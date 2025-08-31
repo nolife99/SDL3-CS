@@ -26,11 +26,14 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
+using System.Runtime.CompilerServices;
+using System.Text;
+
 public static partial class SDL
 {
     private const string SDLLibrary = "SDL3";
-    
-    
+
+
     /// <summary>
     /// Converts a pointer to a structure of type <typeparamref name="T"/>.
     /// </summary>
@@ -38,15 +41,15 @@ public static partial class SDL
     /// The <see cref="IntPtr"/> representing the memory address of the structure.
     /// </param>
     /// <typeparam name="T">
-    /// The type of the structure to which the pointer will be converted. 
+    /// The type of the structure to which the pointer will be converted.
     /// Must be a value type (struct).
     /// </typeparam>
     /// <returns>
-    /// An instance of type <typeparamref name="T"/> containing the data from the memory location pointed to by <paramref name="pointer"/>, 
+    /// An instance of type <typeparamref name="T"/> containing the data from the memory location pointed to by <paramref name="pointer"/>,
     /// or <see langword="null"/> if <paramref name="pointer"/> is <see cref="IntPtr.Zero"/>.
     /// </returns>
     /// <remarks>
-    /// This method is typically used when interop with unmanaged code is required, such as reading data from 
+    /// This method is typically used when interop with unmanaged code is required, such as reading data from
     /// unmanaged memory into a managed structure.
     /// </remarks>
     /// <seealso cref="StructureToPointer{T}"/>
@@ -59,33 +62,33 @@ public static partial class SDL
     {
         return pointer == IntPtr.Zero ? null : Marshal.PtrToStructure<T>(pointer);
     }
-    
-    
+
+
     /// <summary>
     /// Allocates unmanaged memory and copies the data of a structure of type <typeparamref name="T"/> into the allocated memory.
     /// </summary>
     /// <param name="structure">
-    /// The instance of the structure to copy into unmanaged memory. 
+    /// The instance of the structure to copy into unmanaged memory.
     /// If <paramref name="structure"/> is <see langword="null"/>, the method returns <see cref="IntPtr.Zero"/>.
     /// </param>
     /// <typeparam name="T">
     /// The type of the structure to be converted. Must be a value type (struct).
     /// </typeparam>
     /// <returns>
-    /// An <see cref="IntPtr"/> pointing to the allocated unmanaged memory containing the structure data, 
+    /// An <see cref="IntPtr"/> pointing to the allocated unmanaged memory containing the structure data,
     /// or <see cref="IntPtr.Zero"/> if <paramref name="structure"/> is <see langword="null"/>.
     /// </returns>
     /// <remarks>
     /// <para>
-    /// This method allocates unmanaged memory using <see cref="Marshal.AllocHGlobal(int)"/> and copies the structure data 
-    /// into the allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>. 
+    /// This method allocates unmanaged memory using <see cref="Marshal.AllocHGlobal(int)"/> and copies the structure data
+    /// into the allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>.
     /// </para>
     /// <para>
-    /// The caller is responsible for releasing the allocated memory by calling <see cref="Marshal.FreeHGlobal(IntPtr)"/> 
+    /// The caller is responsible for releasing the allocated memory by calling <see cref="Marshal.FreeHGlobal(IntPtr)"/>
     /// when the memory is no longer needed to prevent memory leaks.
     /// </para>
     /// <para>
-    /// Be cautious when working with unmanaged memory, as improper memory management can lead to resource leaks 
+    /// Be cautious when working with unmanaged memory, as improper memory management can lead to resource leaks
     /// or application instability.
     /// </para>
     /// </remarks>
@@ -98,42 +101,42 @@ public static partial class SDL
     public static IntPtr StructureToPointer<T>(T? structure) where T : struct
     {
         if (!structure.HasValue) return IntPtr.Zero;
-        
+
         var ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
-        
+
         Marshal.StructureToPtr(structure, ptr, false);
-    
+
         return ptr;
     }
 
-    
+
     /// <summary>
-    /// Allocates unmanaged memory and copies the data of an array of structures of type <typeparamref name="T"/> 
+    /// Allocates unmanaged memory and copies the data of an array of structures of type <typeparamref name="T"/>
     /// into the allocated memory.
     /// </summary>
     /// <param name="array">
-    /// The array of structures to copy into unmanaged memory. 
+    /// The array of structures to copy into unmanaged memory.
     /// If <paramref name="array"/> is <see langword="null"/> or empty, the method returns <see cref="IntPtr.Zero"/>.
     /// </param>
     /// <typeparam name="T">
     /// The type of the structures in the array. Must be a value type (struct).
     /// </typeparam>
     /// <returns>
-    /// An <see cref="IntPtr"/> pointing to the allocated unmanaged memory containing the data of the array, 
+    /// An <see cref="IntPtr"/> pointing to the allocated unmanaged memory containing the data of the array,
     /// or <see cref="IntPtr.Zero"/> if <paramref name="array"/> is <see langword="null"/> or empty.
     /// </returns>
     /// <remarks>
     /// <para>
-    /// This method allocates unmanaged memory using <see cref="Marshal.AllocHGlobal(int)"/> and copies each element 
-    /// of the array into the allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>. 
+    /// This method allocates unmanaged memory using <see cref="Marshal.AllocHGlobal(int)"/> and copies each element
+    /// of the array into the allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>.
     /// The structures are stored contiguously in memory.
     /// </para>
     /// <para>
-    /// The caller is responsible for releasing the allocated memory by calling <see cref="Marshal.FreeHGlobal(IntPtr)"/> 
+    /// The caller is responsible for releasing the allocated memory by calling <see cref="Marshal.FreeHGlobal(IntPtr)"/>
     /// when the memory is no longer needed to prevent memory leaks.
     /// </para>
     /// <para>
-    /// Be cautious when working with unmanaged memory, as improper memory management can lead to resource leaks 
+    /// Be cautious when working with unmanaged memory, as improper memory management can lead to resource leaks
     /// or application instability.
     /// </para>
     /// </remarks>
@@ -143,9 +146,9 @@ public static partial class SDL
     /// <seealso cref="PointerToStringArray(nint)"/>
     /// <seealso cref="PointerToStringArray(nint, int)"/>
     /// <seealso cref="PointerToStructureArray{T}"/>
-    public static IntPtr StructureArrayToPointer<T>(T[] array) where T : struct
+    public static IntPtr StructureArrayToPointer<T>(scoped ReadOnlySpan<T> array) where T : struct
     {
-        if (array == null || array.Length == 0) return IntPtr.Zero;
+        if (array.IsEmpty) return IntPtr.Zero;
 
         var sizeOfT = Marshal.SizeOf<T>();
         var unmanagedPointer = Marshal.AllocHGlobal(sizeOfT * array.Length);
@@ -159,29 +162,29 @@ public static partial class SDL
         return unmanagedPointer;
     }
 
-    
+
     /// <summary>
     /// Converts a block of unmanaged memory pointed to by an <see cref="IntPtr"/> into an array of <see cref="IntPtr"/> instances.
     /// </summary>
     /// <param name="pointer">
-    /// A pointer to the start of the unmanaged memory block containing the array of pointers. 
+    /// A pointer to the start of the unmanaged memory block containing the array of pointers.
     /// If <paramref name="pointer"/> is <see cref="IntPtr.Zero"/>, the method returns <see langword="null"/>.
     /// </param>
     /// <param name="size">
-    /// The number of <see cref="IntPtr"/> elements in the array. If <paramref name="size"/> is 0, 
+    /// The number of <see cref="IntPtr"/> elements in the array. If <paramref name="size"/> is 0,
     /// the method returns an empty array.
     /// </param>
     /// <returns>
-    /// An array of <see cref="IntPtr"/> instances representing the pointers stored in the unmanaged memory block, 
+    /// An array of <see cref="IntPtr"/> instances representing the pointers stored in the unmanaged memory block,
     /// or <see langword="null"/> if <paramref name="pointer"/> is <see cref="IntPtr.Zero"/>.
     /// </returns>
     /// <remarks>
     /// <para>
-    /// This method uses <see cref="Marshal.Copy(IntPtr, IntPtr[], int, int)"/> to copy the contents of the unmanaged 
+    /// This method uses <see cref="Marshal.Copy(IntPtr, IntPtr[], int, int)"/> to copy the contents of the unmanaged
     /// memory block into a managed array of <see cref="IntPtr"/>.
     /// </para>
     /// <para>
-    /// The caller is responsible for ensuring that the memory block pointed to by <paramref name="pointer"/> 
+    /// The caller is responsible for ensuring that the memory block pointed to by <paramref name="pointer"/>
     /// is valid and that its size matches the specified <paramref name="size"/>.
     /// </para>
     /// <para>
@@ -197,19 +200,19 @@ public static partial class SDL
     public static IntPtr[]? PointerToPointerArray(IntPtr pointer, int size)
     {
         if (pointer == IntPtr.Zero) return null;
-        
+
         if (size == 0) return [];
-        
+
         var pointers = new IntPtr[size];
-        
+
         Marshal.Copy(pointer, pointers, 0, pointers.Length);
-        
+
         return pointers;
     }
-    
-    
+
+
     /// <summary>
-    /// Converts an unmanaged array of null-terminated UTF-8 strings, represented as an <see cref="IntPtr"/>, 
+    /// Converts an unmanaged array of null-terminated UTF-8 strings, represented as an <see cref="IntPtr"/>,
     /// into a managed array of <see cref="string"/>.
     /// </summary>
     /// <param name="pointer">
@@ -218,7 +221,7 @@ public static partial class SDL
     /// If <paramref name="pointer"/> is <see cref="IntPtr.Zero"/>, the method returns <see langword="null"/>.
     /// </param>
     /// <returns>
-    /// A managed array of <see cref="string"/> containing the strings from the unmanaged array, 
+    /// A managed array of <see cref="string"/> containing the strings from the unmanaged array,
     /// or <see langword="null"/> if <paramref name="pointer"/> is <see cref="IntPtr.Zero"/> or the array is empty.
     /// </returns>
     /// <remarks>
@@ -232,7 +235,7 @@ public static partial class SDL
     /// <see cref="Marshal.PtrToStringUTF8(IntPtr)"/> to convert each pointer to a managed string.
     /// </para>
     /// <para>
-    /// The caller is responsible for ensuring that the memory block pointed to by <paramref name="pointer"/> 
+    /// The caller is responsible for ensuring that the memory block pointed to by <paramref name="pointer"/>
     /// is valid and correctly structured (i.e., an array of pointers to null-terminated UTF-8 strings followed by <see cref="IntPtr.Zero"/>).
     /// </para>
     /// <para>
@@ -260,16 +263,16 @@ public static partial class SDL
             var str = Marshal.PtrToStringUTF8(currentPtr);
             if (str != null)
                 result.Add(str);
-            
+
             pointer += IntPtr.Size;
         }
-        
+
         return result.Count > 0 ? result.ToArray() : null;
     }
-    
-    
+
+
     /// <summary>
-    /// Converts an unmanaged array of pointers to null-terminated UTF-8 strings, represented by an <see cref="IntPtr"/>, 
+    /// Converts an unmanaged array of pointers to null-terminated UTF-8 strings, represented by an <see cref="IntPtr"/>,
     /// into a managed array of <see cref="string"/> of a specified size.
     /// </summary>
     /// <param name="pointer">
@@ -281,7 +284,7 @@ public static partial class SDL
     /// The number of strings in the unmanaged array. If <paramref name="size"/> is zero, the method returns an empty array.
     /// </param>
     /// <returns>
-    /// A managed array of <see cref="string"/> containing the strings from the unmanaged array, 
+    /// A managed array of <see cref="string"/> containing the strings from the unmanaged array,
     /// or <see langword="null"/> if <paramref name="pointer"/> is <see cref="IntPtr.Zero"/>.
     /// </returns>
     /// <remarks>
@@ -292,14 +295,14 @@ public static partial class SDL
     /// </para>
     /// <para>
     /// The method uses <see cref="Marshal.Copy(IntPtr, IntPtr[], int, int)"/> to copy the pointers from unmanaged memory
-    /// into a managed array of <see cref="IntPtr"/>. Then, <see cref="Marshal.PtrToStringUTF8(IntPtr)"/> is used to convert 
+    /// into a managed array of <see cref="IntPtr"/>. Then, <see cref="Marshal.PtrToStringUTF8(IntPtr)"/> is used to convert
     /// each pointer to a managed string.
     /// </para>
     /// <para>
     /// If the array contains any invalid pointers or strings that are not properly null-terminated, the behavior is undefined.
     /// </para>
     /// <para>
-    /// The caller is responsible for ensuring that the memory block pointed to by <paramref name="pointer"/> 
+    /// The caller is responsible for ensuring that the memory block pointed to by <paramref name="pointer"/>
     /// is valid and correctly structured (i.e., an array of pointers to null-terminated UTF-8 strings).
     /// </para>
     /// </remarks>
@@ -309,18 +312,16 @@ public static partial class SDL
     /// <seealso cref="PointerToPointerArray"/>
     /// <seealso cref="PointerToStringArray(nint)"/>
     /// <seealso cref="PointerToStructureArray{T}"/>
-    public static string[]? PointerToStringArray(IntPtr pointer, int size)
+    public static unsafe string[]? PointerToStringArray(IntPtr pointer, int size)
     {
         if (pointer == IntPtr.Zero) return null;
-        
+
         if (size == 0) return [];
-        
+
         var result = new string[size];
-        
-        var ptrArray = new IntPtr[size];
-        
-        Marshal.Copy(pointer, ptrArray, 0, size);
-            
+
+        Span<IntPtr> ptrArray = new(pointer.ToPointer(), size);
+
         for (var i = 0; i < size; i++)
         {
             result[i] = Marshal.PtrToStringUTF8(ptrArray[i])!;
@@ -339,37 +340,42 @@ public static partial class SDL
     /// or <see cref="IntPtr.Zero"/> if <paramref name="str"/> is <c>null</c>.
     /// </returns>
     /// <remarks>
-    /// The returned pointer must be freed manually using <see cref="Marshal.FreeHGlobal(IntPtr)"/> 
+    /// The returned pointer must be freed manually using <see cref="Marshal.FreeHGlobal(IntPtr)"/>
     /// to avoid memory leaks. If the returned pointer is <see cref="IntPtr.Zero"/>, no deallocation is needed.
     /// </remarks>
-    public static IntPtr StringToPointer(string? str)
+    public static unsafe IntPtr StringToPointer(scoped ReadOnlySpan<char> str)
     {
         if (str == null) return IntPtr.Zero;
-        
-        var utf8Bytes = System.Text.Encoding.UTF8.GetBytes(str + '\0');
-        var unmanagedPointer = Marshal.AllocHGlobal(utf8Bytes.Length);
-        Marshal.Copy(utf8Bytes, 0, unmanagedPointer, utf8Bytes.Length);
+
+        Span<char> utf16 = stackalloc char[str.Length + 1];
+        str.CopyTo(utf16);
+        utf16[str.Length] = '\0';
+
+        var byteCount = Encoding.UTF8.GetByteCount(utf16);
+        var unmanagedPointer = Marshal.AllocHGlobal(byteCount);
+
+        Encoding.UTF8.GetBytes(utf16, new(unmanagedPointer.ToPointer(), byteCount));
         return unmanagedPointer;
     }
-    
-    
+
+
     /// <summary>
     /// Converts an unmanaged array of pointers (or raw memory) to a managed array of structures.
     /// </summary>
     /// <param name="pointer">
-    /// A pointer to the start of an unmanaged block of memory. This block should contain a sequence of structures 
+    /// A pointer to the start of an unmanaged block of memory. This block should contain a sequence of structures
     /// or a series of pointers to structures. If <paramref name="pointer"/> is <see cref="IntPtr.Zero"/> or invalid,
     /// the method will return <see langword="null"/>.
     /// </param>
     /// <param name="count">
-    /// The number of structures in the unmanaged memory block. If <paramref name="count"/> is zero, the method 
+    /// The number of structures in the unmanaged memory block. If <paramref name="count"/> is zero, the method
     /// will return an empty array. If <paramref name="count"/> is negative, the method will return <see langword="null"/>.
     /// </param>
     /// <typeparam name="T">
     /// The type of the structure. This type must be a value type (i.e., a struct).
     /// </typeparam>
     /// <returns>
-    /// A managed array of <typeparamref name="T"/> structures. Returns <see langword="null"/> if the <paramref name="pointer"/> 
+    /// A managed array of <typeparamref name="T"/> structures. Returns <see langword="null"/> if the <paramref name="pointer"/>
     /// is invalid or if <paramref name="count"/> is less than 0.
     /// </returns>
     /// <remarks>
@@ -377,8 +383,8 @@ public static partial class SDL
     /// 1. A raw memory block representing a contiguous array of structures.
     /// 2. A set of pointers (as an array of <see cref="IntPtr"/>) to the individual structures.
     ///
-    /// If the structures are of a primitive type (e.g., <see cref="int"/>, <see cref="float"/>), the method uses a more efficient 
-    /// memory copy operation. For non-primitive types, the method will iterate over the array and use <see cref="Marshal.PtrToStructure{T}(IntPtr)"/> 
+    /// If the structures are of a primitive type (e.g., <see cref="int"/>, <see cref="float"/>), the method uses a more efficient
+    /// memory copy operation. For non-primitive types, the method will iterate over the array and use <see cref="Marshal.PtrToStructure{T}(IntPtr)"/>
     /// to convert each pointer into its corresponding structure.
     /// </remarks>
     /// <seealso cref="PointerToStructure{T}"/>
@@ -394,7 +400,7 @@ public static partial class SDL
         if (count == 0) return [];
 
         var array = new T[count];
-        
+
         if (typeof(T).IsPrimitive)
         {
             new Span<T>((void*)pointer, count).CopyTo(new Span<T>(array, 0, count));
@@ -407,11 +413,16 @@ public static partial class SDL
                 array[i] = Marshal.PtrToStructure<T>(elementPtr);
             }
         }
-    
+
         return array;
     }
-    
-    
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe int StringLength(IntPtr bytes) => strlen(null, (byte*)bytes);
+
+    [UnsafeAccessor(UnsafeAccessorKind.StaticMethod)]
+    static extern unsafe int strlen(string? c, byte* ptr);
+
     /// <summary>
     /// Indicates that a method is a <c>#define</c> macro.
     /// </summary>

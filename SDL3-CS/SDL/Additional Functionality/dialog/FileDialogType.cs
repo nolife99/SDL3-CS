@@ -23,12 +23,13 @@
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary>
+/// Various types of file dialogs.
+/// </summary>
+/// <remarks> This is used by <see cref="SDL.ShowFileDialogWithProperties(FileDialogType, DialogFileCallback, nint, uint)"/> to decide what kind of dialog to present to the user. </remarks>
+public enum FileDialogType
 {
-    public enum FileDialogType
-    {
-        OpenFile,
-        SaveFile,
-        OpenFolder
-    }
+    OpenFile,
+    SaveFile,
+    OpenFolder
 }

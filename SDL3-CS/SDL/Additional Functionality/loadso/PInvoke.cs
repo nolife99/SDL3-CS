@@ -26,8 +26,17 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Buffers;
+using System.Text;
+
+public static unsafe partial class SDL
 {
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadObject"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static partial IntPtr LoadObjectNative(byte* sofile);
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadFunction"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static partial FunctionPointer? LoadFunctionNative(IntPtr handle, byte* name);
+
     /// <code>extern SDL_DECLSPEC SDL_SharedObject * SDLCALL SDL_LoadObject(const char *sofile);</code>
     /// <summary>
     /// Dynamically load a shared object.
@@ -39,10 +48,32 @@ public static partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="LoadFunction"/>
     /// <seealso cref="UnloadObject"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadObject"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial IntPtr LoadObject([MarshalAs(UnmanagedType.LPUTF8Str)] string sofile);
-    
-    
+    public static IntPtr LoadObject(ReadOnlySpan<char> sofile)
+    {
+        int byteCount = Encoding.UTF8.GetByteCount(sofile) + 1;
+
+        byte[]? rented = null;
+        Span<byte> buffer = byteCount <= 512
+            ? stackalloc byte[byteCount]
+            : (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+        try
+        {
+            int written = Encoding.UTF8.GetBytes(sofile, buffer);
+            buffer[written] = 0; // null terminator
+
+            fixed (byte* pBuffer = buffer)
+            {
+                return LoadObjectNative(pBuffer);
+            }
+        }
+        finally
+        {
+            if (rented != null)
+                ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
+
     /// <code>extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(SDL_SharedObject *handle, const char *name);</code>
     /// <summary>
     /// <para>Look up the address of the named function in a shared object.</para>
@@ -62,10 +93,33 @@ public static partial class SDL
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="LoadObject"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadFunction"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial FunctionPointer? LoadFunction(IntPtr handle, [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+    public static FunctionPointer? LoadFunction(IntPtr handle, ReadOnlySpan<char> name)
+    {
+        int byteCount = Encoding.UTF8.GetByteCount(name) + 1;
 
-    
+        byte[]? rented = null;
+        Span<byte> buffer = byteCount <= 512
+            ? stackalloc byte[byteCount]
+            : (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+        try
+        {
+            int written = Encoding.UTF8.GetBytes(name, buffer);
+            buffer[written] = 0; // null terminator
+
+            fixed (byte* pBuffer = buffer)
+            {
+                return LoadFunctionNative(handle, pBuffer);
+            }
+        }
+        finally
+        {
+            if (rented != null)
+                ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_UnloadObject(SDL_SharedObject *handle);</code>
     /// <summary>
     /// <para>Unload a shared object from memory.</para>
@@ -76,6 +130,6 @@ public static partial class SDL
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="LoadObject"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnloadObject"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnloadObject"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void UnloadObject(IntPtr handle);
 }

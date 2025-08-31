@@ -25,15 +25,17 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
+using System.Runtime.CompilerServices;
+
 public static partial class SDL
 {
-    [Macro]
+    [Macro, MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static uint FourCC(char a, char b, char c, char d)
 	{
 		return (uint)(a | (b << 8) | (c << 16) | (d << 24));
 	}
 
-	
+
 	/// <summary>
 	/// <para>A macro to initialize an SDL interface.</para>
 	/// <para>This macro will initialize an SDL interface structure and should be called
@@ -72,7 +74,7 @@ public static partial class SDL
 		try
 		{
 			var size = (uint)Marshal.SizeOf(iface);
-		
+
 			Memset(ptr, 0, size);
 			iface.Version = size;
 		}
@@ -81,8 +83,8 @@ public static partial class SDL
 			Marshal.FreeHGlobal(ptr);
 		}
 	}
-	
-	
+
+
 	/// <summary>
 	/// <para>A macro to initialize an SDL interface.</para>
 	/// <para>This macro will initialize an SDL interface structure and should be called
@@ -121,7 +123,7 @@ public static partial class SDL
 		try
 		{
 			var size = (uint)Marshal.SizeOf(iface);
-		
+
 			Memset(ptr, 0, size);
 			iface.Version = size;
 		}
@@ -130,8 +132,8 @@ public static partial class SDL
 			Marshal.FreeHGlobal(ptr);
 		}
 	}
-	
-	
+
+
 	/// <summary>
 	/// <para>A macro to initialize an SDL interface.</para>
 	/// <para>This macro will initialize an SDL interface structure and should be called
@@ -170,7 +172,7 @@ public static partial class SDL
 		try
 		{
 			var size = (uint)Marshal.SizeOf(iface);
-		
+
 			Memset(ptr, 0, size);
 			iface.Version = size;
 		}

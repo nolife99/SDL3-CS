@@ -59,10 +59,10 @@ public static partial class SDL
     /// <seealso cref="KillProcess"/>
     /// <seealso cref="WaitProcess"/>
     /// <seealso cref="DestroyProcess"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr CreateProcess([MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPUTF8Str)] string[] args, [MarshalAs(UnmanagedType.I1)] bool pipeStdio);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_PropertiesID props);</code>
     /// <summary>
     /// <para>Create a new process with the specified properties.</para>
@@ -128,10 +128,10 @@ public static partial class SDL
     /// <seealso cref="KillProcess"/>
     /// <seealso cref="WaitProcess"/>
     /// <seealso cref="DestroyProcess"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateProcessWithProperties"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateProcessWithProperties"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr CreateProcessWithProperties(uint props);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetProcessProperties(SDL_Process *process);</code>
     /// <summary>
     /// <para>Get the properties associated with a process.</para>
@@ -158,10 +158,10 @@ public static partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="CreateProcess"/>
     /// <seealso cref="CreateProcessWithProperties"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessProperties"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessProperties"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial uint GetProcessProperties(IntPtr process);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t *datasize, int *exitcode);</code>
     /// <summary>
     /// <para>Read all the output from a process.</para>
@@ -185,10 +185,10 @@ public static partial class SDL
     /// <seealso cref="CreateProcess"/>
     /// <seealso cref="CreateProcessWithProperties"/>
     /// <seealso cref="DestroyProcess"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ReadProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ReadProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr ReadProcess(IntPtr process, out UIntPtr datasize, out int exitcode);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInput(SDL_Process *process);</code>
     /// <summary>
     /// <para>Get the SDL_IOStream associated with process standard input.</para>
@@ -208,10 +208,10 @@ public static partial class SDL
     /// <seealso cref="CreateProcess"/>
     /// <seealso cref="CreateProcessWithProperties"/>
     /// <seealso cref="GetProcessOutput"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessInput"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessInput"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr GetProcessInput(IntPtr process);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *process);</code>
     /// <summary>
     /// <para>Get the SDL_IOStream associated with process standard output.</para>
@@ -229,10 +229,10 @@ public static partial class SDL
     /// <seealso cref="CreateProcess"/>
     /// <seealso cref="CreateProcessWithProperties"/>
     /// <seealso cref="GetProcessInput"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessOutput"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessOutput"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr GetProcessOutput(IntPtr process);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_KillProcess(SDL_Process *process, bool force);</code>
     /// <summary>
     /// Stop a process.
@@ -251,11 +251,11 @@ public static partial class SDL
     /// <seealso cref="CreateProcessWithProperties"/>
     /// <seealso cref="WaitProcess"/>
     /// <seealso cref="DestroyProcess"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_KillProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_KillProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool KillProcess(IntPtr process, [MarshalAs(UnmanagedType.I1)] bool force);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_WaitProcess(SDL_Process *process, bool block, int *exitcode);</code>
     /// <summary>
     /// <para>Wait for a process to finish.</para>
@@ -281,11 +281,11 @@ public static partial class SDL
     /// <seealso cref="CreateProcessWithProperties"/>
     /// <seealso cref="KillProcess"/>
     /// <seealso cref="DestroyProcess"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_WaitProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_WaitProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool WaitProcess(IntPtr process, [MarshalAs(UnmanagedType.I1)] bool block, out int exitcode);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroyProcess(SDL_Process *process);</code>
     /// <summary>
     /// <para>Destroy a previously created process object.</para>
@@ -299,6 +299,6 @@ public static partial class SDL
     /// <seealso cref="CreateProcess"/>
     /// <seealso cref="CreateProcessWithProperties"/>
     /// <seealso cref="KillProcess"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroyProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroyProcess"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void DestroyProcess(IntPtr process);
 }

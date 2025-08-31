@@ -25,16 +25,17 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
+using System.Runtime.CompilerServices;
+
 public static partial class SDL
 {
     /// <summary>
     /// A set of colors to use for message box dialogs
     /// </summary>
     /// <since>This struct is available since SDL 3.2.0</since>
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential), InlineArray((int)MessageBoxColorType.Count)]
     public struct MessageBoxColorScheme
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)MessageBoxColorType.Count)]
-        public MessageBoxColor[] Colors;
+        MessageBoxColor _element0;
     }
 }

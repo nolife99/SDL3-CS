@@ -26,8 +26,15 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Buffers;
+using System.Text;
+
+public static unsafe partial class SDL
 {
+    [LibraryImport("SDL3", EntryPoint = "SDL_ShowMessageBox"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private static partial bool ShowMessageBox(void* data, out int buttonId);
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);</code>
     /// <summary>
     /// <para>Create a modal message box.</para>
@@ -54,11 +61,20 @@ public static partial class SDL
     /// <returns><c>true</c> on success or <c>false</c> on failure; call <see cref="GetError"/> for more
     /// information.</returns>
     /// <since>This function is available since SDL 3.2.0</since>
-    [DllImport(SDLLibrary, EntryPoint = "SDL_ShowMessageBox"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static extern bool ShowMessageBox(in MessageBoxData messageboxdata, out int buttonid);
-    
-    
+    public static bool ShowMessageBox(scoped ref readonly MessageBoxData messageboxdata, out int buttonid)
+    {
+        var pinned = Unsafe.AsRef(in messageboxdata).Pin();
+        try
+        {
+            return ShowMessageBox(&pinned, out buttonid);
+        }
+        finally
+        {
+            Unsafe.AsRef(in messageboxdata).Unpin();
+        }
+    }
+
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, const char *message, SDL_Window *window);</code>
     /// <summary>
     /// <para>Display a simple modal message box.</para>
@@ -92,7 +108,56 @@ public static partial class SDL
     /// information.</returns>
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="ShowMessageBox"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowSimpleMessageBox"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe bool ShowSimpleMessageBox(
+        MessageBoxFlags flags,
+        ReadOnlySpan<char> title,
+        ReadOnlySpan<char> message,
+        IntPtr window)
+    {
+        scoped Span<byte> titleSpan = default, messageSpan = default;
+        byte[]? titleArray = null, messageArray = null;
+
+        if (!title.IsWhiteSpace())
+        {
+            var byteCount = Encoding.UTF8.GetByteCount(title) + 1;
+            titleSpan = byteCount <= 512 ?
+                stackalloc byte[byteCount] :
+                (titleArray = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+            Encoding.UTF8.GetBytes(title, titleSpan);
+            titleSpan[^1] = 0;
+        }
+        if (!message.IsWhiteSpace())
+        {
+            var byteCount = Encoding.UTF8.GetByteCount(message) + 1;
+            messageSpan = byteCount <= 512 ?
+                stackalloc byte[byteCount] :
+                (messageArray = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+            Encoding.UTF8.GetBytes(message, messageSpan);
+            messageSpan[^1] = 0;
+        }
+
+        try
+        {
+            fixed (byte* pTitle = titleSpan)
+            fixed (byte* pMsg = messageSpan)
+            {
+                return ShowSimpleMessageBoxNative(flags, pTitle, pMsg, window);
+            }
+        }
+        finally
+        {
+            if (titleArray is not null) ArrayPool<byte>.Shared.Return(titleArray);
+            if (messageArray is not null) ArrayPool<byte>.Shared.Return(messageArray);
+        }
+    }
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowSimpleMessageBox"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ShowSimpleMessageBox(MessageBoxFlags flags, [MarshalAs(UnmanagedType.LPUTF8Str)] string title, [MarshalAs(UnmanagedType.LPUTF8Str)] string message, IntPtr window);
+    private static partial bool ShowSimpleMessageBoxNative(
+        MessageBoxFlags flags,
+        byte* title,
+        byte* message,
+        IntPtr window);
 }

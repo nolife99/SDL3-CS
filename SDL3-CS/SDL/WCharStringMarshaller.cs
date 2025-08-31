@@ -46,7 +46,7 @@ public static class WCharStringMarshaller
         {
             return unmanaged == IntPtr.Zero ? null : PtrToStringUTF32(unmanaged);
         }
-        
+
         public static string? PtrToStringUTF32(IntPtr ptr)
         {
             if (ptr == IntPtr.Zero)
@@ -71,27 +71,27 @@ public static class WCharStringMarshaller
 
         public static void Free(IntPtr ptr) => Marshal.FreeHGlobal(ptr);
     }
-    
+
     // The size in bytes of a wide character for the current runtime
     public static UIntPtr WCharSize
     {
         get => (UIntPtr)(
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 2 : 4
         );
     }
-        
+
 
     // Выбираем реализацию в зависимости от платформы
     public static IntPtr ConvertToUnmanaged(string? managed)
     {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             WChar16.ConvertToUnmanaged(managed) : WChar32.ConvertToUnmanaged(managed);
     }
 
     public static string? ConvertToManaged(IntPtr unmanaged)
     {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             WChar16.ConvertToManaged(unmanaged) : WChar32.ConvertToManaged(unmanaged);
     }
 

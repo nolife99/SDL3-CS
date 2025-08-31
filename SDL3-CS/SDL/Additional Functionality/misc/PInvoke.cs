@@ -26,7 +26,10 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Buffers;
+using System.Text;
+
+public static unsafe partial class SDL
 {
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_OpenURL(const char *url);</code>
     /// <summary>
@@ -52,7 +55,33 @@ public static partial class SDL
     /// <returns><c>true</c> on success or <c>false</c> on failure; call <see cref="GetError"/> for more
     /// information.</returns>
     /// <since>This function is available since SDL 3.2.0</since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_OpenURL"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static bool OpenURL(scoped ReadOnlySpan<char> url)
+    {
+        int byteCount = Encoding.UTF8.GetByteCount(url) + 1;
+
+        byte[]? rented = null;
+        Span<byte> buffer = byteCount <= 512
+            ? stackalloc byte[byteCount]
+            : (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+        try
+        {
+            int written = Encoding.UTF8.GetBytes(url, buffer);
+            buffer[written] = 0;
+
+            fixed (byte* pBuffer = buffer)
+            {
+                return OpenURLNative(pBuffer);
+            }
+        }
+        finally
+        {
+            if (rented != null)
+                ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_OpenURL"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool OpenURL([MarshalAs(UnmanagedType.LPUTF8Str)] string url);
+    private static partial bool OpenURLNative(byte* url);
 }

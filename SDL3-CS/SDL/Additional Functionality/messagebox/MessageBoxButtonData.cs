@@ -25,25 +25,64 @@ using System.Runtime.InteropServices;
 
 namespace SDL3;
 
+using System.Buffers;
+using System.Text;
+
 public static partial class SDL
 {
     /// <summary>
     /// Individual button data.
     /// </summary>
     /// <since>This struct is available since SDL 3.2.0</since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct MessageBoxButtonData
+    public struct MessageBoxButtonData : IDisposable
     {
-        public MessageBoxButtonFlags Flags;
+        MessageBoxButtonFlags Flags;
+        int ButtonID;
+        byte[] Text;
 
-        /// <summary>
-        /// User defined button id (value returned via <see cref="ShowMessageBox"/>)
-        /// </summary>
-        public int ButtonID;
+        public MessageBoxButtonData(MessageBoxButtonFlags flags, int buttonId, scoped ReadOnlySpan<char> text)
+        {
+            Flags = flags;
+            ButtonID = buttonId;
 
-        /// <summary>
-        /// The UTF-8 button text
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPUTF8Str)] public string Text;
+            if (text.IsWhiteSpace()) return;
+
+            var length = Encoding.UTF8.GetByteCount(text);
+            Text = ArrayPool<byte>.Shared.Rent(length + 1);
+            Encoding.UTF8.GetBytes(text, Text);
+            Text[length] = 0;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Pinned
+        {
+            public MessageBoxButtonFlags Flags;
+            public int ButtonID;
+            public nint Text;
+        }
+
+        GCHandle textPin;
+        internal Pinned Pin()
+        {
+            textPin = GCHandle.Alloc(Text, GCHandleType.Pinned);
+            return new()
+            {
+                Flags = Flags,
+                ButtonID = ButtonID,
+                Text = textPin.AddrOfPinnedObject()
+            };
+        }
+
+        internal void Unpin()
+        {
+            if (textPin.IsAllocated) textPin.Free();
+        }
+
+        public void Dispose()
+        {
+            Unpin();
+
+            ArrayPool<byte>.Shared.Return(Text);
+        }
     }
 }

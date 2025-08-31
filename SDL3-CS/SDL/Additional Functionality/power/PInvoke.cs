@@ -55,6 +55,6 @@ public static partial class SDL
 	/// <returns>the current battery state or <see cref="PowerState.Error"/> on failure;
 	/// call <see cref="GetError"/> for more information.</returns>
 	/// <since>This function is available since SDL 3.2.0</since>
-	[LibraryImport(SDLLibrary, EntryPoint = "SDL_GetPowerInfo"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	[LibraryImport(SDLLibrary, EntryPoint = "SDL_GetPowerInfo"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static partial PowerState GetPowerInfo(out int seconds, out int percent);
 }

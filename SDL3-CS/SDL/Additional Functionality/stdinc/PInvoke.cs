@@ -50,10 +50,10 @@ public partial class SDL
     /// <seealso cref="Calloc"/>
     /// <seealso cref="Realloc"/>
     /// <seealso cref="AlignedAlloc"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_malloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_malloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr Malloc(UIntPtr size);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void * SDLCALL SDL_calloc(size_t nmemb, size_t size);</code>
     /// <summary>
     /// <para>Allocate a zero-initialized array.</para>
@@ -68,10 +68,10 @@ public partial class SDL
     /// <returns>a pointer to the allocated array, or <c>null</c> if allocation failed.</returns>
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_calloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_calloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr Calloc(UIntPtr nmemb, UIntPtr size);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_ALLOC_SIZE(2) void * SDLCALL SDL_realloc(void *mem, size_t size);</code>
     /// <summary>
     /// <para>Change the size of allocated memory.</para>
@@ -104,10 +104,10 @@ public partial class SDL
     /// <seealso cref="Free"/>
     /// <seealso cref="Malloc"/>
     /// <seealso cref="Calloc"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_realloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_realloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr Realloc(IntPtr mem, UIntPtr size);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_free(void *mem);</code>
     /// <summary>
     /// <para>Free allocated memory.</para>
@@ -118,10 +118,10 @@ public partial class SDL
     /// <param name="mem">a pointer to allocated memory, or <c>null</c>.</param>
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_free"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_free"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void Free(IntPtr mem);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func, SDL_calloc_func *calloc_func, SDL_realloc_func *realloc_func, SDL_free_func *free_func);</code>
     /// <summary>
     /// <para>Get the original set of SDL memory functions.</para>
@@ -136,10 +136,10 @@ public partial class SDL
     /// <param name="freeFunc">filled with free function.</param>
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetOriginalMemoryFunctions"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetOriginalMemoryFunctions"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void GetOriginalMemoryFunctions(out MallocFunc mallocFunc, out CallocFunc callocFunc, out ReallocFunc reallocFunc, out FreeFunc freeFunc);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func, SDL_calloc_func *calloc_func, SDL_realloc_func *realloc_func, SDL_free_func *free_func);</code>
     /// <summary>
     /// <para>Get the current set of SDL memory functions.</para>
@@ -154,10 +154,10 @@ public partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="SetMemoryFunctions"/>
     /// <seealso cref="GetOriginalMemoryFunctions"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetMemoryFunctions"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetMemoryFunctions"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void GetMemoryFunctions(out MallocFunc mallocFunc, out CallocFunc callocFunc, out ReallocFunc reallocFunc, out FreeFunc freeFunc);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func, SDL_calloc_func calloc_func, SDL_realloc_func realloc_func, SDL_free_func free_func);</code>
     /// <summary>
     /// <para>Replace SDL's memory allocation functions with a custom set.</para>
@@ -179,11 +179,11 @@ public partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="GetMemoryFunctions"/>
     /// <seealso cref="GetOriginalMemoryFunctions"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetMemoryFunctions"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetMemoryFunctions"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetMemoryFunctions(MallocFunc mallocFunc, CallocFunc callocFunc, ReallocFunc reallocFunc, FreeFunc freeFunc);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);</code>
     /// <summary>
     /// <para>Allocate memory aligned to a specific alignment.</para>
@@ -200,10 +200,10 @@ public partial class SDL
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="AlignedFree"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_aligned_alloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_aligned_alloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr AlignedAlloc(UIntPtr alignment, UIntPtr size);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_aligned_free(void *mem);</code>
     /// <summary>
     /// <para>Free memory allocated by <see cref="AlignedAlloc"/>.</para>
@@ -215,10 +215,10 @@ public partial class SDL
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="AlignedFree"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_aligned_alloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_aligned_alloc"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void AlignedFree(IntPtr mem);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);</code>
     /// <summary>
     /// Get the number of outstanding (unfreed) allocations.
@@ -227,10 +227,10 @@ public partial class SDL
     /// disabled.</returns>
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetNumAllocations"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetNumAllocations"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial int GetNumAllocations();
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_GetEnvironment(void);</code>
     /// <summary>
     /// <para>Get the process environment.</para>
@@ -248,10 +248,10 @@ public partial class SDL
     /// <seealso cref="GetEnvironmentVariables"/>
     /// <seealso cref="SetEnvironmentVariable"/>
     /// <seealso cref="UnsetEnvironmentVariable"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEnvironment"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEnvironment"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr GetEnvironment();
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(bool populated);</code>
     /// <summary>
     /// Create a set of environment variables
@@ -269,11 +269,11 @@ public partial class SDL
     /// <seealso cref="SetEnvironmentVariable"/>
     /// <seealso cref="UnsetEnvironmentVariable"/>
     /// <seealso cref="DestroyEnvironment"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateEnvironment"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateEnvironment"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr CreateEnvironment([MarshalAs(UnmanagedType.I1)] bool populated);
-    
-    
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEnvironmentVariable"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEnvironmentVariable"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial IntPtr SDL_GetEnvironmentVariable(IntPtr env, [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
     /// <code>extern SDL_DECLSPEC const char * SDLCALL SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name);</code>
     /// <summary>
@@ -292,13 +292,13 @@ public partial class SDL
     /// <seealso cref="UnsetEnvironmentVariable"/>
     public static string? GetEnvironmentVariable(IntPtr env, string name)
     {
-        var value = SDL_GetEnvironmentVariable(env, name); 
+        var value = SDL_GetEnvironmentVariable(env, name);
         return value == IntPtr.Zero ? null : Marshal.PtrToStringUTF8(value);
     }
-    
-    
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEnvironmentVariables"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial IntPtr SDL_GetEnvironmentVariables(IntPtr env); 
+
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEnvironmentVariables"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static partial IntPtr SDL_GetEnvironmentVariables(IntPtr env);
     /// <code>extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment *env);</code>
     /// <summary>
     /// Get all variables in the environment.
@@ -328,8 +328,8 @@ public partial class SDL
             Free(ptr);
         }
     }
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite);</code>
     /// <summary>
     /// Set the value of a variable in the environment.
@@ -349,12 +349,12 @@ public partial class SDL
     /// <seealso cref="GetEnvironmentVariable"/>
     /// <seealso cref="GetEnvironmentVariables"/>
     /// <seealso cref="UnsetEnvironmentVariable"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetEnvironmentVariable"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetEnvironmentVariable"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetEnvironmentVariable(IntPtr env, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, 
+    public static partial bool SetEnvironmentVariable(IntPtr env, [MarshalAs(UnmanagedType.LPUTF8Str)] string name,
         [MarshalAs(UnmanagedType.LPUTF8Str)] string value, [MarshalAs(UnmanagedType.I1)] bool overwrite);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name);</code>
     /// <summary>
     /// Clear a variable from the environment.
@@ -371,11 +371,11 @@ public partial class SDL
     /// <seealso cref="GetEnvironmentVariables"/>
     /// <seealso cref="SetEnvironmentVariable"/>
     /// <seealso cref="UnsetEnvironmentVariable"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnsetEnvironmentVariable"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnsetEnvironmentVariable"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool UnsetEnvironmentVariable(IntPtr env, [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroyEnvironment(SDL_Environment *env);</code>
     /// <summary>
     /// Destroy a set of environment variables.
@@ -385,10 +385,10 @@ public partial class SDL
     /// the environment is no longer in use.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="CreateEnvironment"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroyEnvironment"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroyEnvironment"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void DestroyEnvironment(IntPtr env);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);</code>
     /// <summary>
     /// Seeds the pseudo-random number generator.
@@ -403,10 +403,10 @@ public partial class SDL
     /// <seealso cref="Rand"/>
     /// <seealso cref="RandBits"/>
     /// <seealso cref="RandF"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_srand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_srand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial void SRand(ulong seed);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand(Sint32 n);</code>
     /// <summary>
     /// <para>Generate a pseudo-random number less than n for positive n</para>
@@ -431,10 +431,10 @@ public partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <see cref="SRand"/>
     /// <seealso cref="RandF"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial int Rand(int n);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC float SDLCALL SDL_randf(void);</code>
     /// <summary>
     /// <para>Generate a uniform pseudo-random floating point number less than 1.0</para>
@@ -451,10 +451,10 @@ public partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="SRand"/>
     /// <seealso cref="Rand"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial float RandF();
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);</code>
     /// <summary>
     /// <para>Generate 32 pseudo-random bits.</para>
@@ -471,10 +471,10 @@ public partial class SDL
     /// <seealso cref="Rand"/>
     /// <seealso cref="RandF"/>
     /// <seealso cref="SRand"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial uint RandBits();
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_r(Uint64 *state, Sint32 n);</code>
     /// <summary>
     /// <para>Generate a pseudo-random number less than n for positive n</para>
@@ -501,10 +501,10 @@ public partial class SDL
     /// <seealso cref="Rand"/>
     /// <seealso cref="RandBitsR"/>
     /// <seealso cref="RandFR"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand_r"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand_r"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial int RandR(ref ulong state, int n);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);</code>
     /// <summary>
     /// <para>Generate a uniform pseudo-random floating point number less than 1.0</para>
@@ -525,10 +525,10 @@ public partial class SDL
     /// <seealso cref="RandBitsR"/>
     /// <seealso cref="RandR"/>
     /// <seealso cref="RandF"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_randf_r"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_randf_r"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial float RandFR(ref ulong state);
-    
-    
+
+
     /// <code>extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits_r(Uint64 *state);</code>
     /// <summary>
     /// <para>Generate 32 pseudo-random bits.</para>
@@ -547,7 +547,7 @@ public partial class SDL
     /// <since>This function is available since SDL 3.2.0</since>
     /// <seealso cref="RandR"/>
     /// <seealso cref="RandFR"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand_bits_r"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand_bits_r"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining), SuppressGCTransition]
     public static partial uint RandBitsR(ref ulong state);
 
 
@@ -565,6 +565,6 @@ public partial class SDL
     /// <returns><c>dst</c></returns>
     /// <threadsafety>It is safe to call this function from any thread.</threadsafety>
     /// <since>This function is available since SDL 3.2.0</since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_memset"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_memset"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial IntPtr Memset(IntPtr dst, int c, UIntPtr len);
 }

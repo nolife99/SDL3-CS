@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <TargetFrameworks>net8.0;net9.0;net7.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <PackageReleaseNotes>This is a stable bugfix release, with the following changes:
 
             - Fixed a crash when passing large invalid coordinates to SDL_BlitSurfaceScaled()
@@ -48,11 +48,11 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <None Include="../README.md" Pack="true" PackagePath="\"/>
-        <None Include="../README-nuget.md" Pack="true" PackagePath="\"/>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Include="../CODE_OF_CONDUCT.md" Pack="true" PackagePath="\"/>
-        <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
+        <None Include="../README.md" Pack="true" PackagePath="\" />
+        <None Include="../README-nuget.md" Pack="true" PackagePath="\" />
+        <None Include="../LICENSE" Pack="true" PackagePath="\" />
+        <None Include="../CODE_OF_CONDUCT.md" Pack="true" PackagePath="\" />
+        <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)' == 'Release'">

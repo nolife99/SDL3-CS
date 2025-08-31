@@ -21,44 +21,69 @@
  */
 #endregion
 
+using System.Buffers;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary>
+/// <para>An entry for filters for file dialogs.</para>
+/// </summary>
+/// <since>This struct is available since SDL 3.2.0</since>
+/// <seealso cref="DialogFileCallback"/>
+/// <seealso cref="SDL.ShowOpenFileDialog"/>
+/// <seealso cref="SDL.ShowSaveFileDialog"/>
+/// <seealso cref="SDL.ShowOpenFolderDialog"/>
+/// <seealso cref="SDL.ShowFileDialogWithProperties"/>
+public struct DialogFileFilter : IDisposable
 {
-    /// <summary>
-    /// <para>An entry for filters for file dialogs.</para>
-    /// </summary>
+    readonly byte[] name, pattern;
+    GCHandle namePin, patternPin;
+
     /// <param name="name">is a user-readable label for the filter (for example, "Office
     /// document").</param>
     /// <param name="pattern">is a semicolon-separated list of file extensions (for example,
     /// <c>"doc;docx"</c>). File extensions may only contain alphanumeric characters,
     /// hyphens, underscores and periods. Alternatively, the whole string can be a
     /// single asterisk (<c>"*"</c>), which serves as an "<c>All files</c>" filter.</param>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    /// <seealso cref="DialogFileCallback"/>
-    /// <seealso cref="ShowOpenFileDialog"/>
-    /// <seealso cref="ShowSaveFileDialog"/>
-    /// <seealso cref="ShowOpenFolderDialog"/>
-    /// <seealso cref="ShowFileDialogWithProperties"/>
-    [StructLayout(LayoutKind.Sequential)]
-    public readonly struct DialogFileFilter(string name, string pattern) : IDisposable
+    public DialogFileFilter(scoped ReadOnlySpan<char> name, scoped ReadOnlySpan<char> pattern)
     {
-        public readonly IntPtr Name = Marshal.StringToCoTaskMemUTF8(name);
-        public readonly IntPtr Pattern = Marshal.StringToCoTaskMemUTF8(pattern);
-
-        public void Dispose()
+        if (!name.IsWhiteSpace())
         {
-            if (Name != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(Name);
-            }
-
-            if (Pattern != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(Pattern);
-            }
+            var length = Encoding.UTF8.GetByteCount(name);
+            this.name = ArrayPool<byte>.Shared.Rent(length + 1);
+            Encoding.UTF8.GetBytes(name, this.name);
+            this.name[length] = 0;
         }
+        if (!pattern.IsWhiteSpace())
+        {
+            var length = Encoding.UTF8.GetByteCount(pattern);
+            this.pattern = ArrayPool<byte>.Shared.Rent(length + 1);
+            Encoding.UTF8.GetBytes(pattern, this.pattern);
+            this.pattern[length] = 0;
+        }
+    }
+
+    internal (nint, nint) Pin()
+    {
+        if (name is not null) namePin = GCHandle.Alloc(name, GCHandleType.Pinned);
+        if (pattern is not null) patternPin = GCHandle.Alloc(pattern, GCHandleType.Pinned);
+
+        return (name is null ? 0 : namePin.AddrOfPinnedObject(), pattern is null ? 0 : patternPin.AddrOfPinnedObject());
+    }
+
+    internal void Unpin()
+    {
+        if (namePin.IsAllocated) namePin.Free();
+        if (patternPin.IsAllocated) patternPin.Free();
+    }
+
+    public void Dispose()
+    {
+        Unpin();
+
+        if (name is not null) ArrayPool<byte>.Shared.Return(name);
+        if (pattern is not null) ArrayPool<byte>.Shared.Return(pattern);
     }
 }
