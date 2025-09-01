@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,27 +20,20 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> An enumeration of indices inside the colors array of <see cref="MessageBoxColorScheme"/>. </summary>
+public enum MessageBoxColorType
 {
-    /// <summary>
-    /// An enumeration of indices inside the colors array of
-    /// <see cref="MessageBoxColorScheme"/>.
-    /// </summary>
-    public enum MessageBoxColorType
-    {
-        Background,
-        Text,
-        ButtonBorder,
-        ButtonBackground,
-        ButtonSelected,
-        
-        /// <summary>
-        /// Size of the colors array of <see cref="MessageBoxColorScheme"/>.
-        /// </summary>
-        Count
-    }
+    Background,
+    Text,
+    ButtonBorder,
+    ButtonBackground,
+    ButtonSelected,
+
+    /// <summary> Size of the colors array of <see cref="MessageBoxColorScheme"/>. </summary>
+    Count
 }

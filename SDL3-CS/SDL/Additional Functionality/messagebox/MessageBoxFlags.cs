@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,43 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary>
+///     <para> Message box flags. </para> <para> If supported will display warning icon, etc. </para>
+/// </summary>
+/// <since> This datatype is available since SDL 3.2.0 </since>
+[Flags]
+public enum MessageBoxFlags : uint
 {
-    /// <summary>
-    /// <para>Message box flags.</para>
-    /// <para>If supported will display warning icon, etc.</para>
-    /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
-    [Flags]
-    public enum MessageBoxFlags : uint
-    {
-        /// <summary>
-        /// error dialog
-        /// </summary>
-        Error = 0x00000010u,
-        
-        /// <summary>
-        /// warning dialog
-        /// </summary>
-        Warning = 0x00000020u,
-        
-        /// <summary>
-        /// informational dialog
-        /// </summary>
-        Information = 0x00000040u,
-        
-        /// <summary>
-        /// buttons placed left to right
-        /// </summary>
-        ButtonsLeftToRight = 0x00000080u,
-        
-        /// <summary>
-        /// buttons placed right to left
-        /// </summary>
-        ButtonsRightToLeft = 0x00000100u
-    }
+    /// <summary> error dialog </summary>
+    Error = 0x00000010u,
+
+    /// <summary> warning dialog </summary>
+    Warning = 0x00000020u,
+
+    /// <summary> informational dialog </summary>
+    Information = 0x00000040u,
+
+    /// <summary> buttons placed left to right </summary>
+    ButtonsLeftToRight = 0x00000080u,
+
+    /// <summary> buttons placed right to left </summary>
+    ButtonsRightToLeft = 0x00000100u
 }

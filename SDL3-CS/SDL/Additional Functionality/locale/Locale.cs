@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,34 +20,31 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Runtime.InteropServices;
+
+/// <summary>
+///     <para> A struct to provide locale data. </para>
+///     <para>
+///         Locale data is split into a spoken language, like English, and an optional country, like Canada. The language
+///         will be in ISO-639 format (so English would be "en"), and the country, if not NULL, will be an ISO-3166 country code
+///         (so Canada would be "CA").
+///     </para>
+/// </summary>
+/// <since> This function is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.GetPreferredLocales"/>
+[StructLayout(LayoutKind.Sequential)]
+public struct Locale
 {
-    /// <summary>
-    /// <para>A struct to provide locale data.</para>
-    /// <para>Locale data is split into a spoken language, like English, and an optional
-    /// country, like Canada. The language will be in ISO-639 format (so English
-    /// would be "en"), and the country, if not NULL, will be an ISO-3166 country
-    /// code (so Canada would be "CA").</para>
-    /// </summary>
-    /// <since>This function is available since SDL 3.2.0</since>
-    /// <seealso cref="GetPreferredLocales"/>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Locale
-    {
-        /// <summary>
-        /// A language name, like "en" for English.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPUTF8Str)] public string Language;
-        
-        /// <summary>
-        /// A country, like "US" for America. Can be <c>null</c>.
-        /// </summary>
-        [MarshalAs(UnmanagedType.LPUTF8Str)] public string? Country;
-    }
+    /// <summary> A language name, like "en" for English. </summary>
+    [MarshalAs(UnmanagedType.LPUTF8Str)]
+    public string Language;
+
+    /// <summary> A country, like "US" for America. Can be <c> null </c>. </summary>
+    [MarshalAs(UnmanagedType.LPUTF8Str)]
+    public string? Country;
 }

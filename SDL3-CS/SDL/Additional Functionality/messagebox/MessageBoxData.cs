@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,131 +20,128 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
-public static partial class SDL
+/// <summary> MessageBox structure containing title, text, window, etc. </summary>
+public struct MessageBoxData : IDisposable
 {
-    /// <summary>
-    /// MessageBox structure containing title, text, window, etc.
-    /// </summary>
-    public struct MessageBoxData : IDisposable
+    readonly MessageBoxFlags Flags;
+    readonly nint Window;
+    readonly int NumButtons;
+    readonly byte[]? Title, Message;
+    readonly MessageBoxButtonData[]? Buttons;
+    readonly MessageBoxColorScheme[]? ColorScheme;
+
+    public MessageBoxData(MessageBoxFlags flags,
+        nint window,
+        scoped ReadOnlySpan<char> title,
+        scoped ReadOnlySpan<char> message,
+        scoped ReadOnlySpan<MessageBoxButtonData> buttons,
+        scoped ReadOnlySpan<MessageBoxColorScheme> colorScheme)
     {
-        readonly MessageBoxFlags Flags;
-        readonly nint Window;
-        readonly int NumButtons;
-        readonly byte[]? Title, Message;
-        readonly MessageBoxButtonData[]? Buttons;
-        readonly MessageBoxColorScheme[]? ColorScheme;
+        Flags = flags;
+        Window = window;
 
-        public MessageBoxData(MessageBoxFlags flags,
-            nint window,
-            scoped ReadOnlySpan<char> title,
-            scoped ReadOnlySpan<char> message,
-            scoped ReadOnlySpan<MessageBoxButtonData> buttons,
-            scoped ReadOnlySpan<MessageBoxColorScheme> colorScheme)
+        if (!title.IsWhiteSpace())
         {
-            Flags = flags;
-            Window = window;
-
-            if (!title.IsWhiteSpace())
-            {
-                var length = Encoding.UTF8.GetByteCount(title);
-                Title = ArrayPool<byte>.Shared.Rent(length + 1);
-                Encoding.UTF8.GetBytes(title, Title);
-                Title[length] = 0;
-            }
-            if (!message.IsWhiteSpace())
-            {
-                var length = Encoding.UTF8.GetByteCount(message);
-                Message = ArrayPool<byte>.Shared.Rent(length + 1);
-                Encoding.UTF8.GetBytes(message, Message);
-                Message[length] = 0;
-            }
-            if (!buttons.IsEmpty)
-            {
-                Buttons = ArrayPool<MessageBoxButtonData>.Shared.Rent(buttons.Length + 1);
-                buttons.CopyTo(Buttons);
-                Buttons[buttons.Length] = Unsafe.NullRef<MessageBoxButtonData>();
-
-                NumButtons = buttons.Length;
-            }
-            if (!colorScheme.IsEmpty)
-            {
-                ColorScheme = ArrayPool<MessageBoxColorScheme>.Shared.Rent(colorScheme.Length + 1);
-                colorScheme.CopyTo(ColorScheme);
-                ColorScheme[colorScheme.Length] = Unsafe.NullRef<MessageBoxColorScheme>();
-            }
+            var length = Encoding.UTF8.GetByteCount(title);
+            Title = ArrayPool<byte>.Shared.Rent(length + 1);
+            Encoding.UTF8.GetBytes(title, Title);
+            Title[length] = 0;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct Pinned
+        if (!message.IsWhiteSpace())
         {
-            public MessageBoxFlags flags;
-            public nint window, title, message;
-            public int numbuttons;
-            public nint buttons, colorScheme;
+            var length = Encoding.UTF8.GetByteCount(message);
+            Message = ArrayPool<byte>.Shared.Rent(length + 1);
+            Encoding.UTF8.GetBytes(message, Message);
+            Message[length] = 0;
         }
 
-        MessageBoxButtonData.Pinned[]? buttonsPinned;
-        GCHandle titlePin, messagePin, buttonsArrayPin, colorSchemePin;
-
-        internal Pinned Pin()
+        if (!buttons.IsEmpty)
         {
-            if (Title is not null) titlePin = GCHandle.Alloc(Title, GCHandleType.Pinned);
-            if (Message is not null) messagePin = GCHandle.Alloc(Message, GCHandleType.Pinned);
-            if (ColorScheme is not null) colorSchemePin = GCHandle.Alloc(ColorScheme, GCHandleType.Pinned);
+            Buttons = ArrayPool<MessageBoxButtonData>.Shared.Rent(buttons.Length);
+            buttons.CopyTo(Buttons);
 
-            if (NumButtons != 0)
-            {
-                buttonsPinned = ArrayPool<MessageBoxButtonData.Pinned>.Shared.Rent(NumButtons);
-                for (var i = 0; i < NumButtons; i++) buttonsPinned[i] = Buttons[i].Pin();
-
-                buttonsArrayPin = GCHandle.Alloc(buttonsPinned, GCHandleType.Pinned);
-            }
-
-            return new()
-            {
-                flags = Flags,
-                window = Window,
-                title = Title is null ? 0 : titlePin.AddrOfPinnedObject(),
-                message = Message is null ? 0 : messagePin.AddrOfPinnedObject(),
-                numbuttons = NumButtons,
-                buttons = NumButtons == 0 ? 0 : buttonsArrayPin.AddrOfPinnedObject(),
-                colorScheme = ColorScheme is null ? 0 : colorSchemePin.AddrOfPinnedObject()
-            };
+            NumButtons = buttons.Length;
         }
 
-        internal void Unpin()
+        if (!colorScheme.IsEmpty)
         {
-            if (titlePin.IsAllocated) titlePin.Free();
-            if (messagePin.IsAllocated) messagePin.Free();
-            if (colorSchemePin.IsAllocated) colorSchemePin.Free();
+            ColorScheme = ArrayPool<MessageBoxColorScheme>.Shared.Rent(colorScheme.Length);
+            colorScheme.CopyTo(ColorScheme);
+            ColorScheme[colorScheme.Length] = Unsafe.NullRef<MessageBoxColorScheme>();
+        }
+    }
 
-            if (buttonsArrayPin.IsAllocated)
-            {
-                buttonsArrayPin.Free();
-                ArrayPool<MessageBoxButtonData.Pinned>.Shared.Return(buttonsPinned);
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Pinned
+    {
+        public MessageBoxFlags flags;
+        public nint window, title, message;
+        public int numbuttons;
+        public nint buttons, colorScheme;
+    }
 
-                for (var i = 0; i < NumButtons; ++i) Buttons[i].Unpin();
-            }
+    MessageBoxButtonData.Pinned[]? buttonsPinned;
+    GCHandle titlePin, messagePin, buttonsArrayPin, colorSchemePin;
+
+    internal Pinned Pin()
+    {
+        if (Title is not null) titlePin = GCHandle.Alloc(Title, GCHandleType.Pinned);
+        if (Message is not null) messagePin = GCHandle.Alloc(Message, GCHandleType.Pinned);
+        if (ColorScheme is not null) colorSchemePin = GCHandle.Alloc(ColorScheme, GCHandleType.Pinned);
+
+        if (NumButtons != 0)
+        {
+            buttonsPinned = ArrayPool<MessageBoxButtonData.Pinned>.Shared.Rent(NumButtons);
+            for (var i = 0; i < NumButtons; i++) buttonsPinned[i] = Buttons[i].Pin();
+
+            buttonsArrayPin = GCHandle.Alloc(buttonsPinned, GCHandleType.Pinned);
         }
 
-        public void Dispose()
+        return new()
         {
-            Unpin();
+            flags = Flags,
+            window = Window,
+            title = Title is null ? 0 : titlePin.AddrOfPinnedObject(),
+            message = Message is null ? 0 : messagePin.AddrOfPinnedObject(),
+            numbuttons = NumButtons,
+            buttons = NumButtons == 0 ? 0 : buttonsArrayPin.AddrOfPinnedObject(),
+            colorScheme = ColorScheme is null ? 0 : colorSchemePin.AddrOfPinnedObject()
+        };
+    }
 
-            if (Title is not null) ArrayPool<byte>.Shared.Return(Title);
-            if (Message is not null) ArrayPool<byte>.Shared.Return(Message);
-            if (Buttons is not null) ArrayPool<MessageBoxButtonData>.Shared.Return(Buttons);
-            if (ColorScheme is not null) ArrayPool<MessageBoxColorScheme>.Shared.Return(ColorScheme);
+    internal void Unpin()
+    {
+        if (titlePin.IsAllocated) titlePin.Free();
+        if (messagePin.IsAllocated) messagePin.Free();
+        if (colorSchemePin.IsAllocated) colorSchemePin.Free();
+
+        if (buttonsArrayPin.IsAllocated)
+        {
+            buttonsArrayPin.Free();
+            ArrayPool<MessageBoxButtonData.Pinned>.Shared.Return(buttonsPinned);
+
+            for (var i = 0; i < NumButtons; ++i) Buttons[i].Unpin();
         }
+    }
+
+    public void Dispose()
+    {
+        Unpin();
+
+        if (Title is not null) ArrayPool<byte>.Shared.Return(Title);
+        if (Message is not null) ArrayPool<byte>.Shared.Return(Message);
+        if (Buttons is not null) ArrayPool<MessageBoxButtonData>.Shared.Return(Buttons);
+        if (ColorScheme is not null) ArrayPool<MessageBoxColorScheme>.Shared.Return(ColorScheme);
     }
 }

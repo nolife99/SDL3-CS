@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,70 +20,61 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
 using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Text;
 
-public static partial class SDL
+/// <summary> Individual button data. </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+public struct MessageBoxButtonData : IDisposable
 {
-    /// <summary>
-    /// Individual button data.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    public struct MessageBoxButtonData : IDisposable
+    readonly MessageBoxButtonFlags Flags;
+    readonly int ButtonID;
+    readonly byte[]? Text;
+
+    public MessageBoxButtonData(MessageBoxButtonFlags flags, int buttonId, scoped ReadOnlySpan<char> text)
     {
-        MessageBoxButtonFlags Flags;
-        int ButtonID;
-        byte[] Text;
+        Flags = flags;
+        ButtonID = buttonId;
 
-        public MessageBoxButtonData(MessageBoxButtonFlags flags, int buttonId, scoped ReadOnlySpan<char> text)
-        {
-            Flags = flags;
-            ButtonID = buttonId;
+        if (text.IsWhiteSpace()) return;
 
-            if (text.IsWhiteSpace()) return;
+        var length = Encoding.UTF8.GetByteCount(text);
+        Text = ArrayPool<byte>.Shared.Rent(length + 1);
+        Encoding.UTF8.GetBytes(text, Text);
+        Text[length] = 0;
+    }
 
-            var length = Encoding.UTF8.GetByteCount(text);
-            Text = ArrayPool<byte>.Shared.Rent(length + 1);
-            Encoding.UTF8.GetBytes(text, Text);
-            Text[length] = 0;
-        }
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Pinned
+    {
+        public MessageBoxButtonFlags Flags;
+        public int ButtonID;
+        public nint Text;
+    }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct Pinned
-        {
-            public MessageBoxButtonFlags Flags;
-            public int ButtonID;
-            public nint Text;
-        }
+    GCHandle textPin;
 
-        GCHandle textPin;
-        internal Pinned Pin()
-        {
-            textPin = GCHandle.Alloc(Text, GCHandleType.Pinned);
-            return new()
-            {
-                Flags = Flags,
-                ButtonID = ButtonID,
-                Text = textPin.AddrOfPinnedObject()
-            };
-        }
+    internal Pinned Pin()
+    {
+        textPin = GCHandle.Alloc(Text, GCHandleType.Pinned);
+        return new() { Flags = Flags, ButtonID = ButtonID, Text = textPin.AddrOfPinnedObject() };
+    }
 
-        internal void Unpin()
-        {
-            if (textPin.IsAllocated) textPin.Free();
-        }
+    internal void Unpin()
+    {
+        if (textPin.IsAllocated) textPin.Free();
+    }
 
-        public void Dispose()
-        {
-            Unpin();
+    public void Dispose()
+    {
+        Unpin();
 
-            ArrayPool<byte>.Shared.Return(Text);
-        }
+        ArrayPool<byte>.Shared.Return(Text);
     }
 }

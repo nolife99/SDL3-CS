@@ -78,7 +78,7 @@ public static unsafe partial class SDL
         // Worst case UTF-8 byte count + 1 for null terminator
         int byteCount = Encoding.UTF8.GetByteCount(guidString) + 1;
         byte[]? rented = null;
-        Span<byte> buffer = byteCount <= 512
+        var buffer = byteCount <= 512
             ? stackalloc byte[byteCount]
             : (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
 

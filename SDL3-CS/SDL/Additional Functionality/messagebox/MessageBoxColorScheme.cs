@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,23 +20,18 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> A set of colors to use for message box dialogs </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential), InlineArray((int)MessageBoxColorType.Count)]
+public struct MessageBoxColorScheme
 {
-    /// <summary>
-    /// A set of colors to use for message box dialogs
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    [StructLayout(LayoutKind.Sequential), InlineArray((int)MessageBoxColorType.Count)]
-    public struct MessageBoxColorScheme
-    {
-        MessageBoxColor _element0;
-    }
+    MessageBoxColor _element0;
 }
