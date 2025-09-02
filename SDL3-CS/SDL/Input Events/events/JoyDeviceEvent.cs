@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,39 +20,39 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Joystick device event structure (event.jdevice.*)</para>
-    /// <para>SDL will send <see cref="EventType.JoystickAdded"/> events for devices that are already plugged in
-    /// during <see cref="Init"/>.</para>
+    ///     <para> Joystick device event structure (event.jdevice.*) </para>
+    ///     <para>
+    ///         SDL will send <see cref="EventType.JoystickAdded"/> events for devices that are already plugged in during
+    ///         <see cref="Init"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GamepadDeviceEvent"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct JoyDeviceEvent
     {
         /// <summary>
-        /// <see cref="EventType.JoystickAdded"/> or <see cref="EventType.JoystickRemoved"/> or <see cref="EventType.JoystickUpdateComplete"/>
+        ///     <see cref="EventType.JoystickAdded"/> or <see cref="EventType.JoystickRemoved"/> or
+        ///     <see cref="EventType.JoystickUpdateComplete"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The joystick instance id
-        /// </summary>
-        public UInt32 Which;
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The joystick instance id </summary>
+        public uint Which;
     }
 }

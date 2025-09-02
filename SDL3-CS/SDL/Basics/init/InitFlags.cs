@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,11 +28,13 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Initialization flags for <see cref="Init"/> and/or <see cref="InitSubSystem"/></para>
-    /// <para>These are the flags which may be passed to <see cref="Init"/>. You should specify
-    /// the subsystems which you will be using in your application.</para>
+    ///     <para> Initialization flags for <see cref="Init"/> and/or <see cref="InitSubSystem"/> </para>
+    ///     <para>
+    ///         These are the flags which may be passed to <see cref="Init"/>. You should specify the subsystems which you will
+    ///         be using in your application.
+    ///     </para>
     /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     /// <seealso cref="Init"/>
     /// <seealso cref="Quit"/>
     /// <seealso cref="InitSubSystem"/>
@@ -39,36 +43,24 @@ public static partial class SDL
     [Flags]
     public enum InitFlags : uint
     {
-        /// <summary>
-        /// <see cref="Audio"/> implies <see cref="Events"/>
-        /// </summary>
-        Audio =     0x00000010u,
-        
-        /// <summary>
-        /// <see cref="Video"/> implies <see cref="Events"/>, should be initialized on the main thread
-        /// </summary>
-        Video =     0x00000020u,
-        
-        /// <summary>
-        /// <see cref="Joystick"/> implies <see cref="Events"/>
-        /// </summary>
-        Joystick =  0x00000200u,
-        Haptic =    0x00001000u,
-        
-        /// <summary>
-        /// <see cref="Gamepad"/> implies <see cref="Events"/>
-        /// </summary>
-        Gamepad =   0x00002000u,
-        Events =    0x00004000u,
-        
-        /// <summary>
-        /// <see cref="Sensor"/> implies <see cref="Events"/>
-        /// </summary>
-        Sensor =    0x00008000u,
-        
-        /// <summary>
-        /// <see cref="Camera"/> implies <see cref="Events"/>
-        /// </summary>
-        Camera =    0x00010000u
+        /// <summary> <see cref="Audio"/> implies <see cref="Events"/> </summary>
+        Audio = 0x00000010u,
+
+        /// <summary> <see cref="Video"/> implies <see cref="Events"/>, should be initialized on the main thread </summary>
+        Video = 0x00000020u,
+
+        /// <summary> <see cref="Joystick"/> implies <see cref="Events"/> </summary>
+        Joystick = 0x00000200u,
+        Haptic = 0x00001000u,
+
+        /// <summary> <see cref="Gamepad"/> implies <see cref="Events"/> </summary>
+        Gamepad = 0x00002000u,
+        Events = 0x00004000u,
+
+        /// <summary> <see cref="Sensor"/> implies <see cref="Events"/> </summary>
+        Sensor = 0x00008000u,
+
+        /// <summary> <see cref="Camera"/> implies <see cref="Events"/> </summary>
+        Camera = 0x00010000u
     }
 }

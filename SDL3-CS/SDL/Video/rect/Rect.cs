@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A rectangle, with the origin at the upper left (using integers).
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A rectangle, with the origin at the upper left (using integers). </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="RectEmpty"/>
     /// <seealso cref="RectsEqual"/>
     /// <seealso cref="HasRectIntersection"/>
@@ -42,11 +42,11 @@ public static partial class SDL
     public struct Rect
     {
         public int X;
-        
+
         public int Y;
-        
+
         public int W;
-        
+
         public int H;
     }
 }

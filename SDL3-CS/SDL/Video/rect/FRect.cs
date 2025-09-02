@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,19 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A rectangle, with the origin at the upper left (using floating point
-    /// values).
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A rectangle, with the origin at the upper left (using floating point values). </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="RectEmptyFloat"/>
     /// <seealso cref="RectsEqualFloat"/>
     /// <seealso cref="RectsEqualEpsilon"/>
@@ -45,11 +44,11 @@ public static partial class SDL
     public struct FRect
     {
         public float X;
-        
+
         public float Y;
-        
+
         public float W;
-        
+
         public float H;
     }
 }

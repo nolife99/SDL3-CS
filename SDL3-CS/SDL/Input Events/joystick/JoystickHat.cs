@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -34,7 +36,7 @@ public static partial class SDL
         Left = 0x08,
         RightUp = Right | Up,
         RightDown = Right | Down,
-        LeftUp = Left | Up, 
+        LeftUp = Left | Up,
         LeftDown = Left | Down
     }
 }

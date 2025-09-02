@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,46 +20,33 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// SDL_IOStream status, set by a read or write operation.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.0.0.</since>
+    /// <summary> SDL_IOStream status, set by a read or write operation. </summary>
+    /// <since> This enum is available since SDL 3.0.0. </since>
     public enum IOStatus
     {
-        /// <summary>
-        /// Everything is ready (no errors and not EOF).
-        /// </summary>
+        /// <summary> Everything is ready (no errors and not EOF). </summary>
         Ready,
-        
-        /// <summary>
-        /// Read or write I/O error
-        /// </summary>
+
+        /// <summary> Read or write I/O error </summary>
         Error,
-        
-        /// <summary>
-        /// End of file
-        /// </summary>
+
+        /// <summary> End of file </summary>
         EOF,
-        
-        /// <summary>
-        /// Non blocking I/O, not ready
-        /// </summary>
+
+        /// <summary> Non blocking I/O, not ready </summary>
         NotReady,
-        
-        /// <summary>
-        /// Tried to write a read-only buffer
-        /// </summary>
-        ReadOnly, 
-        
-        /// <summary>
-        /// Tried to read a write-only buffer
-        /// </summary>
+
+        /// <summary> Tried to write a read-only buffer </summary>
+        ReadOnly,
+
+        /// <summary> Tried to read a write-only buffer </summary>
         WriteOnly
     }
 }

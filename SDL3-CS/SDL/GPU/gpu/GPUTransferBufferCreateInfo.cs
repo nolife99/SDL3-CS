@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,35 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of a transfer buffer.</para>
+    ///     <para> A structure specifying the parameters of a transfer buffer. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUTransferBuffer"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUTransferBufferCreateInfo
     {
-        /// <summary>
-        /// How the transfer buffer is intended to be used by the client.
-        /// </summary>
+        /// <summary> How the transfer buffer is intended to be used by the client. </summary>
         public GPUTransferBufferUsage Usage;
-        
-        /// <summary>
-        /// The size in bytes of the transfer buffer.
-        /// </summary>
-        public UInt32 Size;
 
-        /// <summary>
-        /// A properties ID for extensions. Should be 0 if no extensions are needed.
-        /// </summary>
-        public UInt32 Props;
+        /// <summary> The size in bytes of the transfer buffer. </summary>
+        public uint Size;
+
+        /// <summary> A properties ID for extensions. Should be 0 if no extensions are needed. </summary>
+        public uint Props;
     }
 }

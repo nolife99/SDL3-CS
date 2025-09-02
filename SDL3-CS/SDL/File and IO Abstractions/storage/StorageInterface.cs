@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,99 +28,80 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Function interface for SDL_Storage.</para>
-    /// <para>Apps that want to supply a custom implementation of SDL_Storage will fill
-    /// in all the functions in this struct, and then pass it to <see cref="OpenStorage"/> to
-    /// create a custom SDL_Storage object.</para>
-    /// <para>It is not usually necessary to do this; SDL provides standard
-    /// implementations for many things you might expect to do with an SDL_Storage.</para>
-    /// <para>This structure should be initialized using <see cref="InitInterface(ref StorageInterface)"/></para>
+    ///     <para> Function interface for SDL_Storage. </para>
+    ///     <para>
+    ///         Apps that want to supply a custom implementation of SDL_Storage will fill in all the functions in this struct,
+    ///         and then pass it to <see cref="OpenStorage"/> to create a custom SDL_Storage object.
+    ///     </para>
+    ///     <para>
+    ///         It is not usually necessary to do this; SDL provides standard implementations for many things you might expect to
+    ///         do with an SDL_Storage.
+    ///     </para>
+    ///     <para> This structure should be initialized using <see cref="InitInterface(ref StorageInterface)"/> </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="InitInterface(ref StorageInterface)"/>
     public struct StorageInterface
     {
-        /// <summary>
-        /// The version of this interface
-        /// </summary>
-        public UInt32 Version;
-        
-        /// <summary>
-        /// Called when the storage is closed
-        /// </summary>
+        /// <summary> The version of this interface </summary>
+        public uint Version;
+
+        /// <summary> Called when the storage is closed </summary>
         public CloseDelegate Close;
-        
-        /// <summary>
-        /// Optional, returns whether the storage is currently ready for access
-        /// </summary>
+
+        /// <summary> Optional, returns whether the storage is currently ready for access </summary>
         public ReadyDelegate Ready;
-        
-        /// <summary>
-        /// Enumerate a directory, optional for write-only storage
-        /// </summary>
+
+        /// <summary> Enumerate a directory, optional for write-only storage </summary>
         public EnumerateDelegate Enumerate;
-        
-        /// <summary>
-        /// Get path information, optional for write-only storage
-        /// </summary>
+
+        /// <summary> Get path information, optional for write-only storage </summary>
         public InfoDelegate Info;
-        
-        /// <summary>
-        /// Read a file from storage, optional for write-only storage
-        /// </summary>
+
+        /// <summary> Read a file from storage, optional for write-only storage </summary>
         public ReadFileDelegate ReadFile;
-        
-        /// <summary>
-        /// Write a file to storage, optional for read-only storage
-        /// </summary>
+
+        /// <summary> Write a file to storage, optional for read-only storage </summary>
         public WriteFileDelegate WriteFile;
-        
-        /// <summary>
-        /// Create a directory, optional for read-only storage
-        /// </summary>
+
+        /// <summary> Create a directory, optional for read-only storage </summary>
         public MkdirDelegate Mkdir;
-        
-        /// <summary>
-        /// Remove a file or empty directory, optional for read-only storage
-        /// </summary>
+
+        /// <summary> Remove a file or empty directory, optional for read-only storage </summary>
         public RemoveDelegate Remove;
-        
-        /// <summary>
-        /// Rename a path, optional for read-only storage
-        /// </summary>
+
+        /// <summary> Rename a path, optional for read-only storage </summary>
         public RenameDelegate Rename;
-        
-        /// <summary>
-        /// Copy a file, optional for read-only storage
-        /// </summary>
+
+        /// <summary> Copy a file, optional for read-only storage </summary>
         public CopyDelegate Copy;
-        
-        /// <summary>
-        /// Get the space remaining, optional for read-only storage
-        /// </summary>
+
+        /// <summary> Get the space remaining, optional for read-only storage </summary>
         public SpaceRemainingDelegate SpaceRemaining;
-        
-        
-        public delegate bool CloseDelegate(IntPtr userdata);
-        
-        public delegate bool ReadyDelegate(IntPtr userdata);
-        
-        public delegate bool EnumerateDelegate(IntPtr userdata, string path, EnumerateDirectoryCallback callback, IntPtr callbackUserdata);
-        
-        public delegate bool InfoDelegate(IntPtr userdata, string path, out PathInfo info);
-        
-        public delegate bool ReadFileDelegate(IntPtr userdata, string path, IntPtr destination, ulong length);
-        
-        public delegate bool WriteFileDelegate(IntPtr userdata, string path, IntPtr source, ulong length);
-        
-        public delegate bool MkdirDelegate(IntPtr userdata, string path);
-        
-        public delegate bool RemoveDelegate(IntPtr userdata, string path);
-        
-        public delegate bool RenameDelegate(IntPtr userdata, string oldpath, string newpath);
-        
-        public delegate bool CopyDelegate(IntPtr userdata, string oldpath, string newpath);
-        
-        public delegate ulong SpaceRemainingDelegate(IntPtr userdata);
+
+        public delegate bool CloseDelegate(nint userdata);
+
+        public delegate bool ReadyDelegate(nint userdata);
+
+        public delegate bool EnumerateDelegate(nint userdata,
+            string path,
+            EnumerateDirectoryCallback callback,
+            nint callbackUserdata);
+
+        public delegate bool InfoDelegate(nint userdata, string path, out PathInfo info);
+
+        public delegate bool ReadFileDelegate(nint userdata, string path, nint destination, ulong length);
+
+        public delegate bool WriteFileDelegate(nint userdata, string path, nint source, ulong length);
+
+        public delegate bool MkdirDelegate(nint userdata, string path);
+
+        public delegate bool RemoveDelegate(nint userdata, string path);
+
+        public delegate bool RenameDelegate(nint userdata, string oldpath, string newpath);
+
+        public delegate bool CopyDelegate(nint userdata, string oldpath, string newpath);
+
+        public delegate ulong SpaceRemainingDelegate(nint userdata);
     }
 }

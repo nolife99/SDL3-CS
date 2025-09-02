@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,22 +20,15 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> Possible flags to be set for the <see cref="GLAttr.ContextFlags"/> attribute. </summary>
+/// <since> This datatype is available since SDL 3.2.0 </since>
+[Flags]
+public enum GLContextFlag
 {
-    /// <summary>
-    /// Possible flags to be set for the <see cref="GLAttr.ContextFlags"/> attribute.
-    /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
-    [Flags]
-    public enum GLContextFlag
-    {
-        Debug = 0x0001,
-        ForwardCompatible = 0x0002,
-        RobustAccess = 0x0004,
-        Isolation = 0x0008
-    }
+    Debug = 0x0001, ForwardCompatible = 0x0002, RobustAccess = 0x0004, Isolation = 0x0008
 }

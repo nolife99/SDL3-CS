@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,38 +20,35 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of a buffer.</para>
-    /// <para>Usage flags can be bitwise OR'd together for combinations of usages. Note
-    /// that certain combinations are invalid, for example VERTEX and INDEX.</para>
+    ///     <para> A structure specifying the parameters of a buffer. </para>
+    ///     <para>
+    ///         Usage flags can be bitwise OR'd together for combinations of usages. Note that certain combinations are invalid,
+    ///         for example VERTEX and INDEX.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUBuffer"/>
     /// <seealso cref="GPUBufferUsageFlags"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUBufferCreateInfo
     {
-        /// <summary>
-        /// How the buffer is intended to be used by the client.
-        /// </summary>
+        /// <summary> How the buffer is intended to be used by the client. </summary>
         public GPUBufferUsageFlags Usage;
-        
-        /// <summary>
-        /// The size in bytes of the buffer.
-        /// </summary>
-        public UInt32 Size;
 
-        /// <summary>
-        /// A properties ID for extensions. Should be 0 if no extensions are needed.
-        /// </summary>
-        public UInt32 Props;
+        /// <summary> The size in bytes of the buffer. </summary>
+        public uint Size;
+
+        /// <summary> A properties ID for extensions. Should be 0 if no extensions are needed. </summary>
+        public uint Props;
     }
 }

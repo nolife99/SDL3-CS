@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,31 +20,21 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> Possible values to be set for the <see cref="GLAttr.ContextProfileMask"/> attribute. </summary>
+/// <since> This datatype is available since SDL 3.2.0 </since>
+public enum GLProfile
 {
-    /// <summary>
-    /// Possible values to be set for the <see cref="GLAttr.ContextProfileMask"/> attribute.
-    /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
-    public enum GLProfile
-    {
-        /// <summary>
-        /// OpenGL Core Profile context
-        /// </summary>
-        Core           = 0x0001,
-        
-        /// <summary>
-        /// OpenGL Compatibility Profile context
-        /// </summary>
-        Compatibility  = 0x0002,
-        
-        /// <summary>
-        /// GLX_CONTEXT_ES2_PROFILE_BIT_EXT
-        /// </summary>
-        ES = 0x0004
-    }
+    /// <summary> OpenGL Core Profile context </summary>
+    Core = 0x0001,
+
+    /// <summary> OpenGL Compatibility Profile context </summary>
+    Compatibility = 0x0002,
+
+    /// <summary> GLX_CONTEXT_ES2_PROFILE_BIT_EXT </summary>
+    ES = 0x0004
 }

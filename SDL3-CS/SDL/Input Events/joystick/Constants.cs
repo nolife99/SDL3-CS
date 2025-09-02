@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,27 +20,25 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// The largest value an SDL_Joystick's axis can report.
-    /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <summary> The largest value an SDL_Joystick's axis can report. </summary>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     /// <seealso cref="JoystickAxisMin"/>
     public const short JoystickAxisMax = short.MaxValue;
-    
+
     /// <summary>
-    /// <para>The smallest value an SDL_Joystick's axis can report.</para>
-    /// <para>This is a negative number!</para>
+    ///     <para> The smallest value an SDL_Joystick's axis can report. </para> <para> This is a negative number! </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     /// <seealso cref="JoystickAxisMax"/>
     public const short JoystickAxisMin = short.MinValue;
-    
+
     // ReSharper disable once InconsistentNaming
     public const float IPhoneMaxGForce = 5.0f;
 }

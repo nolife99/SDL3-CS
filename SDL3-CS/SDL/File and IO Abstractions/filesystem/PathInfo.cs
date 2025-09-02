@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,43 +20,32 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Information about a path on the filesystem.
-    /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <summary> Information about a path on the filesystem. </summary>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     /// <seealso cref="GetPathInfo"/>
     /// <seealso cref="GetStoragePathInfo"/>
     public struct PathInfo
     {
-        /// <summary>
-        /// the path type
-        /// </summary>
+        /// <summary> the path type </summary>
         public PathType Type;
-        
-        /// <summary>
-        /// the file size in bytes
-        /// </summary>
+
+        /// <summary> the file size in bytes </summary>
         public ulong Size;
-        
-        /// <summary>
-        /// the time when the path was created
-        /// </summary>
+
+        /// <summary> the time when the path was created </summary>
         public long CreateTime;
-        
-        /// <summary>
-        /// the last time the path was modified
-        /// </summary>
+
+        /// <summary> the last time the path was modified </summary>
         public long ModifyTime;
-        
-        /// <summary>
-        /// the last time the path was read
-        /// </summary>
+
+        /// <summary> the last time the path was read </summary>
         public long AccessTime;
     }
 }

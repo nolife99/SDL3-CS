@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,12 +28,13 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Standard gamepad types.</para>
-    /// <para>This type does not necessarily map to first-party controllers from
-    /// Microsoft/Sony/Nintendo; in many cases, third-party controllers can report
-    /// as these, either because they were designed for a specific console, or they
-    /// simply most closely match that console's controllers (does it have A/B/X/Y
-    /// buttons or X/O/Square/Triangle? Does it have a touchpad? etc).</para>
+    ///     <para> Standard gamepad types. </para>
+    ///     <para>
+    ///         This type does not necessarily map to first-party controllers from Microsoft/Sony/Nintendo; in many cases,
+    ///         third-party controllers can report as these, either because they were designed for a specific console, or they
+    ///         simply most closely match that console's controllers (does it have A/B/X/Y buttons or X/O/Square/Triangle? Does it
+    ///         have a touchpad? etc).
+    ///     </para>
     /// </summary>
     public enum GamepadType
     {

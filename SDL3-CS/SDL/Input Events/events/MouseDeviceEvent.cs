@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,36 +20,29 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Mouse device event structure (event.mdevice.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Mouse device event structure (event.mdevice.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct MouseDeviceEvent
     {
-        /// <summary>
-        /// <see cref="EventType.MouseAdded"/> or <see cref="EventType.MouseRemoved"/>
-        /// </summary>
+        /// <summary> <see cref="EventType.MouseAdded"/> or <see cref="EventType.MouseRemoved"/> </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The mouse instance id
-        /// </summary>
-        public UInt32 Which;
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The mouse instance id </summary>
+        public uint Which;
     }
 }

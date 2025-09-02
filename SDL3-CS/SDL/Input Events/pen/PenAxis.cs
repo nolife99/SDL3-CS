@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,6 +25,7 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
 namespace SDL3;
@@ -31,56 +33,45 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Pen axis indices.</para>
-    /// <para>These are the valid values for the <c>axis</c> field in <see cref="PenAxisEvent"/>. All
-    /// axes are either normalised to 0..1 or report a (positive or negative) angle
-    /// in degrees, with 0.0 representing the centre. Not all pens/backends support
-    /// all axes: unsupported axes are always zero.</para>
-    /// <para>To convert angles for tilt and rotation into vector representation, use
-    /// SDL_sinf on the XTILT, YTILT, or ROTATION component, for example:</para>
-    /// <para><c>SDL_sinf(xtilt * SDL_PI_F / 180.0)</c></para>
+    ///     <para> Pen axis indices. </para>
+    ///     <para>
+    ///         These are the valid values for the <c> axis </c> field in <see cref="PenAxisEvent"/>. All axes are either
+    ///         normalised to 0..1 or report a (positive or negative) angle in degrees, with 0.0 representing the centre. Not all
+    ///         pens/backends support all axes: unsupported axes are always zero.
+    ///     </para>
+    ///     <para>
+    ///         To convert angles for tilt and rotation into vector representation, use SDL_sinf on the XTILT, YTILT, or ROTATION
+    ///         component, for example:
+    ///     </para>
+    ///     <para>
+    ///         <c> SDL_sinf(xtilt * SDL_PI_F / 180.0) </c>
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum PenAxis
     {
-        /// <summary>
-        /// Pen pressure.  Unidirectional: 0 to 1.0
-        /// </summary>
+        /// <summary> Pen pressure.  Unidirectional: 0 to 1.0 </summary>
         Pressure,
-        
-        /// <summary>
-        /// Pen horizontal tilt angle.  Bidirectional: -90.0 to 90.0 (left-to-right).
-        /// </summary>
-        XTilt,  
-        
-        /// <summary>
-        /// Pen vertical tilt angle.  Bidirectional: -90.0 to 90.0 (top-to-down).
-        /// </summary>
+
+        /// <summary> Pen horizontal tilt angle.  Bidirectional: -90.0 to 90.0 (left-to-right). </summary>
+        XTilt,
+
+        /// <summary> Pen vertical tilt angle.  Bidirectional: -90.0 to 90.0 (top-to-down). </summary>
         YTilt,
-        
-        /// <summary>
-        /// Pen distance to drawing surface.  Unidirectional: 0.0 to 1.0
-        /// </summary>
+
+        /// <summary> Pen distance to drawing surface.  Unidirectional: 0.0 to 1.0 </summary>
         Distance,
-        
-        /// <summary>
-        /// Pen barrel rotation.  Bidirectional: -180 to 179.9 (clockwise, 0 is facing up, -180.0 is facing down).
-        /// </summary>
+
+        /// <summary> Pen barrel rotation.  Bidirectional: -180 to 179.9 (clockwise, 0 is facing up, -180.0 is facing down). </summary>
         Rotation,
-        
-        /// <summary>
-        /// Pen finger wheel or slider (e.g., Airbrush Pen).  Unidirectional: 0 to 1.0
-        /// </summary>
+
+        /// <summary> Pen finger wheel or slider (e.g., Airbrush Pen).  Unidirectional: 0 to 1.0 </summary>
         Slider,
-        
-        /// <summary>
-        /// Pressure from squeezing the pen ("barrel pressure").
-        /// </summary>
+
+        /// <summary> Pressure from squeezing the pen ("barrel pressure"). </summary>
         TangetialPressure,
-        
-        /// <summary>
-        /// Total known pen axis types in this version of SDL. This number may grow in future releases!
-        /// </summary>
+
+        /// <summary> Total known pen axis types in this version of SDL. This number may grow in future releases! </summary>
         Count
     }
 }

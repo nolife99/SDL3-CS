@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,19 +28,16 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>The SDL thread priority.</para>
-    /// <para>SDL will make system changes as necessary in order to apply the thread
-    /// priority. Code which attempts to control thread state related to priority
-    /// should be aware that calling <see cref="SetCurrentThreadPriority"/> may alter such
-    /// state. <see cref="Hints.ThreadPriorityPolicy"/> can be used to control aspects of
-    /// this behavior.</para>
+    ///     <para> The SDL thread priority. </para>
+    ///     <para>
+    ///         SDL will make system changes as necessary in order to apply the thread priority. Code which attempts to control
+    ///         thread state related to priority should be aware that calling <see cref="SetCurrentThreadPriority"/> may alter such
+    ///         state. <see cref="Hints.ThreadPriorityPolicy"/> can be used to control aspects of this behavior.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum ThreadPriority
     {
-        Low,
-        Normal,
-        High,
-        TimeCritical
+        Low, Normal, High, TimeCritical
     }
 }

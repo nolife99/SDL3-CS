@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,49 +20,39 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public partial class ShaderCross
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct HLSLDefine
     {
-        private IntPtr name;
-        private IntPtr _value;
+        IntPtr name;
+        IntPtr _value;
 
-        /// <summary>
-        /// The define name.
-        /// </summary>
-        public string Name
-        {
-            get => Marshal.PtrToStringUTF8(name)!;
-            set => name = SDL.StringToPointer(value);
-        }
+        /// <summary> The define name. </summary>
+        public string Name { get => Marshal.PtrToStringUTF8(name)!; set => name = SDL.StringToPointer(value); }
 
-        /// <summary>
-        /// An optional value for the define. Can be NULL.
-        /// </summary>
-        public string? Value
-        {
-            get => Marshal.PtrToStringUTF8(_value);
-            set => _value = SDL.StringToPointer(value);
-        }
-        
+        /// <summary> An optional value for the define. Can be NULL. </summary>
+        public string? Value { get => Marshal.PtrToStringUTF8(_value); set => _value = SDL.StringToPointer(value); }
+
         public void Dispose()
         {
-            if (name != IntPtr.Zero)
+            if (name != nint.Zero)
             {
                 Marshal.FreeHGlobal(name);
-                name = IntPtr.Zero;
+                name = nint.Zero;
             }
 
-            if (_value == IntPtr.Zero) return;
+            if (_value == nint.Zero) return;
+
             Marshal.FreeHGlobal(_value);
-            _value = IntPtr.Zero;
+            _value = nint.Zero;
         }
     }
 }

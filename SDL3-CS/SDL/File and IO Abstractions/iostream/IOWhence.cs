@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,26 +28,19 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Possible <c>whence</c> values for SDL_IOStream seeking.</para>
-    /// <para>These map to the same "whence" concept that <c>fseek</c> or <c>lseek</c> use in the
-    /// standard C runtime.</para>
+    ///     <para> Possible <c> whence </c> values for SDL_IOStream seeking. </para>
+    ///     <para> These map to the same "whence" concept that <c> fseek </c> or <c> lseek </c> use in the standard C runtime. </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum IOWhence
     {
-        /// <summary>
-        /// Seek from the beginning of data
-        /// </summary>
+        /// <summary> Seek from the beginning of data </summary>
         Set,
-        
-        /// <summary>
-        /// Seek relative to current read point
-        /// </summary>
+
+        /// <summary> Seek relative to current read point </summary>
         Cur,
-        
-        /// <summary>
-        /// Seek relative to the end of data
-        /// </summary>
-        End,
+
+        /// <summary> Seek relative to the end of data </summary>
+        End
     }
 }

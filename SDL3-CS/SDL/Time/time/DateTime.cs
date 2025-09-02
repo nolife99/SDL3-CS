@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,65 +20,45 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure holding a calendar date and time broken down public into its
-    /// components.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure holding a calendar date and time broken down public into its components. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct DateTime
     {
-        /// <summary>
-        /// Year
-        /// </summary>
+        /// <summary> Year </summary>
         public int Year;
-        
-        /// <summary>
-        /// Month [01-12]
-        /// </summary>
+
+        /// <summary> Month [01-12] </summary>
         public int Month;
-        
-        /// <summary>
-        /// Day of the month [01-31]
-        /// </summary>
+
+        /// <summary> Day of the month [01-31] </summary>
         public int Day;
-        
-        /// <summary>
-        /// Hour [0-23]
-        /// </summary>
+
+        /// <summary> Hour [0-23] </summary>
         public int Hour;
-        
-        /// <summary>
-        /// Minute [0-59]
-        /// </summary>
+
+        /// <summary> Minute [0-59] </summary>
         public int Minute;
-        
-        /// <summary>
-        /// Seconds [0-60]
-        /// </summary>
+
+        /// <summary> Seconds [0-60] </summary>
         public int Second;
-        
-        /// <summary>
-        /// Nanoseconds [0-999999999]
-        /// </summary>
+
+        /// <summary> Nanoseconds [0-999999999] </summary>
         public int Nanosecond;
-        
-        /// <summary>
-        /// Day of the week [0-6] (0 being Sunday)
-        /// </summary>
+
+        /// <summary> Day of the week [0-6] (0 being Sunday) </summary>
         public int DayOfWeek;
-        
-        /// <summary>
-        /// Seconds east of UTC
-        /// </summary>
+
+        /// <summary> Seconds east of UTC </summary>
         public int UTCOffset;
     }
 }

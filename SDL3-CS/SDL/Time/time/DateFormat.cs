@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,33 +20,22 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> The preferred date format of the current system locale. components. </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.GetDateTimeLocalePreferences"/>
+public enum DateFormat
 {
-    /// <summary>
-    /// The preferred date format of the current system locale.
-    /// components.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    /// <seealso cref="GetDateTimeLocalePreferences"/>
-    public enum DateFormat
-    {
-        /// <summary>
-        /// Year/Month/Day
-        /// </summary>
-        YYYYMMDD = 0,
-        
-        /// <summary>
-        /// Day/Month/Year
-        /// </summary>
-        DDMMYYYY = 1,
-        
-        /// <summary>
-        /// Month/Day/Year
-        /// </summary>
-        MMDDYYYY = 2
-    }
+    /// <summary> Year/Month/Day </summary>
+    YYYYMMDD = 0,
+
+    /// <summary> Day/Month/Year </summary>
+    DDMMYYYY = 1,
+
+    /// <summary> Month/Day/Year </summary>
+    MMDDYYYY = 2
 }

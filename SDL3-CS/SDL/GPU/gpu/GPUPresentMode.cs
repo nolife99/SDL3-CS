@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,31 +28,34 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Specifies the timing that will be used to present swapchain textures to the
-    /// OS.</para>
-    /// <para><see cref="VSync"/> mode will always be supported. <see cref="Immediate"/> and <see cref="Mailbox"/> modes may not be
-    /// supported on certain systems.</para>
-    /// <para>It is recommended to query <see cref="WindowSupportsGPUPresentMode"/> after claiming
-    /// the window if you wish to change the present mode to <see cref="Immediate"/> or <see cref="Mailbox"/>.</para>
-    /// <list type="bullet">
-    /// <item><see cref="VSync"/>: Waits for vblank before presenting. No tearing is possible. If
-    /// there is a pending image to present, the new image is enqueued for
-    /// presentation. Disallows tearing at the cost of visual latency.</item>
-    /// <item><see cref="Immediate"/>: Immediately presents. Lowest latency option, but tearing may
-    /// occur.</item>
-    /// <item><see cref="Mailbox"/>: Waits for vblank before presenting. No tearing is possible. If
-    /// there is a pending image to present, the pending image is replaced by the
-    /// new image. Similar to VSYNC, but with reduced visual latency.</item>
-    /// </list>
+    ///     <para> Specifies the timing that will be used to present swapchain textures to the OS. </para>
+    ///     <para>
+    ///         <see cref="VSync"/> mode will always be supported. <see cref="Immediate"/> and <see cref="Mailbox"/> modes may
+    ///         not be supported on certain systems.
+    ///     </para>
+    ///     <para>
+    ///         It is recommended to query <see cref="WindowSupportsGPUPresentMode"/> after claiming the window if you wish to
+    ///         change the present mode to <see cref="Immediate"/> or <see cref="Mailbox"/>.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see cref="VSync"/>: Waits for vblank before presenting. No tearing is possible. If there is a pending image
+    ///             to present, the new image is enqueued for presentation. Disallows tearing at the cost of visual latency.
+    ///         </item>
+    ///         <item> <see cref="Immediate"/>: Immediately presents. Lowest latency option, but tearing may occur. </item>
+    ///         <item>
+    ///             <see cref="Mailbox"/>: Waits for vblank before presenting. No tearing is possible. If there is a pending
+    ///             image to present, the pending image is replaced by the new image. Similar to VSYNC, but with reduced visual
+    ///             latency.
+    ///         </item>
+    ///     </list>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="SetGPUSwapchainParameters"/>
     /// <seealso cref="WindowSupportsGPUPresentMode"/>
     /// <seealso cref="WaitAndAcquireGPUSwapchainTexture"/>
     public enum GPUPresentMode
     {
-        VSync,
-        Immediate,
-        Mailbox
+        VSync, Immediate, Mailbox
     }
 }

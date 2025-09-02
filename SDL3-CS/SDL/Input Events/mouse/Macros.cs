@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,22 +25,23 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    [Macro]
-    public static uint ButtonMask(int x) => 1u << (x - 1);
-
     public static uint ButtonLMask = ButtonMask((int)MouseButtonFlags.Left);
-    
+
     public static uint ButtonMMask = ButtonMask((int)MouseButtonFlags.Middle);
-    
+
     public static uint ButtonRMask = ButtonMask((int)MouseButtonFlags.Right);
-    
+
     public static uint ButtonX1Mask = ButtonMask((int)MouseButtonFlags.X1);
-    
+
     public static uint ButtonX2Mask = ButtonMask((int)MouseButtonFlags.X2);
+
+    [Macro]
+    public static uint ButtonMask(int x) => 1u << x - 1;
 }

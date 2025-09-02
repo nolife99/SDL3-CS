@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,24 +20,27 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A mapping between one joystick input to a gamepad control.</para>
-    /// <para>A gamepad has a collection of several bindings, to say, for example, when
-    /// joystick button number 5 is pressed, that should be treated like the
-    /// gamepad's "start" button.</para>
-    /// <para>SDL has these bindings built-in for many popular controllers, and can add
-    /// more with a simple text string. Those strings are parsed into a collection
-    /// of these structs to make it easier to operate on the data.</para>
+    ///     <para> A mapping between one joystick input to a gamepad control. </para>
+    ///     <para>
+    ///         A gamepad has a collection of several bindings, to say, for example, when joystick button number 5 is pressed,
+    ///         that should be treated like the gamepad's "start" button.
+    ///     </para>
+    ///     <para>
+    ///         SDL has these bindings built-in for many popular controllers, and can add more with a simple text string. Those
+    ///         strings are parsed into a collection of these structs to make it easier to operate on the data.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GetGamepadBindings"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GamepadBinding

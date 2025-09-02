@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,60 +20,42 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Specifies what happens to a stored stencil value if stencil tests fail or
-    /// pass.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Specifies what happens to a stored stencil value if stencil tests fail or pass. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUGraphicsPipeline"/>
     public enum GPUStencilOp
     {
         Invalid,
-        
-        /// <summary>
-        /// Keeps the current value.
-        /// </summary>
+
+        /// <summary> Keeps the current value. </summary>
         Keep,
-        
-        /// <summary>
-        /// Sets the value to 0.
-        /// </summary>
+
+        /// <summary> Sets the value to 0. </summary>
         Zero,
-        
-        /// <summary>
-        /// Sets the value to reference.
-        /// </summary>
+
+        /// <summary> Sets the value to reference. </summary>
         Replace,
-        
-        /// <summary>
-        /// Increments the current value and clamps to the maximum value.
-        /// </summary>
+
+        /// <summary> Increments the current value and clamps to the maximum value. </summary>
         IncrementAndClamp,
-        
-        /// <summary>
-        /// Decrements the current value and clamps to 0.
-        /// </summary>
+
+        /// <summary> Decrements the current value and clamps to 0. </summary>
         DecrementAndClamp,
-        
-        /// <summary>
-        /// Bitwise-inverts the current value.
-        /// </summary>
+
+        /// <summary> Bitwise-inverts the current value. </summary>
         Invert,
-        
-        /// <summary>
-        /// Increments the current value and wraps back to 0.
-        /// </summary>
+
+        /// <summary> Increments the current value and wraps back to 0. </summary>
         IncrementAndWrap,
-        
-        /// <summary>
-        /// Decrements the current value and wraps to the maximum value.
-        /// </summary>
+
+        /// <summary> Decrements the current value and wraps to the maximum value. </summary>
         DecrementAndWrap
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,6 +25,7 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
 namespace SDL3;
@@ -31,17 +33,12 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <code>#define SDL_TOUCH_MOUSEID ((SDL_MouseID)-1)</code>
-    /// <summary>
-    /// The SDL_MouseID for mouse events simulated with touch input.
-    /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <summary> The SDL_MouseID for mouse events simulated with touch input. </summary>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const uint TouchMouseID = unchecked((uint)-1);
-    
-    
+
     /// <code>#define SDL_MOUSE_TOUCHID ((SDL_TouchID)-1)</code>
-    /// <summary>
-    /// The SDL_TouchID for touch events simulated with mouse input.
-    /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <summary> The SDL_TouchID for touch events simulated with mouse input. </summary>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const ulong MouseTouchID = unchecked((ulong)-1);
 }

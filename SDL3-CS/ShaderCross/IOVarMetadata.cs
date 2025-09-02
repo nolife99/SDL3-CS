@@ -1,4 +1,5 @@
 #region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,41 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public partial class ShaderCross
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct IOVarMetadata
     {
-        /// <summary>
-        /// The UTF-8 name of the variable.
-        /// </summary>
-        public string Name
-        {
-            get => Marshal.PtrToStringUTF8(name)!;
-            set => name = SDL.StringToPointer(value);
-        }
-        
-        private IntPtr name;
-        
-        /// <summary>
-        /// The location of the variable.
-        /// </summary>
-        public UInt32 Location;
-        
-        /// <summary>
-        /// The vector type of the variable.
-        /// </summary>
+        /// <summary> The UTF-8 name of the variable. </summary>
+        public string Name { get => Marshal.PtrToStringUTF8(name)!; set => name = SDL.StringToPointer(value); }
+
+        IntPtr name;
+
+        /// <summary> The location of the variable. </summary>
+        public uint Location;
+
+        /// <summary> The vector type of the variable. </summary>
         public IOVarType VectorType;
-        
-        /// <summary>
-        /// The number of components in the vector type of the variable.
-        /// </summary>
-        public UInt32 VectorSize;
+
+        /// <summary> The number of components in the vector type of the variable. </summary>
+        public uint VectorSize;
     }
 }

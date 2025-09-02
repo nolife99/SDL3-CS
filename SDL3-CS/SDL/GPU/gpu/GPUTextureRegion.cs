@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,68 +20,51 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying a region of a texture.</para>
-    /// <para>Used when transferring data to or from a texture.</para>
+    ///     <para> A structure specifying a region of a texture. </para>
+    ///     <para> Used when transferring data to or from a texture. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="UploadToGPUTexture"/>
     /// <seealso cref="DownloadFromGPUTexture"/>
     /// <seealso cref="CreateGPUTexture"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUTextureRegion
     {
-        /// <summary>
-        /// The texture used in the copy operation.
-        /// </summary>
+        /// <summary> The texture used in the copy operation. </summary>
         public IntPtr Texture;
-        
-        /// <summary>
-        /// The mip level index to transfer.
-        /// </summary>
-        public UInt32 MipLevel;
-        
-        /// <summary>
-        /// The layer index to transfer.
-        /// </summary>
-        public UInt32 Layer;
-        
-        /// <summary>
-        /// The left offset of the region.
-        /// </summary>
-        public UInt32 X;
-        
-        /// <summary>
-        /// The top offset of the region.
-        /// </summary>
-        public UInt32 Y;
-        
-        /// <summary>
-        /// The front offset of the region.
-        /// </summary>
-        public UInt32 Z;
-        
-        /// <summary>
-        /// The width of the region.
-        /// </summary>
-        public UInt32 W;
-        
-        /// <summary>
-        /// The height of the region.
-        /// </summary>
-        public UInt32 H;
-        
-        /// <summary>
-        /// The depth of the region.
-        /// </summary>
-        public UInt32 D;
-    } 
+
+        /// <summary> The mip level index to transfer. </summary>
+        public uint MipLevel;
+
+        /// <summary> The layer index to transfer. </summary>
+        public uint Layer;
+
+        /// <summary> The left offset of the region. </summary>
+        public uint X;
+
+        /// <summary> The top offset of the region. </summary>
+        public uint Y;
+
+        /// <summary> The front offset of the region. </summary>
+        public uint Z;
+
+        /// <summary> The width of the region. </summary>
+        public uint W;
+
+        /// <summary> The height of the region. </summary>
+        public uint H;
+
+        /// <summary> The depth of the region. </summary>
+        public uint D;
+    }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,27 +28,22 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// The addressing mode for a texture when used in <see cref="RenderGeometry(IntPtr, IntPtr, Vertex[], int, IntPtr, int)"/>.
-    /// <para>This affects how texture coordinates are interpreted outside of [0, 1]</para>
+    ///     The addressing mode for a texture when used in
+    ///     <see cref="RenderGeometry(IntPtr, IntPtr, Vertex[], int, IntPtr, int)"/>.
+    ///     <para> This affects how texture coordinates are interpreted outside of [0, 1] </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.4.0.</since>
+    /// <since> This enum is available since SDL 3.4.0. </since>
     public enum TextureAddressMode
     {
         Invalid = -1,
-        
-        /// <summary>
-        /// Wrapping is enabled if texture coordinates are outside [0, 1], this is the default
-        /// </summary>
+
+        /// <summary> Wrapping is enabled if texture coordinates are outside [0, 1], this is the default </summary>
         Auto,
-        
-        /// <summary>
-        /// Texture coordinates are clamped to the [0, 1] range
-        /// </summary>
+
+        /// <summary> Texture coordinates are clamped to the [0, 1] range </summary>
         Clamp,
-        
-        /// <summary>
-        /// The texture is repeated (tiled)
-        /// </summary>
-        Wrap,
+
+        /// <summary> The texture is repeated (tiled) </summary>
+        Wrap
     }
 }

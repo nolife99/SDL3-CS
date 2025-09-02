@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,57 +20,48 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A user-defined event type (event.user.*)</para>
-    /// <para>This event is unique; it is never created by SDL, but only by the
-    /// application. The event can be pushed onto the event queue using
-    /// <see cref="PushEvent"/>. The contents of the structure members are completely up to
-    /// the programmer; the only requirement is that <c>type</c> is a value obtained
-    /// from <see cref="RegisterEvents"/>.</para>
+    ///     <para> A user-defined event type (event.user.*) </para>
+    ///     <para>
+    ///         This event is unique; it is never created by SDL, but only by the application. The event can be pushed onto the
+    ///         event queue using <see cref="PushEvent"/>. The contents of the structure members are completely up to the
+    ///         programmer; the only requirement is that <c> type </c> is a value obtained from <see cref="RegisterEvents"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct UserEvent
     {
         /// <summary>
-        /// <see cref="EventType.User"/> through <see cref="EventType.Last"/>-1,
-        /// Uint32 because these are not in the <see cref="EventType"/> enumeration
+        ///     <see cref="EventType.User"/> through <see cref="EventType.Last"/>-1, Uint32 because these are not in the
+        ///     <see cref="EventType"/> enumeration
         /// </summary>
-        public UInt32 Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The associated window if any
-        /// </summary>
-        public UInt32 WindowID;
-        
-        /// <summary>
-        /// User defined event code 
-        /// </summary>
-        public Int32 Code;
-        
-        /// <summary>
-        /// User defined data pointer
-        /// </summary>
+        public uint Type;
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The associated window if any </summary>
+        public uint WindowID;
+
+        /// <summary> User defined event code </summary>
+        public int Code;
+
+        /// <summary> User defined data pointer </summary>
         public IntPtr Data1;
-        
-        /// <summary>
-        /// User defined data pointer
-        /// </summary>
+
+        /// <summary> User defined data pointer </summary>
         public IntPtr Data2;
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,47 +20,76 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+/// <summary> An event triggered when the clipboard contents have changed (event.clipboard.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct ClipboardEvent
 {
-    /// <summary>
-    /// An event triggered when the clipboard contents have changed
-    /// (event.clipboard.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ClipboardEvent
+    /// <summary> are we owning the clipboard (internal update) </summary>
+    public bool Owner
     {
-        /// <summary>
-        /// <see cref="EventType.ClipboardUpdate"/>
-        /// </summary>
-        public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => owner != 0;
 
-        /// <summary>
-        /// are we owning the clipboard (internal update)
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)] public bool Owner;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => owner = value ? 1 : 0;
+    }
 
-        /// <summary>
-        /// number of mime types
-        /// </summary>
-        public Int32 NumMimeTypes;
+    /// <summary> current mime types as an array of UTF8 strings </summary>
+    public unsafe MimeTypeEnumerator MimeType
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(new((void*)mimeTypes, NumMimeTypes));
+    }
 
-        /// <summary>
-        /// current mime types
-        /// </summary>
-        public IntPtr MimeTypes;
+    /// <summary>
+    /// <see cref="SDL.EventType.ClipboardUpdate"/>
+    /// </summary>
+    public SDL.EventType Type;
+
+    uint _reserved;
+
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
+
+    int owner, NumMimeTypes;
+
+    IntPtr mimeTypes;
+
+    public ref struct MimeTypeEnumerator
+    {
+        public readonly Span<nint> MimeTypes;
+        int _index;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal MimeTypeEnumerator(Span<nint> ptrs)
+        {
+            MimeTypes = ptrs;
+            _index = -1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public MimeTypeEnumerator GetEnumerator() => this;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext() => ++_index < MimeTypes.Length;
+
+        public unsafe ReadOnlySpan<byte> Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                var p = MimeTypes[_index];
+                return new((void*)p, SDL.StringLength(p));
+            }
+        }
     }
 }

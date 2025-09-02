@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,33 +28,26 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Auto capitalization type.</para>
-    /// <para>These are the valid values for <see cref="Props.TextInputCapitalizationNumber"/>.
-    /// Not every value is valid on every platform, but where a value isn't
-    /// supported, a reasonable fallback will be used.</para>
+    ///     <para> Auto capitalization type. </para>
+    ///     <para>
+    ///         These are the valid values for <see cref="Props.TextInputCapitalizationNumber"/>. Not every value is valid on
+    ///         every platform, but where a value isn't supported, a reasonable fallback will be used.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="StartTextInputWithProperties"/>
     public enum Capitalization
     {
-        /// <summary>
-        /// No auto-capitalization will be done
-        /// </summary>
+        /// <summary> No auto-capitalization will be done </summary>
         None,
-        
-        /// <summary>
-        /// The first letter of sentences will be capitalized
-        /// </summary>
+
+        /// <summary> The first letter of sentences will be capitalized </summary>
         Sentences,
-        
-        /// <summary>
-        /// The first letter of words will be capitalized
-        /// </summary>
+
+        /// <summary> The first letter of words will be capitalized </summary>
         Words,
-        
-        /// <summary>
-        /// All letters will be capitalized
-        /// </summary>
+
+        /// <summary> All letters will be capitalized </summary>
         Letters
     }
 }

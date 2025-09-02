@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,50 +20,37 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public partial class ShaderCross
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct GraphicsShaderMetadata
     {
-        /// <summary>
-        /// The number of samplers defined in the shader.
-        /// </summary>
+        /// <summary> The number of samplers defined in the shader. </summary>
         public uint NumSamplers;
 
-        /// <summary>
-        /// The number of storage textures defined in the shader.
-        /// </summary>
+        /// <summary> The number of storage textures defined in the shader. </summary>
         public uint NumStorageTextures;
-        
-        /// <summary>
-        /// The number of storage buffers defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of storage buffers defined in the shader. </summary>
         public uint NumStorageBuffers;
-        
-        /// <summary>
-        /// The number of uniform buffers defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of uniform buffers defined in the shader. </summary>
         public uint NumUniformBuffers;
 
-        /// <summary>
-        /// The inputs defined in the shader.
-        /// </summary>
+        /// <summary> The inputs defined in the shader. </summary>
         public IntPtr Inputs;
-        
-        /// <summary>
-        /// The number of outputs defined in the shader.
-        /// </summary>
-        public UInt32 NumOutputs;
-        
-        /// <summary>
-        /// The outputs defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of outputs defined in the shader. </summary>
+        public uint NumOutputs;
+
+        /// <summary> The outputs defined in the shader. </summary>
         public IntPtr Outputs;
     }
 }

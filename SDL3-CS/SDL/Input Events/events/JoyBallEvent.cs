@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,57 +20,46 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Joystick trackball motion event structure (event.jball.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Joystick trackball motion event structure (event.jball.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct JoyBallEvent
     {
         /// <summary>
-        /// <see cref="EventType.JoystickBallMotion"/>
+        ///     <see cref="EventType.JoystickBallMotion"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The joystick instance id
-        /// </summary>
-        public UInt32 Which; 
-        
-        /// <summary>
-        /// The joystick trackball index
-        /// </summary>
-        public Byte Ball;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
-        
-        private Byte _padding3;
-        
-        /// <summary>
-        /// The relative motion in the X direction
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The joystick instance id </summary>
+        public uint Which;
+
+        /// <summary> The joystick trackball index </summary>
+        public byte Ball;
+
+        byte _padding1;
+
+        byte _padding2;
+
+        byte _padding3;
+
+        /// <summary> The relative motion in the X direction </summary>
         public Int16 XRel;
-        
-        /// <summary>
-        /// The relative motion in the Y direction
-        /// </summary>
+
+        /// <summary> The relative motion in the Y direction </summary>
         public Int16 YRel;
     }
 }

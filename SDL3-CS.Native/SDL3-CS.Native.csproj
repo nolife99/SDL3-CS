@@ -1,64 +1,39 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
- 
-    <PropertyGroup>
-        <TargetFrameworks>net9.0;net7.0;net8.0</TargetFrameworks>
-        <RootNamespace>SDL3_CS.Native</RootNamespace>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup Label="NuGet">
-        <Version>3.2.20.0</Version>
-        <Title>SDL3 C# Native library</Title>
-        <Authors>Eduard Gushchin</Authors>
-        <Company>Eduard Gushchin</Company>
-        <Description>This is native library for SDL3-CS 3.2.20.x</Description>
-        <Copyright>Copyright (c) 2024-2025 Eduard Gushchin.</Copyright>
-        <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>SDL, SDL3, SDL3-CS</PackageTags>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageIcon>logo.png</PackageIcon>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>1591</NoWarn>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <RootNamespace>SDL3_CS.Native</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
-        <None Include="README.md" Pack="true" Visible="true" PackagePath="\"/>
-        
-        <None Include="lib\win-x64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-x64\native\</PackagePath>
-        </None>
-        <!--<None Include="lib\win-x86\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-x86\native\</PackagePath>
-        </None>-->
-        <None Include="lib\win-arm64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-arm64\native\</PackagePath>
-        </None>
-        <None Include="lib\linux-x64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\linux-x64\native\</PackagePath>
-        </None>
-        <None Include="lib\linux-arm64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\linux-arm64\native\</PackagePath>
-        </None>
-        <None Include="lib\osx-x64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\osx-x64\native\</PackagePath>
-        </None>
-        <None Include="lib\osx-arm64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\osx-arm64\native\</PackagePath>
-        </None>
-    </ItemGroup>
+  <PropertyGroup Label="NuGet">
+    <Version>3.2.20.0</Version>
+    <Title>SDL3 C# Native library</Title>
+    <Authors>Eduard Gushchin</Authors>
+    <Company>Eduard Gushchin</Company>
+    <Description>This is native library for SDL3-CS 3.2.20.x</Description>
+    <Copyright>Copyright (c) 2024-2025 Eduard Gushchin.</Copyright>
+    <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>SDL, SDL3, SDL3-CS</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo.png</PackageIcon>
+    <NoWarn>1591</NoWarn>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="../LICENSE" Pack="true" PackagePath="\"/>
+    <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
+    <None Include="README.md" Pack="true" Visible="true" PackagePath="\"/>
+
+    <Content Include="lib\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>runtimes\%(RecursiveDir)\native\%(Filename)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\%(RecursiveDir)\native</PackagePath>
+    </Content>
+
+  </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,19 +20,19 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying a vertex attribute.</para>
-    /// <para>All vertex attribute locations provided to an <see cref="GPUVertexInputState"/> must
-    /// be unique.</para>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    ///     <para> A structure specifying a vertex attribute. </para>
+    ///     <para> All vertex attribute locations provided to an <see cref="GPUVertexInputState"/> must be unique. </para>
+    ///     <since> This struct is available since SDL 3.2.0 </since>
     /// </summary>
     /// <seealso cref="GPUVertexBufferDescription"/>
     /// <seealso cref="GPUVertexInputState"/>
@@ -39,24 +40,16 @@ public static partial class SDL
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUVertexAttribute
     {
-        /// <summary>
-        /// The shader input location index.
-        /// </summary>
-        public UInt32 Location;
-        
-        /// <summary>
-        /// The binding slot of the associated vertex buffer.
-        /// </summary>
-        public UInt32 BufferSlot;
-        
-        /// <summary>
-        /// The size and type of the attribute data.
-        /// </summary>
+        /// <summary> The shader input location index. </summary>
+        public uint Location;
+
+        /// <summary> The binding slot of the associated vertex buffer. </summary>
+        public uint BufferSlot;
+
+        /// <summary> The size and type of the attribute data. </summary>
         public GPUVertexElementFormat Format;
-        
-        /// <summary>
-        /// The byte offset of this attribute relative to the start of the vertex element.
-        /// </summary>
-        public UInt32 Offset;
+
+        /// <summary> The byte offset of this attribute relative to the start of the vertex element. </summary>
+        public uint Offset;
     }
 }

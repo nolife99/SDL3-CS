@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -42,7 +44,9 @@ public static partial class TTF
         public const string FontOutlineMiterLimitNumber = "SDL_ttf.font.outline.miter_limit";
 
         public const string RendererTextEngineRendererPointer = "SDL_ttf.renderer_text_engine.create.renderer";
-        public const string RendererTextEngineAtlasTextureSizeNumber = "SDL_ttf.renderer_text_engine.create.atlas_texture_size";
+
+        public const string RendererTextEngineAtlasTextureSizeNumber =
+            "SDL_ttf.renderer_text_engine.create.atlas_texture_size";
 
         public const string GPUTextEngineDevicePointer = "SDL_ttf.gpu_text_engine.create.device";
         public const string GPUTextEngineAtlasTextureSizeNumber = "SDL_ttf.gpu_text_engine.create.atlas_texture_size";

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,41 +28,32 @@ namespace SDL3;
 public static partial class TTF
 {
     /// <summary>
-    /// <para>Hinting flags for TTF (TrueType Fonts)</para>
-    /// <para>This enum specifies the level of hinting to be applied to the font
-    /// rendering. The hinting level determines how much the font's outlines are
-    /// adjusted for better alignment on the pixel grid.</para>
+    ///     <para> Hinting flags for TTF (TrueType Fonts) </para>
+    ///     <para>
+    ///         This enum specifies the level of hinting to be applied to the font rendering. The hinting level determines how
+    ///         much the font's outlines are adjusted for better alignment on the pixel grid.
+    ///     </para>
     /// </summary>
-    /// <since>his enum is available since SDL_ttf 3.0.0.</since>
+    /// <since> his enum is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="SetFontHinting"/>
     /// <seealso cref="GetFontHinting"/>
     public enum HintingFlags
     {
         Invalid = -1,
-        
-        /// <summary>
-        /// Normal hinting applies standard grid-fitting.
-        /// </summary>
+
+        /// <summary> Normal hinting applies standard grid-fitting. </summary>
         Normal = 0,
-        
-        /// <summary>
-        /// Light hinting applies subtle adjustments to improve rendering.
-        /// </summary>
+
+        /// <summary> Light hinting applies subtle adjustments to improve rendering. </summary>
         Light,
-        
-        /// <summary>
-        /// Monochrome hinting adjusts the font for better rendering at lower resolutions.
-        /// </summary>
+
+        /// <summary> Monochrome hinting adjusts the font for better rendering at lower resolutions. </summary>
         Mono,
-        
-        /// <summary>
-        /// No hinting, the font is rendered without any grid-fitting.
-        /// </summary>
+
+        /// <summary> No hinting, the font is rendered without any grid-fitting. </summary>
         None,
-        
-        /// <summary>
-        /// Light hinting with subpixel rendering for more precise font edges.
-        /// </summary>
-        LightSubpixel,
+
+        /// <summary> Light hinting with subpixel rendering for more precise font edges. </summary>
+        LightSubpixel
     }
 }

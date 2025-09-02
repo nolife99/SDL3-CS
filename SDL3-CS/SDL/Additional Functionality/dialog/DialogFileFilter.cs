@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,19 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
+
+namespace SDL3;
 
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace SDL3;
-
 /// <summary>
-/// <para>An entry for filters for file dialogs.</para>
+///     <para> An entry for filters for file dialogs. </para>
 /// </summary>
-/// <since>This struct is available since SDL 3.2.0</since>
+/// <since> This struct is available since SDL 3.2.0 </since>
 /// <seealso cref="DialogFileCallback"/>
 /// <seealso cref="SDL.ShowOpenFileDialog"/>
 /// <seealso cref="SDL.ShowSaveFileDialog"/>
@@ -41,12 +43,12 @@ public struct DialogFileFilter : IDisposable
     readonly byte[] name, pattern;
     GCHandle namePin, patternPin;
 
-    /// <param name="name">is a user-readable label for the filter (for example, "Office
-    /// document").</param>
-    /// <param name="pattern">is a semicolon-separated list of file extensions (for example,
-    /// <c>"doc;docx"</c>). File extensions may only contain alphanumeric characters,
-    /// hyphens, underscores and periods. Alternatively, the whole string can be a
-    /// single asterisk (<c>"*"</c>), which serves as an "<c>All files</c>" filter.</param>
+    /// <param name="name"> is a user-readable label for the filter (for example, "Office document"). </param>
+    /// <param name="pattern">
+    ///     is a semicolon-separated list of file extensions (for example, <c> "doc;docx" </c>). File extensions
+    ///     may only contain alphanumeric characters, hyphens, underscores and periods. Alternatively, the whole string can be a
+    ///     single asterisk (<c> "*" </c>), which serves as an "<c> All files </c>" filter.
+    /// </param>
     public DialogFileFilter(scoped ReadOnlySpan<char> name, scoped ReadOnlySpan<char> pattern)
     {
         if (!name.IsWhiteSpace())
@@ -56,6 +58,7 @@ public struct DialogFileFilter : IDisposable
             Encoding.UTF8.GetBytes(name, this.name);
             this.name[length] = 0;
         }
+
         if (!pattern.IsWhiteSpace())
         {
             var length = Encoding.UTF8.GetByteCount(pattern);

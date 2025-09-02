@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,22 +28,25 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A magic value used with <see cref="WindowPosUndefined"/>.</para>
-    /// <para>Generally this macro isn't used directly, but rather through
-    /// <see cref="WindowPosUndefined"/> or <see cref="WindowPosUndefinedDisplay"/>.</para>
+    ///     <para> A magic value used with <see cref="WindowPosUndefined"/>. </para>
+    ///     <para>
+    ///         Generally this macro isn't used directly, but rather through <see cref="WindowPosUndefined"/> or
+    ///         <see cref="WindowPosUndefinedDisplay"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const uint WindowposUndefinedMask = 0x1FFF0000u;
-    
-    
+
     /// <summary>
-    /// <para>A magic value used with <see cref="WindowPosCentered"/>.</para>
-    /// <para>Generally this macro isn't used directly, but rather through
-    /// <see cref="WindowPosCentered"/> or <see cref="WindowPosCenteredDisplay"/>.</para>
+    ///     <para> A magic value used with <see cref="WindowPosCentered"/>. </para>
+    ///     <para>
+    ///         Generally this macro isn't used directly, but rather through <see cref="WindowPosCentered"/> or
+    ///         <see cref="WindowPosCenteredDisplay"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const uint WindowposCenteredMask = 0x2FFF0000u;
-    
+
     public const int WindowSurfaceVSyncDisabled = 0;
     public const int WindowSurfaceVSyncAdaptive = -1;
 }

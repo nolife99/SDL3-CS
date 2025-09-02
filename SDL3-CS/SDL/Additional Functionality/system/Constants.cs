@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,17 +28,18 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// See the official Android developer guide for more information:
-    /// http://developer.android.com/guide/topics/data/data-storage.html
+    ///     See the official Android developer guide for more information:
+    ///     http://developer.android.com/guide/topics/data/data-storage.html
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const uint AndroidExternalStorageRead = 0x01;
-    
-    
+
     /// <summary>
-    /// <para>See the official Android developer guide for more information:
-    /// http://developer.android.com/guide/topics/data/data-storage.html</para>
+    ///     <para>
+    ///         See the official Android developer guide for more information:
+    ///         http://developer.android.com/guide/topics/data/data-storage.html
+    ///     </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const uint AndroidExternalStorageWrite = 0x02;
 }

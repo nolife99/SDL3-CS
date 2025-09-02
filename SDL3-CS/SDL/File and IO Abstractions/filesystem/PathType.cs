@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,33 +28,26 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Types of filesystem entries.</para>
-    /// <para>Note that there may be other sorts of items on a filesystem: devices,
-    /// symlinks, named pipes, etc. They are currently reported as
-    /// <see cref="Other"/>.</para>
+    ///     <para> Types of filesystem entries. </para>
+    ///     <para>
+    ///         Note that there may be other sorts of items on a filesystem: devices, symlinks, named pipes, etc. They are
+    ///         currently reported as <see cref="Other"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="PathInfo"/>
     public enum PathType
     {
-        /// <summary>
-        /// path does not exist
-        /// </summary>
+        /// <summary> path does not exist </summary>
         None,
-        
-        /// <summary>
-        /// a normal file
-        /// </summary>
+
+        /// <summary> a normal file </summary>
         File,
-        
-        /// <summary>
-        /// a directory
-        /// </summary>
+
+        /// <summary> a directory </summary>
         Directory,
-        
-        /// <summary>
-        /// something completely different like a device node (not a symlink, those are always followed)
-        /// </summary>
+
+        /// <summary> something completely different like a device node (not a symlink, those are always followed) </summary>
         Other
     }
 }

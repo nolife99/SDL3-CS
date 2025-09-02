@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,30 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
-public static partial class SDL
-{
-    /// <code>typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);</code>
-    /// <summary>
-    /// A function pointer used for callbacks that watch the event queue.
-    /// </summary>
-    /// <param name="userdata">what was passed as <c>userdata</c> to <see cref="SetEventFilter"/> or
-    /// <see cref="AddEventWatch"/>, etc.</param>
-    /// <param name="event">the event that triggered the callback.</param>
-    /// <returns>true to permit event to be added to the queue, and false to
-    /// disallow it. When used with <see cref="AddEventWatch"/>, the return value is
-    /// ignored.</returns>
-    /// <threadsafety>SDL may call this callback at any time from any thread; the
-    /// application is responsible for locking resources the callback
-    /// touches that need to be protected.</threadsafety>
-    /// <since>This datatype is available since SDL 3.2.0</since>
-    /// <seealso cref="SetEventFilter"/>
-    /// <seealso cref="AddEventWatch"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate bool EventFilter(IntPtr userdata, ref Event @event);
-}
+using System.Runtime.InteropServices;
+
+/// <code>typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);</code>
+/// <summary> A function pointer used for callbacks that watch the event queue. </summary>
+/// <param name="userdata">
+///     what was passed as <c> userdata </c> to <see cref="SDL.SetEventFilter"/> or
+///     <see cref="SDL.AddEventWatch"/>, etc.
+/// </param>
+/// <param name="event"> the event that triggered the callback. </param>
+/// <returns>
+///     true to permit event to be added to the queue, and false to disallow it. When used with
+///     <see cref="SDL.AddEventWatch"/>, the return value is ignored.
+/// </returns>
+/// <threadsafety>
+///     SDL may call this callback at any time from any thread; the application is responsible for locking resources
+///     the callback touches that need to be protected.
+/// </threadsafety>
+/// <since> This datatype is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.SetEventFilter"/>
+/// <seealso cref="SDL.AddEventWatch"/>
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate bool EventFilter(nint userdata, ref SDL.Event @event);

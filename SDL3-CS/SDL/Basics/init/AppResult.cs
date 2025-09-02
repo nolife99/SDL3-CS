@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,25 +28,24 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Return values for optional main callbacks.</para>
-    /// <para>Returning <see cref="Success"/> or <see cref="Failure"/> from <see cref="AppInit"/>,
-    /// <see cref="AppEvent"/>, or <see cref="AppIterate"/> will terminate the program and report
-    /// success/failure to the operating system. What that means is
-    /// platform-dependent. On Unix, for example, on success, the process error
-    /// code will be zero, and on failure it will be 1. This interface doesn't
-    /// allow you to return specific exit codes, just whether there was an error
-    /// generally or not.</para>
-    /// <para>Returning <see cref="Continue"/> from these functions will let the app continue
-    /// to run.</para>
-    /// <para>See
-    /// <a href="https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3">Main callbacks in SDL3</a>
-    /// for complete details.</para>
+    ///     <para> Return values for optional main callbacks. </para>
+    ///     <para>
+    ///         Returning <see cref="Success"/> or <see cref="Failure"/> from <see cref="AppInit"/>, <see cref="AppEvent"/>, or
+    ///         <see cref="AppIterate"/> will terminate the program and report success/failure to the operating system. What that
+    ///         means is platform-dependent. On Unix, for example, on success, the process error code will be zero, and on failure
+    ///         it will be 1. This interface doesn't allow you to return specific exit codes, just whether there was an error
+    ///         generally or not.
+    ///     </para>
+    ///     <para> Returning <see cref="Continue"/> from these functions will let the app continue to run. </para>
+    ///     <para>
+    ///         See
+    ///         <a href="https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3"> Main callbacks in SDL3 </a> for
+    ///         complete details.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum AppResult
     {
-        Continue,
-        Success,
-        Failure
+        Continue, Success, Failure
     }
 }

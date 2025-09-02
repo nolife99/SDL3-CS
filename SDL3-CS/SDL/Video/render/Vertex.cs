@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,34 +20,27 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Vertex structure.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Vertex structure. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct Vertex
     {
-        /// <summary>
-        /// Vertex position, in SDL_Renderer coordinates
-        /// </summary>
+        /// <summary> Vertex position, in SDL_Renderer coordinates </summary>
         public FPoint Position;
 
-        /// <summary>
-        /// Vertex color
-        /// </summary>
+        /// <summary> Vertex color </summary>
         public FColor Color;
 
-        /// <summary>
-        /// Normalized texture coordinates, if needed
-        /// </summary>
+        /// <summary> Normalized texture coordinates, if needed </summary>
         public FPoint TexCoord;
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,38 +20,29 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Specifies which color components are written in a graphics pipeline.
-    /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <summary> Specifies which color components are written in a graphics pipeline. </summary>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUGraphicsPipeline"/>
     [Flags]
     public enum GPUColorComponentFlags : byte
     {
-        /// <summary>
-        /// the red component
-        /// </summary>
+        /// <summary> the red component </summary>
         R = 1,
-        
-        /// <summary>
-        /// the green component
-        /// </summary>
+
+        /// <summary> the green component </summary>
         G = 2,
-        
-        /// <summary>
-        /// the blue component
-        /// </summary>
+
+        /// <summary> the blue component </summary>
         B = 4,
-        
-        /// <summary>
-        /// the alpha component
-        /// </summary>
+
+        /// <summary> the alpha component </summary>
         A = 8
     }
 }

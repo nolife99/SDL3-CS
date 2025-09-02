@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,16 +28,12 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Possible connection states for a joystick device.</para>
-    /// <para>This is used by <see cref="GetJoystickConnectionState"/> to report how a device is
-    /// connected to the system.</para>
+    ///     <para> Possible connection states for a joystick device. </para>
+    ///     <para> This is used by <see cref="GetJoystickConnectionState"/> to report how a device is connected to the system. </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum JoystickConnectionState
     {
-        Invalid = -1,
-        Unknown,
-        Wired,
-        Wireless
+        Invalid = -1, Unknown, Wired, Wireless
     }
 }

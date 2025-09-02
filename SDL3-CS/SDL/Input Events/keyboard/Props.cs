@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,19 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-	public static partial class Props
-	{
-		public const string TextInputTypeNumber = "SDL.textinput.type";
-		public const string TextInputCapitalizationNumber = "SDL.textinput.capitalization";
-		public const string TextInputAutoCorrectBoolean = "SDL.textinput.autocorrect";
-		public const string TextInputMultilineBoolean = "SDL.textinput.multiline";
-		public const string TextInputAndroidInputTypeNumber = "SDL.textinput.android.inputtype";
-	}
+    public static partial class Props
+    {
+        public const string TextInputTypeNumber = "SDL.textinput.type";
+        public const string TextInputCapitalizationNumber = "SDL.textinput.capitalization";
+        public const string TextInputAutoCorrectBoolean = "SDL.textinput.autocorrect";
+        public const string TextInputMultilineBoolean = "SDL.textinput.multiline";
+        public const string TextInputAndroidInputTypeNumber = "SDL.textinput.android.inputtype";
+    }
 }

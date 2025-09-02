@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,41 +20,27 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> Display orientation values; the way a display is rotated. </summary>
+/// <since> This enum is available since SDL 3.2.0 </since>
+public enum DisplayOrientation
 {
-    /// <summary>
-    /// Display orientation values; the way a display is rotated.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
-    public enum DisplayOrientation
-    {
-        /// <summary>
-        /// The display orientation can't be determined
-        /// </summary>
-        Unknown,
-        
-        /// <summary>
-        /// The display is in landscape mode, with the right side up, relative to portrait mode
-        /// </summary>
-        Landscape,
-        
-        /// <summary>
-        /// The display is in landscape mode, with the left side up, relative to portrait mode
-        /// </summary>
-        LandscapeFlipped,
-        
-        /// <summary>
-        /// The display is in portrait mode
-        /// </summary>
-        Portrait,
-        
-        /// <summary>
-        /// The display is in portrait mode, upside down
-        /// </summary>
-        PortraitFlipped
-    }
+    /// <summary> The display orientation can't be determined </summary>
+    Unknown,
+
+    /// <summary> The display is in landscape mode, with the right side up, relative to portrait mode </summary>
+    Landscape,
+
+    /// <summary> The display is in landscape mode, with the left side up, relative to portrait mode </summary>
+    LandscapeFlipped,
+
+    /// <summary> The display is in portrait mode </summary>
+    Portrait,
+
+    /// <summary> The display is in portrait mode, upside down </summary>
+    PortraitFlipped
 }

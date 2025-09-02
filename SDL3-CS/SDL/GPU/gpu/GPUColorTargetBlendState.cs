@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the blend state of a color target.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the blend state of a color target. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUColorTargetDescription"/>
     /// <seealso cref="GPUBlendFactor"/>
     /// <seealso cref="GPUBlendOp"/>
@@ -38,53 +38,38 @@ public static partial class SDL
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUColorTargetBlendState
     {
-        /// <summary>
-        /// The value to be multiplied by the source RGB value.
-        /// </summary>
+        /// <summary> The value to be multiplied by the source RGB value. </summary>
         public GPUBlendFactor SrcColorBlendfactor;
-        
-        /// <summary>
-        /// The value to be multiplied by the destination RGB value.
-        /// </summary>
+
+        /// <summary> The value to be multiplied by the destination RGB value. </summary>
         public GPUBlendFactor DstColorBlendfactor;
-        
-        /// <summary>
-        /// The blend operation for the RGB components.
-        /// </summary>
+
+        /// <summary> The blend operation for the RGB components. </summary>
         public GPUBlendOp ColorBlendOp;
-        
-        /// <summary>
-        /// The value to be multiplied by the source alpha.
-        /// </summary>
+
+        /// <summary> The value to be multiplied by the source alpha. </summary>
         public GPUBlendFactor SrcAlphaBlendfactor;
-        
-        /// <summary>
-        /// The value to be multiplied by the destination alpha.
-        /// </summary>
+
+        /// <summary> The value to be multiplied by the destination alpha. </summary>
         public GPUBlendFactor DstAlphaBlendfactor;
-        
-        /// <summary>
-        /// The blend operation for the alpha component.
-        /// </summary>
+
+        /// <summary> The blend operation for the alpha component. </summary>
         public GPUBlendOp AlphaBlendOp;
-        
+
         /// <summary>
-        /// A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if enable_color_write_mask is false.
+        ///     A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if
+        ///     enable_color_write_mask is false.
         /// </summary>
         public GPUColorComponentFlags ColorWriteMask;
-        
-        /// <summary>
-        /// Whether blending is enabled for the color target.
-        /// </summary>
-        public Byte EnableBlend;
-        
-        /// <summary>
-        /// Whether the color write mask is enabled.
-        /// </summary>
-        public Byte EnableColorWriteMask;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
+
+        /// <summary> Whether blending is enabled for the color target. </summary>
+        public byte EnableBlend;
+
+        /// <summary> Whether the color write mask is enabled. </summary>
+        public byte EnableColorWriteMask;
+
+        byte _padding1;
+
+        byte _padding2;
     }
 }

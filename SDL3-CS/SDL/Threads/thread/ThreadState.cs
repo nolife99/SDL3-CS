@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,31 +28,23 @@ namespace SDL3;
 public partial class SDL
 {
     /// <summary>
-    /// <para>The SDL thread state.</para>
-    /// <para>The current state of a thread can be checked by calling <see cref="GetThreadState"/>.</para>
+    ///     <para> The SDL thread state. </para>
+    ///     <para> The current state of a thread can be checked by calling <see cref="GetThreadState"/>. </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="GetThreadState"/>
     public enum ThreadState
     {
-        /// <summary>
-        /// The thread is not valid
-        /// </summary>
+        /// <summary> The thread is not valid </summary>
         Unknown,
-        
-        /// <summary>
-        /// The thread is currently running
-        /// </summary>
+
+        /// <summary> The thread is currently running </summary>
         Alive,
-        
-        /// <summary>
-        /// The thread is detached and can't be waited on
-        /// </summary>
+
+        /// <summary> The thread is detached and can't be waited on </summary>
         Detached,
-        
-        /// <summary>
-        /// The thread has finished and should be cleaned up with <see cref="WaitThread"/>
-        /// </summary>
+
+        /// <summary> The thread has finished and should be cleaned up with <see cref="WaitThread"/> </summary>
         Complete
     }
 }

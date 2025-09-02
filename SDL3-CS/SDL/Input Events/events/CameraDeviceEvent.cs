@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,37 +20,29 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Runtime.InteropServices;
+
+/// <summary> Camera device event structure (event.cdevice.*) </summary>
+/// <requires> SDL 3.2.0 </requires>
+[StructLayout(LayoutKind.Sequential)]
+public struct CameraDeviceEvent
 {
     /// <summary>
-    /// Camera device event structure (event.cdevice.*)
+    /// <see cref="SDL.EventType.CameraDeviceAdded"/>, <see cref="SDL.EventType.CameraDeviceRemoved"/>,
+    /// <see cref="SDL.EventType.CameraDeviceApproved"/>, <see cref="SDL.EventType.CameraDeviceDenied"/>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct CameraDeviceEvent
-    {
-        /// <summary>
-        /// <see cref="EventType.CameraDeviceAdded"/>, <see cref="EventType.CameraDeviceRemoved"/>,
-        /// <see cref="EventType.CameraDeviceApproved"/>, <see cref="EventType.CameraDeviceDenied"/>
-        /// </summary>
-        public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// SDL_CameraID for the device being added or removed or changing
-        /// </summary>
-        public UInt32 Which;
-    }
+    public SDL.EventType Type;
+
+    uint _reserved;
+
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
+
+    /// <summary> SDL_CameraID for the device being added or removed or changing </summary>
+    public uint Which;
 }

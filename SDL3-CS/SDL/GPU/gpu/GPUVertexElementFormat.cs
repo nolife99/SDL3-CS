@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,16 +20,15 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Specifies the format of a vertex attribute.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Specifies the format of a vertex attribute. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUGraphicsPipeline"/>
     public enum GPUVertexElementFormat
     {

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,68 +20,50 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Mouse button event structure (event.button.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Mouse button event structure (event.button.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct MouseButtonEvent
     {
-        /// <summary>
-        /// <see cref="EventType.GamepadButtonDown"/> or <see cref="EventType.MouseButtonUp"/>
-        /// </summary>
+        /// <summary> <see cref="EventType.GamepadButtonDown"/> or <see cref="EventType.MouseButtonUp"/> </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The window with mouse focus, if any
-        /// </summary>
-        public UInt32 WindowID;
-        
-        /// <summary>
-        /// The mouse instance id in relative mode, <see cref="TouchMouseID"/> for touch events, or 0
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// The mouse button index
-        /// </summary>
-        public Byte Button;
 
-        /// <summary>
-        /// true if the button is pressed
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)] public bool Down;
+        uint _reserved;
 
-        /// <summary>
-        /// 1 for single-click, 2 for double-click, etc.
-        /// </summary>
-        public Byte Clicks;
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
 
-        private Byte _padding;
+        /// <summary> The window with mouse focus, if any </summary>
+        public uint WindowID;
 
-        /// <summary>
-        /// X coordinate, relative to window
-        /// </summary>
+        /// <summary> The mouse instance id in relative mode, <see cref="TouchMouseID"/> for touch events, or 0 </summary>
+        public uint Which;
+
+        /// <summary> The mouse button index </summary>
+        public byte Button;
+
+        /// <summary> true if the button is pressed </summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public bool Down;
+
+        /// <summary> 1 for single-click, 2 for double-click, etc. </summary>
+        public byte Clicks;
+
+        byte _padding;
+
+        /// <summary> X coordinate, relative to window </summary>
         public float X;
 
-        /// <summary>
-        /// Y coordinate, relative to window
-        /// </summary>
+        /// <summary> Y coordinate, relative to window </summary>
         public float Y;
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -47,11 +49,18 @@ public static partial class SDL
         public const string GPUDeviceCreateShadersMSLBoolean = "SDL.gpu.device.create.shaders.msl";
         public const string GPUDeviceCreateShadersMetalLibBoolean = "SDL.gpu.device.create.shaders.metallib";
         public const string GPUDeviceCreateD3D12SemanticNameString = "SDL.gpu.device.create.d3d12.semantic";
-        public const string GPUDeviceCreateVulkanShaderClipDistanceBoolean = "SDL.gpu.device.create.vulkan.shaderclipdistance";
+
+        public const string GPUDeviceCreateVulkanShaderClipDistanceBoolean =
+            "SDL.gpu.device.create.vulkan.shaderclipdistance";
+
         public const string GPUDeviceCreateVulkanDepthClampBoolean = "SDL.gpu.device.create.vulkan.depthclamp";
-        public const string GPUDeviceCreateVulkanDrawInDirectFirstBoolean =  "SDL.gpu.device.create.vulkan.drawindirectfirstinstance";
-        public const string GPUDeviceCreateVulkanSamplerAnisotropyBoolean =  "SDL.gpu.device.create.vulkan.sampleranisotropy";
-        
+
+        public const string GPUDeviceCreateVulkanDrawInDirectFirstBoolean =
+            "SDL.gpu.device.create.vulkan.drawindirectfirstinstance";
+
+        public const string GPUDeviceCreateVulkanSamplerAnisotropyBoolean =
+            "SDL.gpu.device.create.vulkan.sampleranisotropy";
+
         public const string GPUGraphicsPipelineCreateNameString = "SDL.gpu.graphicspipeline.create.name";
         public const string GPUSamplerCreateNameString = "SDL.gpu.sampler.create.name";
         public const string GPUShaderCreateNameString = "SDL.gpu.shader.create.name";

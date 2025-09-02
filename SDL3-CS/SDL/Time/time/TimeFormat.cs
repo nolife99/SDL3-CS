@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,20 +20,15 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> The preferred time format of the current system locale. </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.GetDateTimeLocalePreferences"/>
+public enum TimeFormat
 {
-    /// <summary>
-    /// The preferred time format of the current system locale.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    /// <seealso cref="GetDateTimeLocalePreferences"/>
-    public enum TimeFormat
-    {
-        Format24HR = 0,
-        Format12HR = 1
-    }
+    Format24HR = 0, Format12HR = 1
 }

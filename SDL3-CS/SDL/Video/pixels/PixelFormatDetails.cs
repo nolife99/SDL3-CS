@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,25 +20,24 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Details about the format of a pixel.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Details about the format of a pixel. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct PixelFormatDetails
     {
         public PixelFormat Format;
         public byte BitsPerPixel;
         public byte BytesPerPixel;
-        private unsafe fixed byte Padding[2];
+        unsafe fixed byte Padding[2];
         public uint RMask;
         public uint GMask;
         public uint BMask;
@@ -52,4 +52,3 @@ public static partial class SDL
         public byte AShift;
     }
 }
-

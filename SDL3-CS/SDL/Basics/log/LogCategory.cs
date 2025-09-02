@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,12 +28,15 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>The predefined log categories</para>
-    /// <para>By default the application and gpu categories are enabled at the <see cref="LogPriority.Info"/>
-    /// level, the assert category is enabled at the see <see cref="LogPriority.Warn"/> level, test is enabled at
-    /// the see <see cref="LogPriority.Verbose"/> level and all other categories are enabled at the see <see cref="LogPriority.Error"/> level.</para>
+    ///     <para> The predefined log categories </para>
+    ///     <para>
+    ///         By default the application and gpu categories are enabled at the <see cref="LogPriority.Info"/> level, the assert
+    ///         category is enabled at the see <see cref="LogPriority.Warn"/> level, test is enabled at the see
+    ///         <see cref="LogPriority.Verbose"/> level and all other categories are enabled at the see
+    ///         <see cref="LogPriority.Error"/> level.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum LogCategory
     {
         Application,

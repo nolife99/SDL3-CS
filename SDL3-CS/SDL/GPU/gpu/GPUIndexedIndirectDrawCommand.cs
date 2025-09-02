@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,51 +20,42 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of an indexed indirect draw command.</para>
-    /// <para>Note that the <c>FirstIndex</c> and <c>FirstInstance</c> parameters are NOT
-    /// compatible with built-in vertex/instance ID variables in shaders (for
-    /// example, SV_VertexID); GPU APIs and shader languages do not define these
-    /// built-in variables consistently, so if your shader depends on them, the
-    /// only way to keep behavior consistent and portable is to always pass 0 for
-    /// the correlating parameter in the draw calls.</para>
+    ///     <para> A structure specifying the parameters of an indexed indirect draw command. </para>
+    ///     <para>
+    ///         Note that the <c> FirstIndex </c> and <c> FirstInstance </c> parameters are NOT compatible with built-in
+    ///         vertex/instance ID variables in shaders (for example, SV_VertexID); GPU APIs and shader languages do not define
+    ///         these built-in variables consistently, so if your shader depends on them, the only way to keep behavior consistent
+    ///         and portable is to always pass 0 for the correlating parameter in the draw calls.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="DrawGPUIndexedPrimitivesIndirect"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUIndexedIndirectDrawCommand
     {
-        /// <summary>
-        /// The number of indices to draw per instance.
-        /// </summary>
-        public UInt32 NumIndices;
-        
-        /// <summary>
-        /// The number of instances to draw.
-        /// </summary>
-        public UInt32 NumInstances;
-        
-        /// <summary>
-        /// The base index within the index buffer.
-        /// </summary>
-        public UInt32 FirstIndex;
-        
-        /// <summary>
-        /// The value added to the vertex index before indexing into the vertex buffer.
-        /// </summary>
+        /// <summary> The number of indices to draw per instance. </summary>
+        public uint NumIndices;
+
+        /// <summary> The number of instances to draw. </summary>
+        public uint NumInstances;
+
+        /// <summary> The base index within the index buffer. </summary>
+        public uint FirstIndex;
+
+        /// <summary> The value added to the vertex index before indexing into the vertex buffer. </summary>
         public short VertexOffset;
-        
-        /// <summary>
-        /// The ID of the first instance to draw.
-        /// </summary>
-        public UInt32 FirstInstance;
+
+        /// <summary> The ID of the first instance to draw. </summary>
+        public uint FirstInstance;
     }
 }

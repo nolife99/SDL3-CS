@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,54 +20,45 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Joystick axis motion event structure (event.jaxis.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Joystick axis motion event structure (event.jaxis.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct JoyAxisEvent
     {
         /// <summary>
-        /// <see cref="EventType.JoystickAxisMotion"/>
+        ///     <see cref="EventType.JoystickAxisMotion"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The joystick instance id
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// The joystick axis index
-        /// </summary>
-        public Byte Axis; 
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
-        
-        private Byte _padding3;
-        
-        /// <summary>
-        /// The axis value (range: -32768 to 32767)
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The joystick instance id </summary>
+        public uint Which;
+
+        /// <summary> The joystick axis index </summary>
+        public byte Axis;
+
+        byte _padding1;
+
+        byte _padding2;
+
+        byte _padding3;
+
+        /// <summary> The axis value (range: -32768 to 32767) </summary>
         public short Value;
-        
-        private Byte _padding4;
+
+        byte _padding4;
     }
 }

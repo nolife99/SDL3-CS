@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,39 +28,30 @@ namespace SDL3;
 public partial class SDL
 {
     /// <summary>
-    /// <para>Flags that control the creation of system tray entries.</para>
-    /// <para>Some of these flags are required; exactly one of them must be specified at
-    /// the time a tray entry is created. Other flags are optional; zero or more of
-    /// those can be OR'ed together with the required flag.</para>
+    ///     <para> Flags that control the creation of system tray entries. </para>
+    ///     <para>
+    ///         Some of these flags are required; exactly one of them must be specified at the time a tray entry is created.
+    ///         Other flags are optional; zero or more of those can be OR'ed together with the required flag.
+    ///     </para>
     /// </summary>
-    /// <since>This datatype is available since SDL 3.0.0.</since>
+    /// <since> This datatype is available since SDL 3.0.0. </since>
     /// <seealso cref="InsertTrayEntryAt"/>
     [Flags]
     public enum TrayEntryFlags : uint
-    { 
-        /// <summary>
-        /// Make the entry a simple button. Required.
-        /// </summary>
+    {
+        /// <summary> Make the entry a simple button. Required. </summary>
         Button = 0x00000001u,
-        
-        /// <summary>
-        /// Make the entry a checkbox. Required.
-        /// </summary>
+
+        /// <summary> Make the entry a checkbox. Required. </summary>
         CheckBox = 0x00000002u,
-        
-        /// <summary>
-        /// Prepare the entry to have a submenu. Required
-        /// </summary>
+
+        /// <summary> Prepare the entry to have a submenu. Required </summary>
         SubMenu = 0x00000004u,
-        
-        /// <summary>
-        /// Make the entry disabled. Optional.
-        /// </summary>
+
+        /// <summary> Make the entry disabled. Optional. </summary>
         Disabled = 0x80000000u,
-        
-        /// <summary>
-        /// Make the entry checked. This is valid only for checkboxes. Optional.
-        /// </summary>
-        Checked = 0x40000000u,
+
+        /// <summary> Make the entry checked. This is valid only for checkboxes. Optional. </summary>
+        Checked = 0x40000000u
     }
 }

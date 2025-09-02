@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -28,20 +30,14 @@ public static partial class SDL
     public enum TouchDeviceType
     {
         Invalid = -1,
-        
-        /// <summary>
-        /// touch screen with window-relative coordinates
-        /// </summary>
+
+        /// <summary> touch screen with window-relative coordinates </summary>
         Direct,
-        
-        /// <summary>
-        /// trackpad with absolute device coordinates
-        /// </summary>
+
+        /// <summary> trackpad with absolute device coordinates </summary>
         IndirectAbsolute,
-        
-        /// <summary>
-        /// trackpad with screen cursor-relative coordinates
-        /// </summary>
+
+        /// <summary> trackpad with screen cursor-relative coordinates </summary>
         IndirectRelative
     }
 }

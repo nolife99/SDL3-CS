@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the parameters of a graphics pipeline state.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the parameters of a graphics pipeline state. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUGraphicsPipeline"/>
     /// <seealso cref="GPUVertexInputState"/>
     /// <seealso cref="GPUPrimitiveType"/>
@@ -41,49 +41,31 @@ public static partial class SDL
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUGraphicsPipelineCreateInfo
     {
-        /// <summary>
-        /// The vertex shader used by the graphics pipeline.
-        /// </summary>
+        /// <summary> The vertex shader used by the graphics pipeline. </summary>
         public IntPtr VertexShader;
-        
-        /// <summary>
-        /// The fragment shader used by the graphics pipeline.
-        /// </summary>
+
+        /// <summary> The fragment shader used by the graphics pipeline. </summary>
         public IntPtr FragmentShader;
-        
-        /// <summary>
-        /// The vertex layout of the graphics pipeline.
-        /// </summary>
+
+        /// <summary> The vertex layout of the graphics pipeline. </summary>
         public GPUVertexInputState VertexInputState;
-        
-        /// <summary>
-        /// The primitive topology of the graphics pipeline.
-        /// </summary>
+
+        /// <summary> The primitive topology of the graphics pipeline. </summary>
         public GPUPrimitiveType PrimitiveType;
-        
-        /// <summary>
-        /// The rasterizer state of the graphics pipeline.
-        /// </summary>
+
+        /// <summary> The rasterizer state of the graphics pipeline. </summary>
         public GPURasterizerState RasterizerState;
-        
-        /// <summary>
-        /// The multisample state of the graphics pipeline.
-        /// </summary>
+
+        /// <summary> The multisample state of the graphics pipeline. </summary>
         public GPUMultisampleState MultisampleState;
-        
-        /// <summary>
-        /// The depth-stencil state of the graphics pipeline.
-        /// </summary>
+
+        /// <summary> The depth-stencil state of the graphics pipeline. </summary>
         public GPUDepthStencilState DepthStencilState;
-        
-        /// <summary>
-        /// Formats and blend modes for the render targets of the graphics pipeline.
-        /// </summary>
+
+        /// <summary> Formats and blend modes for the render targets of the graphics pipeline. </summary>
         public GPUGraphicsPipelineTargetInfo TargetInfo;
-        
-        /// <summary>
-        /// A properties ID for extensions. Should be 0 if no extensions are needed.
-        /// </summary>
-        public UInt32 Props;
+
+        /// <summary> A properties ID for extensions. Should be 0 if no extensions are needed. </summary>
+        public uint Props;
     }
 }

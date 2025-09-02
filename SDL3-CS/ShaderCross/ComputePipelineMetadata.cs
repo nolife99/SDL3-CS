@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,64 +20,48 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public partial class ShaderCross
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct ComputePipelineMetadata
     {
-        /// <summary>
-        /// The number of samplers defined in the shader.
-        /// </summary>
+        /// <summary> The number of samplers defined in the shader. </summary>
         public uint NumSamplers;
-        
-        /// <summary>
-        /// The number of readonly storage textures defined in the shader. 
-        /// </summary>
+
+        /// <summary> The number of readonly storage textures defined in the shader. </summary>
         public uint NumReadOnlyStorageTextures;
-        
-        /// <summary>
-        /// The number of readonly storage buffers defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of readonly storage buffers defined in the shader. </summary>
         public uint NumReadOnlyStorageBuffers;
-        
-        /// <summary>
-        /// The number of read-write storage textures defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of read-write storage textures defined in the shader. </summary>
         public uint NumReadWriteStorageTextures;
-        
-        /// <summary>
-        /// The number of read-write storage buffers defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of read-write storage buffers defined in the shader. </summary>
         public uint NumReadwriteStorageBuffers;
-        
-        /// <summary>
-        /// The number of uniform buffers defined in the shader.
-        /// </summary>
+
+        /// <summary> The number of uniform buffers defined in the shader. </summary>
         public uint NumUniformBuffers;
-        
-        /// <summary>
-        /// The number of threads in the X dimension.
-        /// </summary>
+
+        /// <summary> The number of threads in the X dimension. </summary>
         public uint ThreadCountX;
-        
-        /// <summary>
-        /// The number of threads in the Y dimension.
-        /// </summary>
+
+        /// <summary> The number of threads in the Y dimension. </summary>
         public uint ThreadCountY;
-        
-        /// <summary>
-        /// The number of threads in the Z dimension.
-        /// </summary>
+
+        /// <summary> The number of threads in the Z dimension. </summary>
         public uint ThreadCountZ;
 
         /// <summary>
-        /// A properties ID for extensions. This is allocated and freed by the caller, and should be 0 if no extensions are needed.
+        ///     A properties ID for extensions. This is allocated and freed by the caller, and should be 0 if no extensions are
+        ///     needed.
         /// </summary>
         public uint Props;
     }

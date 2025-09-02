@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,85 +20,58 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public partial class ShaderCross
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct HLSLInfo : IDisposable
     {
-        private IntPtr source;
-        
-        /// <summary>
-        /// The HLSL source code for the shader.
-        /// </summary>
-        public string Source
-        {
-            get => Marshal.PtrToStringUTF8(source)!;
-            set => source = SDL.StringToPointer(value);
-        }
-        
-        private IntPtr entrypoint;
-        
-        /// <summary>
-        /// The entry point function name for the shader in UTF-8.
-        /// </summary>
+        IntPtr source;
+
+        /// <summary> The HLSL source code for the shader. </summary>
+        public string Source { get => Marshal.PtrToStringUTF8(source)!; set => source = SDL.StringToPointer(value); }
+
+        IntPtr entrypoint;
+
+        /// <summary> The entry point function name for the shader in UTF-8. </summary>
         public string Entrypoint
         {
             get => Marshal.PtrToStringUTF8(entrypoint)!;
             set => entrypoint = SDL.StringToPointer(value);
         }
-        
-        private IntPtr include_dir;
-        
-        /// <summary>
-        /// The include directory for shader code. Optional, can be NULL.
-        /// </summary>
+
+        IntPtr include_dir;
+
+        /// <summary> The include directory for shader code. Optional, can be NULL. </summary>
         public string? IncludeDir
         {
             get => Marshal.PtrToStringUTF8(include_dir);
             set => include_dir = SDL.StringToPointer(value);
         }
-        
-        /// <summary>
-        /// An array of defines. Optional, can be NULL. If not NULL, must be terminated with a fully NULL define struct.
-        /// </summary>
+
+        /// <summary> An array of defines. Optional, can be NULL. If not NULL, must be terminated with a fully NULL define struct. </summary>
         public IntPtr Defines;
-        
-        /// <summary>
-        /// The shader stage to compile the shader with.
-        /// </summary>
+
+        /// <summary> The shader stage to compile the shader with. </summary>
         public ShaderStage ShaderStage;
 
-        private byte enableDebug;
+        byte enableDebug;
 
-        /// <summary>
-        /// Allows debug info to be emitted when relevant. Can be useful for graphics debuggers like RenderDoc.
-        /// </summary>
-        public bool EnableDebug
-        {
-            get => enableDebug != 0;
-            set => enableDebug = (byte)(value ? 1 : 0);
-        }
-        
-        private IntPtr name;
-        
-        /// <summary>
-        /// A UTF-8 name to associate with the shader. Optional, can be NULL.
-        /// </summary>
-        public string? Name
-        {
-            get => Marshal.PtrToStringUTF8(name);
-            set => name = SDL.StringToPointer(value);
-        }
+        /// <summary> Allows debug info to be emitted when relevant. Can be useful for graphics debuggers like RenderDoc. </summary>
+        public bool EnableDebug { get => enableDebug != 0; set => enableDebug = (byte)(value ? 1 : 0); }
 
-        /// <summary>
-        /// A properties ID for extensions. Should be 0 if no extensions are needed.
-        /// </summary>
+        IntPtr name;
+
+        /// <summary> A UTF-8 name to associate with the shader. Optional, can be NULL. </summary>
+        public string? Name { get => Marshal.PtrToStringUTF8(name); set => name = SDL.StringToPointer(value); }
+
+        /// <summary> A properties ID for extensions. Should be 0 if no extensions are needed. </summary>
         public uint Props;
 
         public void Dispose()

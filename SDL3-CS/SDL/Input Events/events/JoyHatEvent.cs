@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,47 +20,37 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
-
-
-using System.Runtime.InteropServices;
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Joystick hat position change event structure (event.jhat.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Joystick hat position change event structure (event.jhat.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct JoyHatEvent
     {
         /// <summary>
-        /// <see cref="EventType.JoystickHatMotion"/>
+        ///     <see cref="EventType.JoystickHatMotion"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The joystick instance id
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// The joystick hat index
-        /// </summary>
-        public Byte Hat;
-        
-        /// <summary>
-        /// The hat position value.
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The joystick instance id </summary>
+        public uint Which;
+
+        /// <summary> The joystick hat index </summary>
+        public byte Hat;
+
+        /// <summary> The hat position value. </summary>
         /// <seealso cref="JoystickHat.LeftUp"/>
         /// <seealso cref="JoystickHat.Up"/>
         /// <seealso cref="JoystickHat.RightUp"/>
@@ -69,10 +60,10 @@ public static partial class SDL
         /// <seealso cref="JoystickHat.LeftDown"/>
         /// <seealso cref="JoystickHat.Down"/>
         /// <seealso cref="JoystickHat.RightDown"/>
-        public Byte Value;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
+        public byte Value;
+
+        byte _padding1;
+
+        byte _padding2;
     }
 }

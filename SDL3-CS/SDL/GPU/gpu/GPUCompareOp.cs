@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,59 +20,42 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Specifies a comparison operator for depth, stencil and sampler operations.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Specifies a comparison operator for depth, stencil and sampler operations. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUGraphicsPipeline"/>
     public enum GPUCompareOp
     {
         Invalid,
-        
-        /// <summary>
-        /// The comparison always evaluates false.
-        /// </summary>
+
+        /// <summary> The comparison always evaluates false. </summary>
         Never,
-        
-        /// <summary>
-        /// The comparison evaluates reference &lt; test.
-        /// </summary>
+
+        /// <summary> The comparison evaluates reference &lt; test. </summary>
         Less,
-        
-        /// <summary>
-        /// The comparison evaluates reference == test.
-        /// </summary>
+
+        /// <summary> The comparison evaluates reference == test. </summary>
         Equal,
-        
-        /// <summary>
-        /// The comparison evaluates reference &lt;= test.
-        /// </summary>
+
+        /// <summary> The comparison evaluates reference &lt;= test. </summary>
         LessOrEqual,
-        
-        /// <summary>
-        /// The comparison evaluates reference &gt; test.
-        /// </summary>
+
+        /// <summary> The comparison evaluates reference &gt; test. </summary>
         Greater,
-        
-        /// <summary>
-        /// The comparison evaluates reference != test.
-        /// </summary>
+
+        /// <summary> The comparison evaluates reference != test. </summary>
         NotEqual,
-        
-        /// <summary>
-        /// The comparison evalutes reference &lt;= test.
-        /// </summary>
+
+        /// <summary> The comparison evalutes reference &lt;= test. </summary>
         GreaterOrEqual,
-        
-        /// <summary>
-        /// The comparison always evaluates true.
-        /// </summary>
+
+        /// <summary> The comparison always evaluates true. </summary>
         Always
     }
 }

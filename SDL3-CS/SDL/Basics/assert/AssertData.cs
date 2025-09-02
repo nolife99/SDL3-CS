@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,57 +20,45 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Information about an assertion failure.</para>
-    /// <para>This structure is filled in with information about a triggered assertion,
-    /// used by the assertion handler, then added to the assertion report. This is
-    /// returned as a linked list from <see cref="GetAssertionReport"/>.</para>
+    ///     <para> Information about an assertion failure. </para>
+    ///     <para>
+    ///         This structure is filled in with information about a triggered assertion, used by the assertion handler, then
+    ///         added to the assertion report. This is returned as a linked list from <see cref="GetAssertionReport"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct AssertData
     {
-        /// <summary>
-        /// true if app should always continue when assertion is triggered.
-        /// </summary>
+        /// <summary> true if app should always continue when assertion is triggered. </summary>
         public bool AlwaysIgonre;
 
-        /// <summary>
-        /// Number of times this assertion has been triggered.
-        /// </summary>
+        /// <summary> Number of times this assertion has been triggered. </summary>
         public uint TriggerCount;
 
-        /// <summary>
-        /// A string of this assert's test code.
-        /// </summary>
+        /// <summary> A string of this assert's test code. </summary>
         public string Condition;
 
-        /// <summary>
-        /// The source file where this assert lives.
-        /// </summary>
+        /// <summary> The source file where this assert lives. </summary>
         public string Filename;
 
-        /// <summary>
-        /// The line in <c>filename</c> where this assert lives.
-        /// </summary>
+        /// <summary> The line in <c> filename </c> where this assert lives. </summary>
         public int Lineum;
 
-        /// <summary>
-        /// The name of the function where this assert lives.
-        /// </summary>
+        /// <summary> The name of the function where this assert lives. </summary>
         public string Function;
 
-        /// <summary>
-        /// next item in the linked list.
-        /// </summary>
+        /// <summary> next item in the linked list. </summary>
         public IntPtr Next;
     }
 }

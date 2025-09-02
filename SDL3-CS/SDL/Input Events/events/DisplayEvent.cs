@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,46 +20,32 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Runtime.InteropServices;
+
+/// <summary> Display state change event data (event.display.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct DisplayEvent
 {
-    /// <summary>
-    /// Display state change event data (event.display.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DisplayEvent
-    {
-        /// <summary>
-        /// EventType.Display...
-        /// </summary>
-        public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The associated display
-        /// </summary>
-        public UInt32 DisplayID;
-        
-        /// <summary>
-        /// event dependent data
-        /// </summary>
-        public Int32 Data1;
-        
-        /// <summary>
-        /// event dependent data
-        /// </summary>
-        public Int32 Data2;
-    }
+    /// <summary> EventType.Display... </summary>
+    public SDL.EventType Type;
+
+    uint _reserved;
+
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
+
+    /// <summary> The associated display </summary>
+    public uint DisplayID;
+
+    /// <summary> event dependent data </summary>
+    public int Data1;
+
+    /// <summary> event dependent data </summary>
+    public int Data2;
 }

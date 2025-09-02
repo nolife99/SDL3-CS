@@ -117,18 +117,18 @@ More examples can be found [here](https://github.com/edwardgushchin/SDL3-CS/tree
 
 ## ✅ Readiness
 
-| **Library**                               | **Stage**                                             |
-|-------------------------------------------|-------------------------------------------------------|
-| [SDL3](SDL3-CS/SDL)                       | ![Ready](https://img.shields.io/badge/Ready-008000)   |
-| [SDL_image](SDL3-CS/Image)                | ![Ready](https://img.shields.io/badge/Ready-008000)   |
-| [SDL_mixer](SDL3-CS/Mixer)                | ![Ready](https://img.shields.io/badge/Ready-008000)   |
-| [SDL_tff](SDL3-CS/TTF)                    | ![Ready](https://img.shields.io/badge/Ready-008000)   |
-| [SDL_shadercross](SDL3-CS/TTFShaderCross) | ![Ready](https://img.shields.io/badge/Ready-008000)   |
-
+| **Library**                               | **Stage**                                           |
+|-------------------------------------------|-----------------------------------------------------|
+| [SDL3](SDL3-CS/SDL)                       | ![Ready](https://img.shields.io/badge/Ready-008000) |
+| [SDL_image](SDL3-CS/Image)                | ![Ready](https://img.shields.io/badge/Ready-008000) |
+| [SDL_mixer](SDL3-CS/Mixer)                | ![Ready](https://img.shields.io/badge/Ready-008000) |
+| [SDL_tff](SDL3-CS/TTF)                    | ![Ready](https://img.shields.io/badge/Ready-008000) |
+| [SDL_shadercross](SDL3-CS/TTFShaderCross) | ![Ready](https://img.shields.io/badge/Ready-008000) |
 
 ## 🤝 Feedback and Contributions
 
-Do you have an idea or found a bug? Please open an [issue](https://github.com/edwardgushchin/SDL3-CS/issues) or start a [discussion](https://github.com/edwardgushchin/SDL3-CS/discussions).
+Do you have an idea or found a bug? Please open an [issue](https://github.com/edwardgushchin/SDL3-CS/issues) or start
+a [discussion](https://github.com/edwardgushchin/SDL3-CS/discussions).
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
@@ -142,7 +142,8 @@ We also have a [chat](https://t.me/sdl3cs) in Telegram, where I am ready to answ
   <img src = "https://contrib.rocks/image?repo=edwardgushchin/SDL3-CS"/>
 </a>
 
-See also the list of [contributors](https://github.com/edwardgushchin/SDL3-CS/graphs/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/edwardgushchin/SDL3-CS/graphs/contributors) who participated in
+this project.
 
 ## 📃 License
 

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,49 +20,44 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of vertex buffers used in a graphics
-    /// pipeline.</para>
-    /// <para>When you call <see cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/>, you specify the binding slots of
-    /// the vertex buffers. For example if you called <see cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/> with
-    /// a first_slot of 2 and num_bindings of 3, the binding slots 2, 3, 4 would be
-    /// used by the vertex buffers you pass in.</para>
-    /// <para>Vertex attributes are linked to buffers via the buffer_slot field of
-    /// <see cref="GPUVertexAttribute"/>. For example, if an attribute has a buffer_slot of
-    /// 0, then that attribute belongs to the vertex buffer bound at slot 0.</para>
+    ///     <para> A structure specifying the parameters of vertex buffers used in a graphics pipeline. </para>
+    ///     <para>
+    ///         When you call <see cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/>, you specify the binding
+    ///         slots of the vertex buffers. For example if you called
+    ///         <see cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/> with a first_slot of 2 and num_bindings of
+    ///         3, the binding slots 2, 3, 4 would be used by the vertex buffers you pass in.
+    ///     </para>
+    ///     <para>
+    ///         Vertex attributes are linked to buffers via the buffer_slot field of <see cref="GPUVertexAttribute"/>. For
+    ///         example, if an attribute has a buffer_slot of 0, then that attribute belongs to the vertex buffer bound at slot 0.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUVertexAttribute"/>
     /// <seealso cref="GPUVertexInputRate"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUVertexBufferDescription
     {
-        /// <summary>
-        /// The binding slot of the vertex buffer.
-        /// </summary>
-        public UInt32 Slot;
-        
-        /// <summary>
-        /// The size of a single element + the offset between elements.
-        /// </summary>
-        public UInt32 Pitch;
-        
-        /// <summary>
-        /// Whether attribute addressing is a function of the vertex index or instance index.
-        /// </summary>
+        /// <summary> The binding slot of the vertex buffer. </summary>
+        public uint Slot;
+
+        /// <summary> The size of a single element + the offset between elements. </summary>
+        public uint Pitch;
+
+        /// <summary> Whether attribute addressing is a function of the vertex index or instance index. </summary>
         public GPUVertexInputRate InputRate;
-        
-        /// <summary>
-        /// Reserved for future use. Must be set to 0.
-        /// </summary>
-        public UInt32 InstanceStepRate;
+
+        /// <summary> Reserved for future use. Must be set to 0. </summary>
+        public uint InstanceStepRate;
     }
 }

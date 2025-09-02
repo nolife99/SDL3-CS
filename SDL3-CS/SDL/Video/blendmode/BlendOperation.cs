@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,42 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// The blend operation used when combining source and destination pixel
-    /// components.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> The blend operation used when combining source and destination pixel components. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum BlendOperation
     {
-        /// <summary>
-        /// dst + src: supported by all renderers
-        /// </summary>
+        /// <summary> dst + src: supported by all renderers </summary>
         Add = 0x1,
-        
-        /// <summary>
-        /// src - dst : supported by D3D, OpenGL, OpenGLES, and Vulkan
-        /// </summary>
+
+        /// <summary> src - dst : supported by D3D, OpenGL, OpenGLES, and Vulkan </summary>
         Subtract = 0x2,
-        
-        /// <summary>
-        /// dst - src : supported by D3D, OpenGL, OpenGLES, and Vulkan
-        /// </summary>
+
+        /// <summary> dst - src : supported by D3D, OpenGL, OpenGLES, and Vulkan </summary>
         RevSubtract = 0x3,
-        
-        /// <summary>
-        /// min(dst, src) : supported by D3D, OpenGL, OpenGLES, and Vulkan
-        /// </summary>
+
+        /// <summary> min(dst, src) : supported by D3D, OpenGL, OpenGLES, and Vulkan </summary>
         Minimum = 0x4,
-        
-        /// <summary>
-        /// max(dst, src) : supported by D3D, OpenGL, OpenGLES, and Vulkan
-        /// </summary>
+
+        /// <summary> max(dst, src) : supported by D3D, OpenGL, OpenGLES, and Vulkan </summary>
         Maximum = 0x5
     }
 }

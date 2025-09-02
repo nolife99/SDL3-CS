@@ -30,243 +30,243 @@ using System.Runtime.InteropServices;
 
 public partial class SDL
 {
-    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);</code>
-    /// <summary>
-    ///     <para> Set a callback for every Windows message, run before TranslateMessage(). </para>
-    ///     <para>
-    ///         The callback may modify the message, and should return true if the message should continue to be processed, or
-    ///         false to prevent further processing.
-    ///     </para>
-    /// </summary>
-    /// <param name="callback"> the <see cref="WindowsMessageHook"/> function to call. </param>
-    /// <param name="userdata"> a pointer to pass to every iteration of <c> callback </c>. </param>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="SetWindowsMessageHook"/>
-    /// <seealso cref="Hints.WindowsEnableMessageLoop"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetWindowsMessageHook"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);</code>
+ /// <summary>
+ ///     <para> Set a callback for every Windows message, run before TranslateMessage(). </para>
+ ///     <para>
+ ///         The callback may modify the message, and should return true if the message should continue to be processed, or
+ ///         false to prevent further processing.
+ ///     </para>
+ /// </summary>
+ /// <param name="callback"> the <see cref="WindowsMessageHook"/> function to call. </param>
+ /// <param name="userdata"> a pointer to pass to every iteration of <c> callback </c>. </param>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ /// <seealso cref="SetWindowsMessageHook"/>
+ /// <seealso cref="Hints.WindowsEnableMessageLoop"/>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetWindowsMessageHook"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void SetWindowsMessageHook(WindowsMessageHook callback, nint userdata);
 
-    /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);</code>
-    /// <summary>
-    ///     <para> Get the D3D9 adapter index that matches the specified display. </para>
-    ///     <para>
-    ///         The returned adapter index can be passed to <c> IDirect3D9::CreateDevice </c> and controls on which monitor a
-    ///         full screen application will appear.
-    ///     </para>
-    /// </summary>
-    /// <param name="displayID"> the instance of the display to query. </param>
-    /// <returns> the D3D9 adapter index on success or -1 on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDirect3D9AdapterIndex"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);</code>
+ /// <summary>
+ ///     <para> Get the D3D9 adapter index that matches the specified display. </para>
+ ///     <para>
+ ///         The returned adapter index can be passed to <c> IDirect3D9::CreateDevice </c> and controls on which monitor a
+ ///         full screen application will appear.
+ ///     </para>
+ /// </summary>
+ /// <param name="displayID"> the instance of the display to query. </param>
+ /// <returns> the D3D9 adapter index on success or -1 on failure; call <see cref="GetError"/> for more information. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDirect3D9AdapterIndex"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial int GetDirect3D9AdapterIndex(uint displayID);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);</code>
-    /// <summary>
-    ///     <para> Get the DXGI Adapter and Output indices for the specified display. </para>
-    ///     <para>
-    ///         The DXGI Adapter and Output indices can be passed to <c> EnumAdapters </c> and <c> EnumOutputs </c> respectively
-    ///         to get the objects required to create a DX10 or DX11 device and swap chain.
-    ///     </para>
-    /// </summary>
-    /// <param name="displayID"> the instance of the display to query. </param>
-    /// <param name="adapterIndex"> a pointer to be filled in with the adapter index. </param>
-    /// <param name="outputIndex"> a pointer to be filled in with the output index. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDXGIOutputInfo"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);</code>
+ /// <summary>
+ ///     <para> Get the DXGI Adapter and Output indices for the specified display. </para>
+ ///     <para>
+ ///         The DXGI Adapter and Output indices can be passed to <c> EnumAdapters </c> and <c> EnumOutputs </c> respectively
+ ///         to get the objects required to create a DX10 or DX11 device and swap chain.
+ ///     </para>
+ /// </summary>
+ /// <param name="displayID"> the instance of the display to query. </param>
+ /// <param name="adapterIndex"> a pointer to be filled in with the adapter index. </param>
+ /// <param name="outputIndex"> a pointer to be filled in with the output index. </param>
+ /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDXGIOutputInfo"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool GetDXGIOutputInfo(uint displayID, out int adapterIndex, out int outputIndex);
 
-    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);</code>
-    /// <summary>
-    ///     <para> Set a callback for every X11 event. </para>
-    ///     <para>
-    ///         The callback may modify the event, and should return true if the event should continue to be processed, or false
-    ///         to prevent further processing.
-    ///     </para>
-    /// </summary>
-    /// <param name="callback"> the <see cref="X11EventHook"/> function to call. </param>
-    /// <param name="userdata"> a pointer to pass to every iteration of <c> callback </c>. </param>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetX11EventHook"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);</code>
+ /// <summary>
+ ///     <para> Set a callback for every X11 event. </para>
+ ///     <para>
+ ///         The callback may modify the event, and should return true if the event should continue to be processed, or false
+ ///         to prevent further processing.
+ ///     </para>
+ /// </summary>
+ /// <param name="callback"> the <see cref="X11EventHook"/> function to call. </param>
+ /// <param name="userdata"> a pointer to pass to every iteration of <c> callback </c>. </param>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetX11EventHook"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void SetX11EventHook(X11EventHook callback, nint userdata);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);</code>
-    /// <summary>
-    ///     <para> Sets the UNIX nice value for a thread. </para>
-    ///     <para> This uses setpriority() if possible, and RealtimeKit if available. </para>
-    /// </summary>
-    /// <param name="threadID"> the Unix thread ID to change priority of. </param>
-    /// <param name="priority"> the new, Unix-specific, priority value. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetLinuxThreadPriority"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);</code>
+ /// <summary>
+ ///     <para> Sets the UNIX nice value for a thread. </para>
+ ///     <para> This uses setpriority() if possible, and RealtimeKit if available. </para>
+ /// </summary>
+ /// <param name="threadID"> the Unix thread ID to change priority of. </param>
+ /// <param name="priority"> the new, Unix-specific, priority value. </param>
+ /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetLinuxThreadPriority"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetLinuxThreadPriority(long threadID, int priority);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);</code>
-    /// <summary>
-    ///     <para> Sets the priority (not nice level) and scheduling policy for a thread. </para>
-    ///     <para> This uses setpriority() if possible, and RealtimeKit if available. </para>
-    /// </summary>
-    /// <param name="threadID"> the Unix thread ID to change priority of. </param>
-    /// <param name="priority"> the new <see cref="ThreadPriority"/> value. </param>
-    /// <param name="schedPolicy"> the new scheduling policy (SCHED_FIFO, SCHED_RR, SCHED_OTHER, etc...). </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetLinuxThreadPriorityAndPolicy"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);</code>
+ /// <summary>
+ ///     <para> Sets the priority (not nice level) and scheduling policy for a thread. </para>
+ ///     <para> This uses setpriority() if possible, and RealtimeKit if available. </para>
+ /// </summary>
+ /// <param name="threadID"> the Unix thread ID to change priority of. </param>
+ /// <param name="priority"> the new <see cref="ThreadPriority"/> value. </param>
+ /// <param name="schedPolicy"> the new scheduling policy (SCHED_FIFO, SCHED_RR, SCHED_OTHER, etc...). </param>
+ /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetLinuxThreadPriorityAndPolicy"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetLinuxThreadPriorityAndPolicy(long threadID, int priority, int schedPolicy);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);</code>
-    /// <summary>
-    ///     <para> Use this function to set the animation callback on Apple iOS. </para>
-    ///     <para> The function prototype for <c> callback </c> is: </para>
-    ///     <para>
-    ///         <code>void callback(void *callbackParam);</code>
-    ///     </para>
-    ///     <para>
-    ///         Where its parameter, <c> callbackParam </c>, is what was passed as <c> callbackParam </c> to
-    ///         <see cref="SetiOSAnimationCallback"/>.
-    ///     </para>
-    ///     <para> This function is only available on Apple iOS. </para>
-    ///     <para> For more information see: </para> <para> https://wiki.libsdl.org/SDL3/README/ios </para>
-    ///     <para>
-    ///         Note that if you use the "main callbacks" instead of a standard C <c> main </c> function, you don't have to use
-    ///         this API, as SDL will manage this for you.
-    ///     </para>
-    ///     <para> Details on main callbacks are here: </para>
-    ///     <para> https://wiki.libsdl.org/SDL3/README/main-functions </para>
-    /// </summary>
-    /// <param name="window"> the window for which the animation callback should be set. </param>
-    /// <param name="interval"> the number of frames after which <b> callback </b> will be called. </param>
-    /// <param name="callback"> the function to call for every frame. </param>
-    /// <param name="callbackParam"> a pointer that is passed to <c> callback </c>. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="SetiOSEventPump"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetiOSAnimationCallback"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);</code>
+ /// <summary>
+ ///     <para> Use this function to set the animation callback on Apple iOS. </para>
+ ///     <para> The function prototype for <c> callback </c> is: </para>
+ ///     <para>
+ ///         <code>void callback(void *callbackParam);</code>
+ ///     </para>
+ ///     <para>
+ ///         Where its parameter, <c> callbackParam </c>, is what was passed as <c> callbackParam </c> to
+ ///         <see cref="SetiOSAnimationCallback"/>.
+ ///     </para>
+ ///     <para> This function is only available on Apple iOS. </para>
+ ///     <para> For more information see: </para> <para> https://wiki.libsdl.org/SDL3/README/ios </para>
+ ///     <para>
+ ///         Note that if you use the "main callbacks" instead of a standard C <c> main </c> function, you don't have to use
+ ///         this API, as SDL will manage this for you.
+ ///     </para>
+ ///     <para> Details on main callbacks are here: </para>
+ ///     <para> https://wiki.libsdl.org/SDL3/README/main-functions </para>
+ /// </summary>
+ /// <param name="window"> the window for which the animation callback should be set. </param>
+ /// <param name="interval"> the number of frames after which <b> callback </b> will be called. </param>
+ /// <param name="callback"> the function to call for every frame. </param>
+ /// <param name="callbackParam"> a pointer that is passed to <c> callback </c>. </param>
+ /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ /// <seealso cref="SetiOSEventPump"/>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetiOSAnimationCallback"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetiOSAnimationCallback(nint window,
         int interval,
         IOSAnimationCallback callback,
         nint callbackParam);
 
-    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);</code>
-    /// <summary>
-    ///     <para> Use this function to enable or disable the SDL event pump on Apple iOS. </para>
-    ///     <para> This function is only available on Apple iOS. </para>
-    /// </summary>
-    /// <param name="enabled"> </param>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetiOSEventPump"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);</code>
+ /// <summary>
+ ///     <para> Use this function to enable or disable the SDL event pump on Apple iOS. </para>
+ ///     <para> This function is only available on Apple iOS. </para>
+ /// </summary>
+ /// <param name="enabled"> </param>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetiOSEventPump"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void SetiOSEventPump([MarshalAs(UnmanagedType.I1)] bool enabled);
 
-    /// <code>extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);</code>
-    /// <summary>
-    ///     <para> Get the Android Java Native Interface Environment of the current thread. </para>
-    ///     <para>
-    ///         This is the JNIEnv one needs to access the Java virtual machine from native code, and is needed for many Android
-    ///         APIs to be usable from C.
-    ///     </para>
-    ///     <para>
-    ///         The prototype of the function in SDL's code actually declare a void* return type, even if the implementation
-    ///         returns a pointer to a JNIEnv. The rationale being that the SDL headers can avoid including jni.h.
-    ///     </para>
-    /// </summary>
-    /// <returns>
-    ///     a pointer to Java native interface object (JNIEnv) to which the current thread is attached, or <c> null </c> on
-    ///     failure; call <see cref="GetError"/> for more information.
-    /// </returns>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="GetAndroidActivity"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidJNIEnv"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);</code>
+ /// <summary>
+ ///     <para> Get the Android Java Native Interface Environment of the current thread. </para>
+ ///     <para>
+ ///         This is the JNIEnv one needs to access the Java virtual machine from native code, and is needed for many Android
+ ///         APIs to be usable from C.
+ ///     </para>
+ ///     <para>
+ ///         The prototype of the function in SDL's code actually declare a void* return type, even if the implementation
+ ///         returns a pointer to a JNIEnv. The rationale being that the SDL headers can avoid including jni.h.
+ ///     </para>
+ /// </summary>
+ /// <returns>
+ ///     a pointer to Java native interface object (JNIEnv) to which the current thread is attached, or <c> null </c> on
+ ///     failure; call <see cref="GetError"/> for more information.
+ /// </returns>
+ /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ /// <seealso cref="GetAndroidActivity"/>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidJNIEnv"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial nint GetAndroidJNIEnv();
 
-    /// <code>extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);</code>
-    /// <summary>
-    ///     <para> Retrieve the Java instance of the Android activity class. </para>
-    ///     <para>
-    ///         The prototype of the function in SDL's code actually declares a void* return type, even if the implementation
-    ///         returns a jobject. The rationale being that the SDL headers can avoid including jni.h.
-    ///     </para>
-    ///     <para>
-    ///         The jobject returned by the function is a local reference and must be released by the caller. See the
-    ///         PushLocalFrame() and PopLocalFrame() or DeleteLocalRef() functions of the Java native interface:
-    ///     </para>
-    ///     <para> https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html </para>
-    /// </summary>
-    /// <returns>
-    ///     the jobject representing the instance of the Activity class of the Android application, or <c> null </c> on
-    ///     failure; call <see cref="GetError"/> for more information.
-    /// </returns>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="GetAndroidJNIEnv"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidActivity"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);</code>
+ /// <summary>
+ ///     <para> Retrieve the Java instance of the Android activity class. </para>
+ ///     <para>
+ ///         The prototype of the function in SDL's code actually declares a void* return type, even if the implementation
+ ///         returns a jobject. The rationale being that the SDL headers can avoid including jni.h.
+ ///     </para>
+ ///     <para>
+ ///         The jobject returned by the function is a local reference and must be released by the caller. See the
+ ///         PushLocalFrame() and PopLocalFrame() or DeleteLocalRef() functions of the Java native interface:
+ ///     </para>
+ ///     <para> https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html </para>
+ /// </summary>
+ /// <returns>
+ ///     the jobject representing the instance of the Activity class of the Android application, or <c> null </c> on
+ ///     failure; call <see cref="GetError"/> for more information.
+ /// </returns>
+ /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ /// <seealso cref="GetAndroidJNIEnv"/>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidActivity"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial nint GetAndroidActivity();
 
-    /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);</code>
-    /// <summary>
-    ///     <para> Query Android API level of the current device. </para>
-    ///     <list type="bullet">
-    ///         <item> API level 35: Android 15 (VANILLA_ICE_CREAM) </item>
-    ///         <item> API level 34: Android 14 (UPSIDE_DOWN_CAKE) </item> <item> API level 33: Android 13 (TIRAMISU) </item>
-    ///         <item> API level 32: Android 12L (S_V2) </item> <item> API level 31: Android 12 (S) </item>
-    ///         <item> API level 30: Android 11 (R) </item> <item> API level 29: Android 10 (Q) </item>
-    ///         <item> API level 28: Android 9 (P) </item> <item> API level 27: Android 8.1 (O_MR1) </item>
-    ///         <item> API level 26: Android 8.0 (O) </item> <item> API level 25: Android 7.1 (N_MR1) </item>
-    ///         <item> API level 24: Android 7.0 (N) </item> <item> API level 23: Android 6.0 (M) </item>
-    ///         <item> API level 22: Android 5.1 (LOLLIPOP_MR1) </item> <item> API level 21: Android 5.0 (LOLLIPOP, L) </item>
-    ///         <item> API level 20: Android 4.4W (KITKAT_WATCH) </item> <item> API level 19: Android 4.4 (KITKAT) </item>
-    ///         <item> API level 18: Android 4.3 (JELLY_BEAN_MR2) </item> <item> API level 17: Android 4.2 (JELLY_BEAN_MR1) </item>
-    ///         <item> API level 16: Android 4.1 (JELLY_BEAN) </item>
-    ///         <item> API level 15: Android 4.0.3 (ICE_CREAM_SANDWICH_MR1) </item>
-    ///         <item> API level 14: Android 4.0 (ICE_CREAM_SANDWICH) </item>
-    ///         <item> API level 13: Android 3.2 (HONEYCOMB_MR2) </item> <item> API level 12: Android 3.1 (HONEYCOMB_MR1) </item>
-    ///         <item> API level 11: Android 3.0 (HONEYCOMB) </item> <item> API level 10: Android 2.3.3 (GINGERBREAD_MR1) </item>
-    ///     </list>
-    /// </summary>
-    /// <returns> the Android API level. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidSDKVersion"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);</code>
+ /// <summary>
+ ///     <para> Query Android API level of the current device. </para>
+ ///     <list type="bullet">
+ ///         <item> API level 35: Android 15 (VANILLA_ICE_CREAM) </item>
+ ///         <item> API level 34: Android 14 (UPSIDE_DOWN_CAKE) </item> <item> API level 33: Android 13 (TIRAMISU) </item>
+ ///         <item> API level 32: Android 12L (S_V2) </item> <item> API level 31: Android 12 (S) </item>
+ ///         <item> API level 30: Android 11 (R) </item> <item> API level 29: Android 10 (Q) </item>
+ ///         <item> API level 28: Android 9 (P) </item> <item> API level 27: Android 8.1 (O_MR1) </item>
+ ///         <item> API level 26: Android 8.0 (O) </item> <item> API level 25: Android 7.1 (N_MR1) </item>
+ ///         <item> API level 24: Android 7.0 (N) </item> <item> API level 23: Android 6.0 (M) </item>
+ ///         <item> API level 22: Android 5.1 (LOLLIPOP_MR1) </item> <item> API level 21: Android 5.0 (LOLLIPOP, L) </item>
+ ///         <item> API level 20: Android 4.4W (KITKAT_WATCH) </item> <item> API level 19: Android 4.4 (KITKAT) </item>
+ ///         <item> API level 18: Android 4.3 (JELLY_BEAN_MR2) </item> <item> API level 17: Android 4.2 (JELLY_BEAN_MR1) </item>
+ ///         <item> API level 16: Android 4.1 (JELLY_BEAN) </item>
+ ///         <item> API level 15: Android 4.0.3 (ICE_CREAM_SANDWICH_MR1) </item>
+ ///         <item> API level 14: Android 4.0 (ICE_CREAM_SANDWICH) </item>
+ ///         <item> API level 13: Android 3.2 (HONEYCOMB_MR2) </item> <item> API level 12: Android 3.1 (HONEYCOMB_MR1) </item>
+ ///         <item> API level 11: Android 3.0 (HONEYCOMB) </item> <item> API level 10: Android 2.3.3 (GINGERBREAD_MR1) </item>
+ ///     </list>
+ /// </summary>
+ /// <returns> the Android API level. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidSDKVersion"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial int GetAndroidSDKVersion();
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);</code>
-    /// <summary> Query if the application is running on a Chromebook. </summary>
-    /// <returns> <c> true </c> if this is a Chromebook, <c> false </c> otherwise. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsChromebook"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);</code>
+ /// <summary> Query if the application is running on a Chromebook. </summary>
+ /// <returns> <c> true </c> if this is a Chromebook, <c> false </c> otherwise. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsChromebook"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
+  MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool IsChromebook();
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);</code>
-    /// <summary> Query if the application is running on a Samsung DeX docking station. </summary>
-    /// <returns> <c> true </c> if this is a DeX docking station, <c> false </c> otherwise. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsDeXMode"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);</code>
+ /// <summary> Query if the application is running on a Samsung DeX docking station. </summary>
+ /// <returns> <c> true </c> if this is a DeX docking station, <c> false </c> otherwise. </returns>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsDeXMode"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
+  MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool IsDeXMode();
 
-    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);</code>
-    /// <summary> Trigger the Android system back button behavior. </summary>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SendAndroidBackButton"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+ /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);</code>
+ /// <summary> Trigger the Android system back button behavior. </summary>
+ /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+ /// <since> This function is available since SDL 3.2.0 </since>
+ [LibraryImport(SDLLibrary, EntryPoint = "SDL_SendAndroidBackButton"),
+  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void SendAndroidBackButton();
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAndroidInternalStoragePath"),

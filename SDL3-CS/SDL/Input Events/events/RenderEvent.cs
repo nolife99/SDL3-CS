@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,36 +20,32 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Renderer event structure (event.render.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.1.7.</since>
+    /// <summary> Renderer event structure (event.render.*) </summary>
+    /// <since> This struct is available since SDL 3.1.7. </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct RenderEvent
     {
         /// <summary>
-        /// <see cref="EventType.RenderTargetsReset"/>, <see cref="EventType.RenderDeviceReset"/>, <see cref="EventType.RenderDeviceLost"/>
+        ///     <see cref="EventType.RenderTargetsReset"/>, <see cref="EventType.RenderDeviceReset"/>,
+        ///     <see cref="EventType.RenderDeviceLost"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The window containing the renderer in question.
-        /// </summary>
-        public UInt32 WindowID;
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The window containing the renderer in question. </summary>
+        public uint WindowID;
     }
 }

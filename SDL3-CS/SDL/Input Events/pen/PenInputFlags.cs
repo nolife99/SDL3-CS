@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,52 +25,37 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Pen input flags, as reported by various pen events' <c>pen_state</c> field.
-    /// </summary>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <summary> Pen input flags, as reported by various pen events' <c> pen_state </c> field. </summary>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     [Flags]
     public enum PenInputFlags : uint
     {
-        /// <summary>
-        /// pen is pressed down
-        /// </summary>
+        /// <summary> pen is pressed down </summary>
         Down = 1u << 0,
-        
-        /// <summary>
-        /// button 1 is pressed
-        /// </summary>
+
+        /// <summary> button 1 is pressed </summary>
         Button1 = 1u << 1,
-        
-        /// <summary>
-        /// button 2 is pressed
-        /// </summary>
+
+        /// <summary> button 2 is pressed </summary>
         Button2 = 1u << 2,
-        
-        /// <summary>
-        /// button 3 is pressed
-        /// </summary>
+
+        /// <summary> button 3 is pressed </summary>
         Button3 = 1u << 3,
-        
-        /// <summary>
-        /// button 4 is pressed
-        /// </summary>
+
+        /// <summary> button 4 is pressed </summary>
         Button4 = 1u << 4,
-        
-        /// <summary>
-        /// button 5 is pressed
-        /// </summary>
+
+        /// <summary> button 5 is pressed </summary>
         Button5 = 1u << 5,
-        
-        /// <summary>
-        /// eraser tip is used
-        /// </summary>
+
+        /// <summary> eraser tip is used </summary>
         EraserTip = 1u << 30
     }
 }

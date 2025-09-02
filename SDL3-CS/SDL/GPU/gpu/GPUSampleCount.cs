@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,33 +28,24 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Specifies the sample count of a texture.</para>
-    /// <para>Used in multisampling. Note that this value only applies when the texture
-    /// is used as a render target.</para>
+    ///     <para> Specifies the sample count of a texture. </para>
+    ///     <para> Used in multisampling. Note that this value only applies when the texture is used as a render target. </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUTexture"/>
     /// <seealso cref="GPUTextureSupportsSampleCount"/>
     public enum GPUSampleCount
     {
-        /// <summary>
-        /// No multisampling.
-        /// </summary>
+        /// <summary> No multisampling. </summary>
         SampleCount1,
-        
-        /// <summary>
-        /// MSAA 2x
-        /// </summary>
+
+        /// <summary> MSAA 2x </summary>
         SampleCount2,
-        
-        /// <summary>
-        /// MSAA 4x
-        /// </summary>
+
+        /// <summary> MSAA 4x </summary>
         SampleCount4,
-        
-        /// <summary>
-        /// MSAA 8x
-        /// </summary>
+
+        /// <summary> MSAA 8x </summary>
         SampleCount8
     }
 }

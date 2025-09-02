@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,34 +28,28 @@ namespace SDL3;
 public static partial class TTF
 {
     /// <summary>
-    /// Direction flags
-    /// <para>The values here are chosen to match
-    /// [hb_direction_t](https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-direction-t)</para>
+    ///     Direction flags
+    ///     <para>
+    ///         The values here are chosen to match
+    ///         [hb_direction_t](https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-direction-t)
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL_ttf 3.0.0.</since>
+    /// <since> This enum is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="SetFontDirection"/>
     public enum Direction
     {
         Invalid = 0,
-        
-        /// <summary>
-        /// Left to Right
-        /// </summary>
+
+        /// <summary> Left to Right </summary>
         LTR = 4,
-        
-        /// <summary>
-        /// Right to Left
-        /// </summary>
+
+        /// <summary> Right to Left </summary>
         RTL,
-        
-        /// <summary>
-        /// Top to Bottom
-        /// </summary>
+
+        /// <summary> Top to Bottom </summary>
         TTB,
-        
-        /// <summary>
-        /// Bottom to Top
-        /// </summary>
+
+        /// <summary> Bottom to Top </summary>
         BTT
     }
 }

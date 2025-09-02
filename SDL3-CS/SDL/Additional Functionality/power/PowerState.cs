@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,40 +28,28 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>The basic state for the system's power supply.</para>
-    /// <para>These are results returned by <see cref="GetPowerInfo"/>.</para>
+    ///     <para> The basic state for the system's power supply. </para>
+    ///     <para> These are results returned by <see cref="GetPowerInfo"/>. </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum PowerState
     {
-        /// <summary>
-        /// error determining power status
-        /// </summary>
+        /// <summary> error determining power status </summary>
         Error = -1,
-        
-        /// <summary>
-        /// cannot determine power status
-        /// </summary>
+
+        /// <summary> cannot determine power status </summary>
         Unknown,
-        
-        /// <summary>
-        /// Not plugged in, running on the battery
-        /// </summary>
+
+        /// <summary> Not plugged in, running on the battery </summary>
         OnBattery,
-        
-        /// <summary>
-        /// Plugged in, no battery available
-        /// </summary>
+
+        /// <summary> Plugged in, no battery available </summary>
         NoBattery,
-        
-        /// <summary>
-        /// Plugged in, charging battery
-        /// </summary>
+
+        /// <summary> Plugged in, charging battery </summary>
         Charging,
-        
-        /// <summary>
-        /// Plugged in, battery charged
-        /// </summary>
+
+        /// <summary> Plugged in, battery charged </summary>
         Charged
     }
 }

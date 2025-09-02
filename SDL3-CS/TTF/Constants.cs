@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,59 +20,40 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class TTF
 {
-    /// <summary>
-    /// Thin (100) named font weight value
-    /// </summary>
+    /// <summary> Thin (100) named font weight value </summary>
     public const int FontWeightThin = 100;
-    
-    /// <summary>
-    /// ExtraLight (200) named font weight value
-    /// </summary>
+
+    /// <summary> ExtraLight (200) named font weight value </summary>
     public const int FontWeightExtraLight = 200;
 
-    /// <summary>
-    /// Light (300) named font weight value
-    /// </summary>
+    /// <summary> Light (300) named font weight value </summary>
     public const int FontWeightLight = 300;
 
-    /// <summary>
-    /// Normal (400) named font weight value
-    /// </summary>
+    /// <summary> Normal (400) named font weight value </summary>
     public const int FontWeightNormal = 400;
 
-    /// <summary>
-    /// Medium (500) named font weight value
-    /// </summary>
+    /// <summary> Medium (500) named font weight value </summary>
     public const int FontWeightMedium = 500;
 
-    /// <summary>
-    /// SemiBold (600) named font weight value
-    /// </summary>
+    /// <summary> SemiBold (600) named font weight value </summary>
     public const int FontWeightSemiBold = 600;
 
-    /// <summary>
-    /// Bold (700) named font weight value
-    /// </summary>
+    /// <summary> Bold (700) named font weight value </summary>
     public const int FontWeightBold = 700;
 
-    /// <summary>
-    /// ExtraBold (800) named font weight value
-    /// </summary>
+    /// <summary> ExtraBold (800) named font weight value </summary>
     public const int FontWeightExtraBold = 800;
 
-    /// <summary>
-    /// Black (900) named font weight value
-    /// </summary>
+    /// <summary> Black (900) named font weight value </summary>
     public const int FontWeightBlack = 900;
 
-    /// <summary>
-    /// ExtraBlack (950) named font weight value
-    /// </summary>
+    /// <summary> ExtraBlack (950) named font weight value </summary>
     public const int FontWeightExtraBlack = 950;
 }

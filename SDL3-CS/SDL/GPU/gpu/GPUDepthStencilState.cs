@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,67 +20,49 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the parameters of the graphics pipeline depth
-    /// stencil state.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the parameters of the graphics pipeline depth stencil state. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUGraphicsPipelineCreateInfo"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUDepthStencilState
     {
-        /// <summary>
-        /// The comparison operator used for depth testing.
-        /// </summary>
+        /// <summary> The comparison operator used for depth testing. </summary>
         public GPUCompareOp CompareOp;
-        
-        /// <summary>
-        /// The stencil op state for back-facing triangles.
-        /// </summary>
+
+        /// <summary> The stencil op state for back-facing triangles. </summary>
         public GPUStencilOpState BackStencilState;
-        
-        /// <summary>
-        /// The stencil op state for front-facing triangles.
-        /// </summary>
+
+        /// <summary> The stencil op state for front-facing triangles. </summary>
         public GPUStencilOpState FrontStencilState;
-        
-        /// <summary>
-        /// Selects the bits of the stencil values participating in the stencil test.
-        /// </summary>
-        public Byte CompareMask;
-        
-        /// <summary>
-        /// Selects the bits of the stencil values updated by the stencil test.
-        /// </summary>
-        public Byte WriteMask;
-        
-        /// <summary>
-        /// true enables the depth test.
-        /// </summary>
-        public Byte EnableDepthTest;
-        
-        /// <summary>
-        /// true enables depth writes. Depth writes are always disabled when enable_depth_test is false.
-        /// </summary>
-        public Byte EnableDepthWrite;
-        
-        /// <summary>
-        /// true enables the stencil test.
-        /// </summary>
-        public Byte EnableStencilTest;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
-        
-        private Byte _padding3;
+
+        /// <summary> Selects the bits of the stencil values participating in the stencil test. </summary>
+        public byte CompareMask;
+
+        /// <summary> Selects the bits of the stencil values updated by the stencil test. </summary>
+        public byte WriteMask;
+
+        /// <summary> true enables the depth test. </summary>
+        public byte EnableDepthTest;
+
+        /// <summary> true enables depth writes. Depth writes are always disabled when enable_depth_test is false. </summary>
+        public byte EnableDepthWrite;
+
+        /// <summary> true enables the stencil test. </summary>
+        public byte EnableStencilTest;
+
+        byte _padding1;
+
+        byte _padding2;
+
+        byte _padding3;
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,33 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying parameters in a buffer binding call.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying parameters in a buffer binding call. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/>
     /// <seealso cref="BindGPUIndexBuffer"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUBufferBinding
     {
         /// <summary>
-        /// The buffer to bind. Must have been created with <see cref="GPUBufferUsageFlags.Vertex"/> for
-        /// <see cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/>, or
-        /// <see cref="GPUBufferUsageFlags.Index"/> for <see cref="BindGPUIndexBuffer"/>.
+        ///     The buffer to bind. Must have been created with <see cref="GPUBufferUsageFlags.Vertex"/> for
+        ///     <see cref="BindGPUVertexBuffers(nint, uint, GPUBufferBinding[], uint)"/>, or <see cref="GPUBufferUsageFlags.Index"/> for
+        ///     <see cref="BindGPUIndexBuffer"/>.
         /// </summary>
         public IntPtr Buffer;
-        
-        /// <summary>
-        /// The starting byte of the data to bind in the buffer.
-        /// </summary>
-        public UInt32 Offset;
+
+        /// <summary> The starting byte of the data to bind in the buffer. </summary>
+        public uint Offset;
     }
 }

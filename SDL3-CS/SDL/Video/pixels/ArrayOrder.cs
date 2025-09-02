@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,24 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Array component order, low byte -> high byte.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Array component order, low byte -> high byte. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum ArrayOrder
     {
-        None,
-        RGB,
-        RGBA,
-        ARGB,
-        BGR,
-        BGRA,
-        ABGR
+        None, RGB, RGBA, ARGB, BGR, BGRA, ABGR
     }
 }

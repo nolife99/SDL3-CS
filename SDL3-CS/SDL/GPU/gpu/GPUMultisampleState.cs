@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,45 +20,35 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the parameters of the graphics pipeline multisample
-    /// state.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the parameters of the graphics pipeline multisample state. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUGraphicsPipelineCreateInfo"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUMultisampleState
     {
-        /// <summary>
-        /// The number of samples to be used in rasterization.
-        /// </summary>
+        /// <summary> The number of samples to be used in rasterization. </summary>
         public GPUSampleCount SampleCount;
-        
-        /// <summary>
-        /// eserved for future use. Must be set to 0.
-        /// </summary>
-        public UInt32 SampleMask;
-        
-        /// <summary>
-        /// Reserved for future use. Must be set to false.
-        /// </summary>
+
+        /// <summary> eserved for future use. Must be set to 0. </summary>
+        public uint SampleMask;
+
+        /// <summary> Reserved for future use. Must be set to false. </summary>
         public byte EnableMask;
-        
-        /// <summary>
-        /// true enables the alpha-to-coverage feature.
-        /// </summary>
-        private byte EnableAlphaToCoverage;
-        
-        private Byte _padding2;
-        
-        private Byte _padding3;
+
+        /// <summary> true enables the alpha-to-coverage feature. </summary>
+        byte EnableAlphaToCoverage;
+
+        byte _padding2;
+
+        byte _padding3;
     }
 }

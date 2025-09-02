@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,58 +28,41 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Text input type.</para>
-    /// <para>These are the valid values for <see cref="Props.TextInputTypeNumber"/>. Not every
-    /// value is valid on every platform, but where a value isn't supported, a
-    /// reasonable fallback will be used.</para>
+    ///     <para> Text input type. </para>
+    ///     <para>
+    ///         These are the valid values for <see cref="Props.TextInputTypeNumber"/>. Not every value is valid on every
+    ///         platform, but where a value isn't supported, a reasonable fallback will be used.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="StartTextInputWithProperties"/>
     public enum TextInputType
     {
-        /// <summary>
-        /// The input is text
-        /// </summary>
+        /// <summary> The input is text </summary>
         Text,
-        
-        /// <summary>
-        /// The input is a person's name
-        /// </summary>
+
+        /// <summary> The input is a person's name </summary>
         TextName,
-        
-        /// <summary>
-        /// The input is an e-mail address
-        /// </summary>
+
+        /// <summary> The input is an e-mail address </summary>
         TextEmail,
-        
-        /// <summary>
-        /// The input is a username
-        /// </summary>
+
+        /// <summary> The input is a username </summary>
         TextUsername,
-        
-        /// <summary>
-        /// The input is a secure password that is hidden
-        /// </summary>
+
+        /// <summary> The input is a secure password that is hidden </summary>
         TextPasswordHidden,
-        
-        /// <summary>
-        /// The input is a secure password that is visible
-        /// </summary>
+
+        /// <summary> The input is a secure password that is visible </summary>
         TextPasswordVisible,
-        
-        /// <summary>
-        /// The input is a number
-        /// </summary>
+
+        /// <summary> The input is a number </summary>
         Number,
-        
-        /// <summary>
-        /// The input is a secure PIN that is hidden
-        /// </summary>
+
+        /// <summary> The input is a secure PIN that is hidden </summary>
         NumberPasswordHidden,
-        
-        /// <summary>
-        /// The input is a secure PIN that is visible
-        /// </summary>
-        NumberPasswordVisible 
+
+        /// <summary> The input is a secure PIN that is visible </summary>
+        NumberPasswordVisible
     }
 }

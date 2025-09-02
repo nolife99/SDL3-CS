@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,50 +20,40 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Gamepad button event structure (event.gbutton.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Gamepad button event structure (event.gbutton.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct GamepadButtonEvent
     {
-        /// <summary>
-        /// <see cref="EventType.GamepadButtonDown"/> or <see cref="EventType.GamepadButtonUp"/>
-        /// </summary>
+        /// <summary> <see cref="EventType.GamepadButtonDown"/> or <see cref="EventType.GamepadButtonUp"/> </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The joystick instance id
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// The gamepad button (<see cref="GamepadButton"/>)
-        /// </summary>
-        public Byte Button;
 
-        /// <summary>
-        /// true if the button is pressed
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)] public bool Down;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The joystick instance id </summary>
+        public uint Which;
+
+        /// <summary> The gamepad button (<see cref="GamepadButton"/>) </summary>
+        public byte Button;
+
+        /// <summary> true if the button is pressed </summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public bool Down;
+
+        byte _padding1;
+
+        byte _padding2;
     }
 }

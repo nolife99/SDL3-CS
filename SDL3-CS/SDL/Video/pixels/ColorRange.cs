@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,22 +28,18 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Colorspace color range, as described by</para>
-    /// <para>https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en</para>
+    ///     <para> Colorspace color range, as described by </para>
+    ///     <para> https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum ColorRange
     {
         Unknown = 0,
-        
-        /// <summary>
-        /// Narrow range, e.g. 16-235 for 8-bit RGB and luma, and 16-240 for 8-bit chroma
-        /// </summary>
+
+        /// <summary> Narrow range, e.g. 16-235 for 8-bit RGB and luma, and 16-240 for 8-bit chroma </summary>
         Limited = 1,
-        
-        /// <summary>
-        /// Full range, e.g. 0-255 for 8-bit RGB and luma, and 1-255 for 8-bit chroma
-        /// </summary>
+
+        /// <summary> Full range, e.g. 0-255 for 8-bit RGB and luma, and 1-255 for 8-bit chroma </summary>
         Full = 2
     }
 }

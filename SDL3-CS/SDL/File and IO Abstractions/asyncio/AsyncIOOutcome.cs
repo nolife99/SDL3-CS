@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,59 +20,42 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Information about a completed asynchronous I/O request.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Information about a completed asynchronous I/O request. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct AsyncIOOutcome
     {
-        /// <summary>
-        /// what generated this task. This pointer will be invalid if it was closed!
-        /// </summary>
+        /// <summary> what generated this task. This pointer will be invalid if it was closed! </summary>
         public IntPtr ASyncIO;
-        
-        /// <summary>
-        /// What sort of task was this? Read, write, etc?
-        /// </summary>
+
+        /// <summary> What sort of task was this? Read, write, etc? </summary>
         public AsyncIOTaskType Type;
-        
-        /// <summary>
-        /// the result of the work (success, failure, cancellation).
-        /// </summary>
+
+        /// <summary> the result of the work (success, failure, cancellation). </summary>
         public AsyncIOResult Result;
-        
-        /// <summary>
-        /// buffer where data was read/written.
-        /// </summary>
+
+        /// <summary> buffer where data was read/written. </summary>
         public IntPtr Buffer;
-        
-        /// <summary>
-        /// offset in the SDL_AsyncIO where data was read/written.
-        /// </summary>
-        public UInt64 Offset;
-        
-        /// <summary>
-        /// number of bytes the task was to read/write.
-        /// </summary>
-        public UInt64 BytesRequested;
-        
-        /// <summary>
-        /// actual number of bytes that were read/written.
-        /// </summary>
-        public UInt64 BytesTransferred;
-        
-        /// <summary>
-        /// pointer provided by the app when starting the task
-        /// </summary>
+
+        /// <summary> offset in the SDL_AsyncIO where data was read/written. </summary>
+        public ulong Offset;
+
+        /// <summary> number of bytes the task was to read/write. </summary>
+        public ulong BytesRequested;
+
+        /// <summary> actual number of bytes that were read/written. </summary>
+        public ulong BytesTransferred;
+
+        /// <summary> pointer provided by the app when starting the task </summary>
         public IntPtr Userdata;
     }
 }

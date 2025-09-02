@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,32 +20,29 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying a location in a transfer buffer.</para>
-    /// <para>Used when transferring buffer data to or from a transfer buffer.</para>
+    ///     <para> A structure specifying a location in a transfer buffer. </para>
+    ///     <para> Used when transferring buffer data to or from a transfer buffer. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="UploadToGPUBuffer"/>
     /// <seealso cref="DownloadFromGPUBuffer"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUTransferBufferLocation
     {
-        /// <summary>
-        /// The transfer buffer used in the transfer operation.
-        /// </summary>
+        /// <summary> The transfer buffer used in the transfer operation. </summary>
         public IntPtr TransferBuffer;
 
-        /// <summary>
-        /// The starting byte of the buffer data in the transfer buffer.
-        /// </summary>
-        public UInt32 Offset;
+        /// <summary> The starting byte of the buffer data in the transfer buffer. </summary>
+        public uint Offset;
     }
 }

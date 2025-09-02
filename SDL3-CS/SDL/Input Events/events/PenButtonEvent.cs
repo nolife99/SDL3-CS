@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,68 +20,54 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Pressure-sensitive pen button event structure (event.pbutton.*)</para>
-    /// <para>This is for buttons on the pen itself that the user might click. The pen
-    /// itself pressing down to draw triggers a <see cref="EventType.PenDown"/> event instead.</para>
+    ///     <para> Pressure-sensitive pen button event structure (event.pbutton.*) </para>
+    ///     <para>
+    ///         This is for buttons on the pen itself that the user might click. The pen itself pressing down to draw triggers a
+    ///         <see cref="EventType.PenDown"/> event instead.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct PenButtonEvent
     {
-        /// <summary>
-        /// <see cref="EventType.PenButtonDown"/> or <see cref="EventType.PenButtonUp"/>
-        /// </summary>
+        /// <summary> <see cref="EventType.PenButtonDown"/> or <see cref="EventType.PenButtonUp"/> </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The window with pen focus, if any
-        /// </summary>
-        public UInt32 WindowID;
-        
-        /// <summary>
-        /// The pen instance id
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// Complete pen input state at time of event
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The window with pen focus, if any </summary>
+        public uint WindowID;
+
+        /// <summary> The pen instance id </summary>
+        public uint Which;
+
+        /// <summary> Complete pen input state at time of event </summary>
         public PenInputFlags PenState;
-        
-        /// <summary>
-        /// X coordinate, relative to window
-        /// </summary>
+
+        /// <summary> X coordinate, relative to window </summary>
         public float X;
-        
-        /// <summary>
-        /// Y coordinate, relative to window
-        /// </summary>
+
+        /// <summary> Y coordinate, relative to window </summary>
         public float Y;
 
-        /// <summary>
-        /// The pen button index (first button is 1).
-        /// </summary>
-        public Byte Button;
+        /// <summary> The pen button index (first button is 1). </summary>
+        public byte Button;
 
-        /// <summary>
-        /// true if the button is pressed
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)] public bool Down;
+        /// <summary> true if the button is pressed </summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public bool Down;
     }
 }

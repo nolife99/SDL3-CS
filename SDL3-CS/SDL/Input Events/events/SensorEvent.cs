@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,46 +20,37 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Sensor event structure (event.sensor.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Sensor event structure (event.sensor.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct SensorEvent
     {
         /// <summary>
-        /// <see cref="EventType.SensorUpdate"/>
+        ///     <see cref="EventType.SensorUpdate"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The instance ID of the sensor
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// Up to 6 values from the sensor - additional values can be queried using <see cref="GetSensorData"/>
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The instance ID of the sensor </summary>
+        public uint Which;
+
+        /// <summary> Up to 6 values from the sensor - additional values can be queried using <see cref="GetSensorData"/> </summary>
         public unsafe fixed float Data[6];
-        
-        /// <summary>
-        /// The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock
-        /// </summary>
-        public UInt64 SensorTimestamp;
+
+        /// <summary> The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock </summary>
+        public ulong SensorTimestamp;
     }
 }

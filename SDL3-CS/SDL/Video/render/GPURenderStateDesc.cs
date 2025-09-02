@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,61 +20,45 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// GPU render state description.
-    /// <para>This structure should be initialized using SDL_INIT_INTERFACE().</para>
+    ///     GPU render state description. <para> This structure should be initialized using SDL_INIT_INTERFACE(). </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.4.0.</since>
+    /// <since> This struct is available since SDL 3.4.0. </since>
     /// <seealso cref="CreateGPURenderState"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPURenderStateDesc
     {
-        /// <summary>
-        /// the version of this interface
-        /// </summary>
+        /// <summary> the version of this interface </summary>
         public uint Version;
-    
-        /// <summary>
-        /// The fragment shader to use when this render state is active 
-        /// </summary>
+
+        /// <summary> The fragment shader to use when this render state is active </summary>
         public IntPtr FragmentShader;
-    
-        /// <summary>
-        /// The number of additional fragment samplers to bind when this render state is active 
-        /// </summary>
+
+        /// <summary> The number of additional fragment samplers to bind when this render state is active </summary>
         public int NumSamplerBindings;
-        
-        /// <summary>
-        /// Additional fragment samplers to bind when this render state is active
-        /// </summary>
+
+        /// <summary> Additional fragment samplers to bind when this render state is active </summary>
         public IntPtr SamplerBindings;
-    
-        /// <summary>
-        /// The number of storage textures to bind when this render state is active
-        /// </summary>
+
+        /// <summary> The number of storage textures to bind when this render state is active </summary>
         public int NumStorageTextures;
-        
-        /// <summary>
-        /// The number of storage textures to bind when this render state is active
-        /// </summary>
+
+        /// <summary> The number of storage textures to bind when this render state is active </summary>
         public IntPtr StorageTextures;
-    
-        /// <summary>
-        /// The number of storage buffers to bind when this render state is active
-        /// </summary>
+
+        /// <summary> The number of storage buffers to bind when this render state is active </summary>
         public int NumStorageBuffers;
-    
-        /// <summary>
-        /// Storage buffers to bind when this render state is active
-        /// </summary>
+
+        /// <summary> Storage buffers to bind when this render state is active </summary>
         public IntPtr StorageBuffers;
     }
 }

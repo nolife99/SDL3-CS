@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,29 +20,31 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>The bits of this structure can be directly reinterpreted as a float-packed
-    /// color which uses the <see cref="PixelFormat.RGBA128Float"/> format</para>
+    ///     <para>
+    ///         The bits of this structure can be directly reinterpreted as a float-packed color which uses the
+    ///         <see cref="PixelFormat.RGBA128Float"/> format
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct FColor(float r, float g, float b, float a)
     {
         public float R = r;
-        
+
         public float G = g;
-        
+
         public float B = b;
-        
+
         public float A = a;
     }
 }
-

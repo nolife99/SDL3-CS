@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,53 +20,41 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>The details of an output format for a camera device.</para>
-    /// <para>Cameras often support multiple formats; each one will be encapsulated in
-    /// this struct.</para>
+    ///     <para> The details of an output format for a camera device. </para>
+    ///     <para> Cameras often support multiple formats; each one will be encapsulated in this struct. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GetCameraSupportedFormats"/>
     /// <seealso cref="GetCameraFormat"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct CameraSpec
     {
-        /// <summary>
-        /// Frame format
-        /// </summary>
+        /// <summary> Frame format </summary>
         public PixelFormat PixelFormat;
-        
-        /// <summary>
-        /// Frame colorspace
-        /// </summary>
+
+        /// <summary> Frame colorspace </summary>
         public Colorspace Colorspace;
-        
-        /// <summary>
-        /// Frame width
-        /// </summary>
+
+        /// <summary> Frame width </summary>
         public int Width;
-        
-        /// <summary>
-        /// Frame height
-        /// </summary>
+
+        /// <summary> Frame height </summary>
         public int Height;
-        
-        /// <summary>
-        /// Frame rate numerator ((num / denom) == FPS, (denom / num) == duration in seconds)
-        /// </summary>
-        public int FramerateNumerator;  // Frame rate numerator
-        
-        /// <summary>
-        /// Frame rate demoninator ((num / denom) == FPS, (denom / num) == duration in seconds)
-        /// </summary>
-        public int FramerateDenominator;// Frame rate denominator
+
+        /// <summary> Frame rate numerator ((num / denom) == FPS, (denom / num) == duration in seconds) </summary>
+        public int FramerateNumerator; // Frame rate numerator
+
+        /// <summary> Frame rate demoninator ((num / denom) == FPS, (denom / num) == duration in seconds) </summary>
+        public int FramerateDenominator; // Frame rate denominator
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,33 +20,25 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Specifies behavior of texture sampling when the coordinates exceed the 0-1
-    /// range.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Specifies behavior of texture sampling when the coordinates exceed the 0-1 range. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="CreateGPUSampler"/>
     public enum GPUSamplerAddressMode
     {
-        /// <summary>
-        /// Specifies that the coordinates will wrap around.
-        /// </summary>
+        /// <summary> Specifies that the coordinates will wrap around. </summary>
         Repeat,
-        
-        /// <summary>
-        /// Specifies that the coordinates will wrap around mirrored.
-        /// </summary>
+
+        /// <summary> Specifies that the coordinates will wrap around mirrored. </summary>
         MirroredRepeat,
-        
-        /// <summary>
-        /// Specifies that the coordinates will clamp to the 0-1 range.
-        /// </summary>
+
+        /// <summary> Specifies that the coordinates will clamp to the 0-1 range. </summary>
         ClampToEdge
     }
 }

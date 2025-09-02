@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,40 +20,31 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the stencil operation state of a graphics pipeline.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the stencil operation state of a graphics pipeline. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUDepthStencilState"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUStencilOpState
     {
-        /// <summary>
-        /// The action performed on samples that fail the stencil test.
-        /// </summary>
+        /// <summary> The action performed on samples that fail the stencil test. </summary>
         public GPUStencilOp FailOp;
-        
-        /// <summary>
-        /// The action performed on samples that pass the depth and stencil tests.
-        /// </summary>
+
+        /// <summary> The action performed on samples that pass the depth and stencil tests. </summary>
         public GPUStencilOp PassOp;
-        
-        /// <summary>
-        /// The action performed on samples that pass the stencil test and fail the depth test.
-        /// </summary>
+
+        /// <summary> The action performed on samples that pass the stencil test and fail the depth test. </summary>
         public GPUStencilOp DepthFailOp;
-        
-        /// <summary>
-        /// The comparison operator used in the stencil test.
-        /// </summary>
+
+        /// <summary> The comparison operator used in the stencil test. </summary>
         public GPUCompareOp CompareOp;
     }
 }

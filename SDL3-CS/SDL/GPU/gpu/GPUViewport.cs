@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,50 +20,37 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying a viewport.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying a viewport. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="SetGPUViewport"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUViewport
     {
-        /// <summary>
-        /// The left offset of the viewport.
-        /// </summary>
+        /// <summary> The left offset of the viewport. </summary>
         public float X;
-        
-        /// <summary>
-        /// The top offset of the viewport.
-        /// </summary>
+
+        /// <summary> The top offset of the viewport. </summary>
         public float Y;
-        
-        /// <summary>
-        /// The width of the viewport.
-        /// </summary>
+
+        /// <summary> The width of the viewport. </summary>
         public float W;
-        
-        /// <summary>
-        /// The height of the viewport.
-        /// </summary>
+
+        /// <summary> The height of the viewport. </summary>
         public float H;
-        
-        /// <summary>
-        /// The minimum depth of the viewport.
-        /// </summary>
+
+        /// <summary> The minimum depth of the viewport. </summary>
         public float MinDepth;
-        
-        /// <summary>
-        /// The maximum depth of the viewport.
-        /// </summary>
+
+        /// <summary> The maximum depth of the viewport. </summary>
         public float MaxDepth;
     }
 }

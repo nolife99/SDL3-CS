@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,40 +28,31 @@ namespace SDL3;
 public static partial class TTF
 {
     /// <summary>
-    /// <para>Font style flags for TTF_Font</para>
-    /// <para>These are the flags which can be used to set the style of a font in
-    /// SDL_ttf. A combination of these flags can be used with functions that set
-    /// or query font style, such as <see cref="SetFontStyle"/> or <see cref="GetFontStyle"/>.</para>
+    ///     <para> Font style flags for TTF_Font </para>
+    ///     <para>
+    ///         These are the flags which can be used to set the style of a font in SDL_ttf. A combination of these flags can be
+    ///         used with functions that set or query font style, such as <see cref="SetFontStyle"/> or <see cref="GetFontStyle"/>.
+    ///     </para>
     /// </summary>
-    /// <since>This datatype is available since SDL_ttf 3.0.0.</since>
+    /// <since> This datatype is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="SetFontStyle"/>
     /// <seealso cref="GetFontStyle"/>
     [Flags]
     public enum FontStyleFlags
     {
-        /// <summary>
-        /// No special style
-        /// </summary>
+        /// <summary> No special style </summary>
         Normal = 0x00,
-        
-        /// <summary>
-        /// Bold style
-        /// </summary>
+
+        /// <summary> Bold style </summary>
         Bold = 0x01,
-        
-        /// <summary>
-        /// Italic style
-        /// </summary>
+
+        /// <summary> Italic style </summary>
         Italic = 0x02,
-        
-        /// <summary>
-        /// Underlined text
-        /// </summary>
+
+        /// <summary> Underlined text </summary>
         Underline = 0x04,
-        
-        /// <summary>
-        /// Strikethrough text
-        /// </summary>
-        Strikethrough = 0x08,
+
+        /// <summary> Strikethrough text </summary>
+        Strikethrough = 0x08
     }
 }

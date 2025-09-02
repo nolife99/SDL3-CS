@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,31 +20,25 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the parameters of color targets used in a graphics
-    /// pipeline.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the parameters of color targets used in a graphics pipeline. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUGraphicsPipelineTargetInfo"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUColorTargetDescription
     {
-        /// <summary>
-        /// The pixel format of the texture to be used as a color target.
-        /// </summary>
+        /// <summary> The pixel format of the texture to be used as a color target. </summary>
         public GPUTextureFormat Format;
-        
-        /// <summary>
-        /// The blend state to be used for the color target.
-        /// </summary>
+
+        /// <summary> The blend state to be used for the color target. </summary>
         public GPUColorTargetBlendState BlendState;
     }
 }

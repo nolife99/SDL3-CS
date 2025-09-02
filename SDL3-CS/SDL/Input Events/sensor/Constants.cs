@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,12 +28,13 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A constant to represent standard gravity for accelerometer sensors.</para>
-    /// <para>The accelerometer returns the current acceleration in SI meters per second
-    /// squared. This measurement includes the force of gravity, so a device at
-    /// rest will have an value of SDL_STANDARD_GRAVITY away from the center of the
-    /// earth, which is a positive Y value.</para>
+    ///     <para> A constant to represent standard gravity for accelerometer sensors. </para>
+    ///     <para>
+    ///         The accelerometer returns the current acceleration in SI meters per second squared. This measurement includes the
+    ///         force of gravity, so a device at rest will have an value of SDL_STANDARD_GRAVITY away from the center of the earth,
+    ///         which is a positive Y value.
+    ///     </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const float StandardGravity = 9.80665f;
 }

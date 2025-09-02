@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class TTF
 {
-    /// <summary>
-    /// The representation of a substring within text.
-    /// </summary>
-    /// <since>This struct is available since SDL_ttf 3.0.0.</since>
+    /// <summary> The representation of a substring within text. </summary>
+    /// <since> This struct is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="GetNextTextSubString"/>
     /// <seealso cref="GetPreviousTextSubString"/>
     /// <seealso cref="GetTextSubString"/>
@@ -40,34 +40,22 @@ public static partial class TTF
     [StructLayout(LayoutKind.Sequential)]
     public struct SubString
     {
-        /// <summary>
-        /// The flags for this substring
-        /// </summary>
+        /// <summary> The flags for this substring </summary>
         public SubStringFlags Flags;
 
-        /// <summary>
-        /// The byte offset from the beginning of the text
-        /// </summary>
+        /// <summary> The byte offset from the beginning of the text </summary>
         public int Offset;
-        
-        /// <summary>
-        /// The byte length starting at the offset
-        /// </summary>
+
+        /// <summary> The byte length starting at the offset </summary>
         public int Length;
 
-        /// <summary>
-        /// The index of the line that contains this substring
-        /// </summary>
+        /// <summary> The index of the line that contains this substring </summary>
         public int LineIndex;
 
-        /// <summary>
-        /// The internal cluster index, used for quickly iterating
-        /// </summary>
+        /// <summary> The internal cluster index, used for quickly iterating </summary>
         public int ClusterIndex;
 
-        /// <summary>
-        /// The rectangle, relative to the top left of the text, containing the substring
-        /// </summary>
+        /// <summary> The rectangle, relative to the top left of the text, containing the substring </summary>
         public SDL.Rect Rect;
     }
 }

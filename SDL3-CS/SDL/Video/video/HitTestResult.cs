@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,68 +20,44 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> Possible return values from the SDL_HitTest callback. </summary>
+/// <threadsafety> This function should only be called on the main thread. </threadsafety>
+/// <since> This enum is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.HitTest"/>
+public enum HitTestResult
 {
-    /// <summary>
-    /// Possible return values from the SDL_HitTest callback.
-    /// </summary>
-    /// <threadsafety>This function should only be called on the main thread.</threadsafety>
-    /// <since>This enum is available since SDL 3.2.0</since>
-    /// <seealso cref="HitTest"/>
-    public enum HitTestResult
-    {
-        /// <summary>
-        /// Region is normal. No special properties.
-        /// </summary>
-        Normal,
-        
-        /// <summary>
-        /// Region can drag entire window.
-        /// </summary>
-        Draggable,
-        
-        /// <summary>
-        /// Region is the resizable top-left corner border.
-        /// </summary>
-        ResizeTopLeft,
-        
-        /// <summary>
-        /// Region is the resizable top border.
-        /// </summary>
-        ResizeTop,
-        
-        /// <summary>
-        /// Region is the resizable top-right corner border.
-        /// </summary>
-        ResizeTopRight,
-        
-        /// <summary>
-        /// Region is the resizable right border.
-        /// </summary>
-        ResizeRight,
-        
-        /// <summary>
-        /// Region is the resizable bottom-right corner border.
-        /// </summary>
-        ResizeBottomRight,
-        
-        /// <summary>
-        /// Region is the resizable bottom border.
-        /// </summary>
-        ResizeBottom,
-        
-        /// <summary>
-        /// Region is the resizable bottom-left corner border.
-        /// </summary>
-        ResizeBottomLeft,
-        
-        /// <summary>
-        /// Region is the resizable left border.
-        /// </summary>
-        ResizeLeft 
-    }
+    /// <summary> Region is normal. No special properties. </summary>
+    Normal,
+
+    /// <summary> Region can drag entire window. </summary>
+    Draggable,
+
+    /// <summary> Region is the resizable top-left corner border. </summary>
+    ResizeTopLeft,
+
+    /// <summary> Region is the resizable top border. </summary>
+    ResizeTop,
+
+    /// <summary> Region is the resizable top-right corner border. </summary>
+    ResizeTopRight,
+
+    /// <summary> Region is the resizable right border. </summary>
+    ResizeRight,
+
+    /// <summary> Region is the resizable bottom-right corner border. </summary>
+    ResizeBottomRight,
+
+    /// <summary> Region is the resizable bottom border. </summary>
+    ResizeBottom,
+
+    /// <summary> Region is the resizable bottom-left corner border. </summary>
+    ResizeBottomLeft,
+
+    /// <summary> Region is the resizable left border. </summary>
+    ResizeLeft
 }

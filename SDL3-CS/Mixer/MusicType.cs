@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,26 +20,16 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public partial class Mixer
 {
-    /// <summary>
-    /// These are types of music files (not libraries used to load them)
-    /// </summary>
+    /// <summary> These are types of music files (not libraries used to load them) </summary>
     public enum MusicType
     {
-        None,
-        WAV,
-        MOD,
-        MID,
-        OGG,
-        MP3,
-        FLAC,
-        OPUS,
-        WAVPACK,
-        GME
+        None, WAV, MOD, MID, OGG, MP3, FLAC, OPUS, WAVPACK, GME
     }
 }

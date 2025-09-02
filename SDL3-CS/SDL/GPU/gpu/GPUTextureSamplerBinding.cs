@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,31 +20,26 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying parameters in a sampler binding call.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying parameters in a sampler binding call. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="BindGPUVertexSamplers(nint, uint, GPUTextureSamplerBinding[], uint)"/>
     /// <seealso cref="BindGPUFragmentSamplers(nint, uint, GPUTextureSamplerBinding[], uint)"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUTextureSamplerBinding
     {
-        /// <summary>
-        /// The texture to bind. Must have been created with <see cref="GPUTextureUsageFlags.Sampler"/>.
-        /// </summary>
+        /// <summary> The texture to bind. Must have been created with <see cref="GPUTextureUsageFlags.Sampler"/>. </summary>
         public IntPtr Texture;
-        
-        /// <summary>
-        /// The sampler to bind.
-        /// </summary>
+
+        /// <summary> The sampler to bind. </summary>
         public IntPtr Sampler;
     }
 }

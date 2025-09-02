@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,26 +25,21 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Scroll direction types for the Scroll event
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Scroll direction types for the Scroll event </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum MouseWheelDirection
     {
-        /// <summary>
-        /// The scroll direction is normal
-        /// </summary>
+        /// <summary> The scroll direction is normal </summary>
         Normal,
-        
-        /// <summary>
-        /// The scroll direction is flipped / natural
-        /// </summary>
+
+        /// <summary> The scroll direction is flipped / natural </summary>
         Flipped
     }
 }

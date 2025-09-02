@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,32 +20,25 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Possible results from an enumeration callback.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Possible results from an enumeration callback. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="EnumerateDirectoryCallback"/>
     public enum EnumerationResult
     {
-        /// <summary>
-        /// Value that requests that enumeration continue.
-        /// </summary>
+        /// <summary> Value that requests that enumeration continue. </summary>
         Continue,
-        
-        /// <summary>
-        /// Value that requests that enumeration stop, successfully.
-        /// </summary>
+
+        /// <summary> Value that requests that enumeration stop, successfully. </summary>
         Success,
-        
-        /// <summary>
-        /// Value that requests that enumeration stop, as a failure.
-        /// </summary>
+
+        /// <summary> Value that requests that enumeration stop, as a failure. </summary>
         Failure
     }
 }

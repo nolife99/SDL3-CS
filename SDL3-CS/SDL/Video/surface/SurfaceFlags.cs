@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,38 +20,29 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// The flags on an <see cref="Surface"/>.
-    /// </summary>
-    /// <remarks>These are generally considered read-only.</remarks>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <summary> The flags on an <see cref="Surface"/>. </summary>
+    /// <remarks> These are generally considered read-only. </remarks>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     [Flags]
     public enum SurfaceFlags : uint
     {
-        /// <summary>
-        /// Surface uses preallocated pixel memory
-        /// </summary>
+        /// <summary> Surface uses preallocated pixel memory </summary>
         Preallocated = 0x00000001u,
 
-        /// <summary>
-        /// Surface needs to be locked to access pixels
-        /// </summary>
+        /// <summary> Surface needs to be locked to access pixels </summary>
         LockNeeded = 0x00000002u,
 
-        /// <summary>
-        /// Surface is currently locked
-        /// </summary>
+        /// <summary> Surface is currently locked </summary>
         Locked = 0x00000004u,
 
-        /// <summary>
-        /// Surface uses pixel memory allocated with SDL_aligned_alloc()
-        /// </summary>
-        SimdAligned = 0x00000008u,
+        /// <summary> Surface uses pixel memory allocated with SDL_aligned_alloc() </summary>
+        SimdAligned = 0x00000008u
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,51 +20,40 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Gamepad sensor event structure (event.gsensor.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Gamepad sensor event structure (event.gsensor.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct GamepadSensorEvent
     {
         /// <summary>
-        /// <see cref="EventType.GamepadSensorUpdate"/>
+        ///     <see cref="EventType.GamepadSensorUpdate"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The joystick instance id
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// The type of the sensor, one of the values of <see cref="SensorType"/>
-        /// </summary>
-        public Int32 Sensor;
-        
-        /// <summary>
-        /// Up to 3 values from the sensor, as defined in SDL_sensor.h
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The joystick instance id </summary>
+        public uint Which;
+
+        /// <summary> The type of the sensor, one of the values of <see cref="SensorType"/> </summary>
+        public int Sensor;
+
+        /// <summary> Up to 3 values from the sensor, as defined in SDL_sensor.h </summary>
         public unsafe fixed float Data[3];
-        
-        /// <summary>
-        /// The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock
-        /// </summary>
-        public UInt64 SensorTimestamp;
+
+        /// <summary> The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock </summary>
+        public ulong SensorTimestamp;
     }
 }

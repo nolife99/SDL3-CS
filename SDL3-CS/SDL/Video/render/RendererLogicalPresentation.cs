@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,41 +20,30 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// How the logical size is mapped to the output.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> How the logical size is mapped to the output. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum RendererLogicalPresentation
     {
-        /// <summary>
-        /// There is no logical size in effect
-        /// </summary>
+        /// <summary> There is no logical size in effect </summary>
         Disabled,
-        
-        /// <summary>
-        /// The rendered content is stretched to the output resolution
-        /// </summary>
+
+        /// <summary> The rendered content is stretched to the output resolution </summary>
         Stretch,
-        
-        /// <summary>
-        /// The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars
-        /// </summary>
+
+        /// <summary> The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars </summary>
         Letterbox,
-        
-        /// <summary>
-        /// The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds
-        /// </summary>
+
+        /// <summary> The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds </summary>
         Overscan,
-        
-        /// <summary>
-        /// The rendered content is scaled up by integer multiples to fit the output resolution
-        /// </summary>
+
+        /// <summary> The rendered content is scaled up by integer multiples to fit the output resolution </summary>
         IntegerScale
     }
 }

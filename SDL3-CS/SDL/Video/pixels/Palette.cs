@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,41 +20,31 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A set of indexed colors representing a palette.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A set of indexed colors representing a palette. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="SDL.SetPaletteColors"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct Palette
     {
-        /// <summary>
-        /// number of elements in <c>colors</c>.
-        /// </summary>
+        /// <summary> number of elements in <c> colors </c>. </summary>
         public int NColors;
-        
-        /// <summary>
-        /// an array of colors, <c>ncolors</c> long.
-        /// </summary>
+
+        /// <summary> an array of colors, <c> ncolors </c> long. </summary>
         public Color[] Colors;
-        
-        /// <summary>
-        /// internal use only, do not touch.
-        /// </summary>
+
+        /// <summary> internal use only, do not touch. </summary>
         public uint Version;
-        
-        /// <summary>
-        /// internal use only, do not touch.
-        /// </summary>
+
+        /// <summary> internal use only, do not touch. </summary>
         public int Refcount;
     }
 }
-

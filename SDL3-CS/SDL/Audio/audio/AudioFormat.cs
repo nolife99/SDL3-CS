@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,61 +20,42 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Audio format.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Audio format. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum AudioFormat : uint
     {
-        /// <summary>
-        /// Unspecified audio format
-        /// </summary>
+        /// <summary> Unspecified audio format </summary>
         Unknown = 0x0000u,
-        
-        /// <summary>
-        /// Unsigned 8-bit samples
-        /// </summary>
+
+        /// <summary> Unsigned 8-bit samples </summary>
         AudioU8 = 0x0008u,
-        
-        /// <summary>
-        /// Signed 8-bit samples
-        /// </summary>
+
+        /// <summary> Signed 8-bit samples </summary>
         AudioS8 = 0x8008u,
-        
-        /// <summary>
-        /// Signed 16-bit samples
-        /// </summary>
+
+        /// <summary> Signed 16-bit samples </summary>
         AudioS16LE = 0x8010u,
-        
-        /// <summary>
-        /// As above, but big-endian byte order
-        /// </summary>
+
+        /// <summary> As above, but big-endian byte order </summary>
         AudioS16BE = 0x9010u,
-        
-        /// <summary>
-        /// 32-bit integer samples
-        /// </summary>
+
+        /// <summary> 32-bit integer samples </summary>
         AudioS32LE = 0x8020u,
-        
-        /// <summary>
-        /// As above, but big-endian byte order
-        /// </summary>
+
+        /// <summary> As above, but big-endian byte order </summary>
         AudioS32BE = 0x9020u,
-        
-        /// <summary>
-        /// 32-bit floating point samples
-        /// </summary>
+
+        /// <summary> 32-bit floating point samples </summary>
         AudioF32LE = 0x8120u,
-        
-        /// <summary>
-        /// As above, but big-endian byte order
-        /// </summary>
-        AudioF32BE = 0x9120u,
+
+        /// <summary> As above, but big-endian byte order </summary>
+        AudioF32BE = 0x9120u
     }
 }

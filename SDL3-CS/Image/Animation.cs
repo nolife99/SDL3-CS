@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,45 +20,32 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public partial class Image
 {
-    /// <summary>
-    /// Animated image support
-    /// Currently only animated GIFs are supported.
-    /// </summary>
+    /// <summary> Animated image support Currently only animated GIFs are supported. </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Animation
     {
-        /// <summary>
-        /// The width of the frames
-        /// </summary>
+        /// <summary> The width of the frames </summary>
         public int W;
-        
-        /// <summary>
-        /// The height of the frames
-        /// </summary>
+
+        /// <summary> The height of the frames </summary>
         public int H;
 
-        /// <summary>
-        /// The number of frames
-        /// </summary>
+        /// <summary> The number of frames </summary>
         public int Count;
 
-        /// <summary>
-        /// An array of frames
-        /// </summary>
+        /// <summary> An array of frames </summary>
         public IntPtr Frames;
-        
-        /// <summary>
-        /// An array of frame delays, in milliseconds
-        /// </summary>
+
+        /// <summary> An array of frame delays, in milliseconds </summary>
         public IntPtr Delays;
     }
 }
-

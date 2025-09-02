@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,30 +20,25 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// The structure that describes a virtual joystick sensor.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> The structure that describes a virtual joystick sensor. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="VirtualJoystickDesc"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct VirtualJoystickSensorDesc
     {
-        /// <summary>
-        /// the type of this sensor
-        /// </summary>
+        /// <summary> the type of this sensor </summary>
         public SensorType Type;
-        
-        /// <summary>
-        /// the update frequency of this sensor, may be 0.0f
-        /// </summary>
+
+        /// <summary> the update frequency of this sensor, may be 0.0f </summary>
         public float Rate;
     }
 }

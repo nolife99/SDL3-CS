@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,37 +20,31 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying parameters related to binding buffers in a compute
-    /// pass.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying parameters related to binding buffers in a compute pass. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="BeginGPUComputePass"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUStorageBufferReadWriteBinding
     {
-        /// <summary>
-        /// The buffer to bind. Must have been created with <see cref="GPUBufferUsageFlags.ComputeStorageWrite"/>.
-        /// </summary>
+        /// <summary> The buffer to bind. Must have been created with <see cref="GPUBufferUsageFlags.ComputeStorageWrite"/>. </summary>
         public IntPtr Buffer;
-        
-        /// <summary>
-        /// true cycles the buffer if it is already bound.
-        /// </summary>
-        public Byte Cycle;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
-        
-        private Byte _padding3;
+
+        /// <summary> true cycles the buffer if it is already bound. </summary>
+        public byte Cycle;
+
+        byte _padding1;
+
+        byte _padding2;
+
+        byte _padding3;
     }
 }

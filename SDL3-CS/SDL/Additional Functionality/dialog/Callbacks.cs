@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,42 +20,43 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 /// <code>typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const *filelist, int filter);</code>
 /// <summary>
-/// <para>Callback used by file dialog functions.</para>
-/// <para>The specific usage is described in each function.</para>
-/// <para>If <c>filelist</c> is:</para>
-/// <list type="bullet">
-/// <item><c>null</c>, an error occurred. Details can be obtained with <see cref="SDL.GetError"/>.</item>
-/// <item>A pointer to <c>null</c>, the user either didn't choose any file or canceled the
-/// dialog.</item>
-/// <item>A pointer to non-<c>null</c>, the user chose one or more files. The argument
-/// is a null-terminated array of pointers to UTF-8 encoded strings, each containing a
-/// path.</item>
-/// </list>
-/// <para>The filelist argument should not be freed; it will automatically be
-/// freed when the callback returns.</para>
-/// <para>The filter argument is the index of the filter that was selected, or <c>-1</c> if
-/// no filter was selected or if the platform or method doesn't support
-/// fetching the selected filter.</para>
-/// <para>In Android, the <c>filelist</c> are <c>content://</c> URIs. They should be opened
-/// using <see cref="SDL.IOFromFile"/> with appropriate modes. This applies both to open
-/// and save file dialog.</para>
+///     <para> Callback used by file dialog functions. </para> <para> The specific usage is described in each function. </para>
+///     <para> If <c> filelist </c> is: </para>
+///     <list type="bullet">
+///         <item> <c> null </c>, an error occurred. Details can be obtained with <see cref="SDL.GetError"/>. </item>
+///         <item> A pointer to <c> null </c>, the user either didn't choose any file or canceled the dialog. </item>
+///         <item>
+///             A pointer to non-<c> null </c>, the user chose one or more files. The argument is a null-terminated array of
+///             pointers to UTF-8 encoded strings, each containing a path.
+///         </item>
+///     </list>
+///     <para> The filelist argument should not be freed; it will automatically be freed when the callback returns. </para>
+///     <para>
+///         The filter argument is the index of the filter that was selected, or <c> -1 </c> if no filter was selected or if
+///         the platform or method doesn't support fetching the selected filter.
+///     </para>
+///     <para>
+///         In Android, the <c> filelist </c> are <c> content:// </c> URIs. They should be opened using
+///         <see cref="SDL.IOFromFile"/> with appropriate modes. This applies both to open and save file dialog.
+///     </para>
 /// </summary>
-/// <param name="userdata">an app-provided pointer, for the callback's use.</param>
-/// <param name="filelist">the file(s) chosen by the user.</param>
-/// <param name="filter">index of the selected filter.</param>
-/// <since>This datatype is available since SDL 3.2.0</since>
+/// <param name="userdata"> an app-provided pointer, for the callback's use. </param>
+/// <param name="filelist"> the file(s) chosen by the user. </param>
+/// <param name="filter"> index of the selected filter. </param>
+/// <since> This datatype is available since SDL 3.2.0 </since>
 /// <seealso cref="DialogFileFilter"/>
 /// <seealso cref="SDL.ShowOpenFileDialog"/>
 /// <seealso cref="SDL.ShowSaveFileDialog"/>
 /// <seealso cref="SDL.ShowOpenFolderDialog"/>
 /// <seealso cref="SDL.ShowFileDialogWithProperties"/>
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void DialogFileCallback(IntPtr userdata, IntPtr filelist, int filter);
+public delegate void DialogFileCallback(nint userdata, nint filelist, int filter);

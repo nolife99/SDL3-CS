@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,16 +20,15 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Pixel type. 
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Pixel type. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum PixelType
     {
         Unknown,
@@ -43,11 +43,8 @@ public static partial class SDL
         ArrayU32,
         ArrayF16,
         ArrayF32,
-        
-        /// <summary>
-        /// appended at the end for compatibility with sdl2-compat:
-        /// </summary>
+
+        /// <summary> appended at the end for compatibility with sdl2-compat: </summary>
         Index2
     }
 }
-

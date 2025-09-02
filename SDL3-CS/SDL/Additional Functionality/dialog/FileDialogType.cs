@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,17 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
-/// <summary>
-/// Various types of file dialogs.
-/// </summary>
-/// <remarks> This is used by <see cref="SDL.ShowFileDialogWithProperties(FileDialogType, DialogFileCallback, nint, uint)"/> to decide what kind of dialog to present to the user. </remarks>
+/// <summary> Various types of file dialogs. </summary>
+/// <remarks>
+///     This is used by <see cref="SDL.ShowFileDialogWithProperties(FileDialogType, DialogFileCallback, nint, uint)"/> to
+///     decide what kind of dialog to present to the user.
+/// </remarks>
 public enum FileDialogType
 {
-    OpenFile,
-    SaveFile,
-    OpenFolder
+    OpenFile, SaveFile, OpenFolder
 }

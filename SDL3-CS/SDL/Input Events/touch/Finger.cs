@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,43 +20,37 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Data about a single finger in a multitouch event.</para>
-    /// <para>Each touch event is a collection of fingers that are simultaneously in
-    /// contact with the touch device (so a "touch" can be a "multitouch," in
-    /// reality), and this struct reports details of the specific fingers.</para>
+    ///     <para> Data about a single finger in a multitouch event. </para>
+    ///     <para>
+    ///         Each touch event is a collection of fingers that are simultaneously in contact with the touch device (so a
+    ///         "touch" can be a "multitouch," in reality), and this struct reports details of the specific fingers.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GetTouchFingers"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct Finger
     {
-        /// <summary>
-        /// the finger ID
-        /// </summary>
-        public UInt64 ID;
-        
-        /// <summary>
-        /// the x-axis location of the touch event, normalized (0...1)
-        /// </summary>
+        /// <summary> the finger ID </summary>
+        public ulong ID;
+
+        /// <summary> the x-axis location of the touch event, normalized (0...1) </summary>
         public float X;
-        
-        /// <summary>
-        /// the y-axis location of the touch event, normalized (0...1)
-        /// </summary>
+
+        /// <summary> the y-axis location of the touch event, normalized (0...1) </summary>
         public float Y;
-        
-        /// <summary>
-        /// the quantity of pressure applied, normalized (0...1)
-        /// </summary>
+
+        /// <summary> the quantity of pressure applied, normalized (0...1) </summary>
         public float Pressure;
     }
 }

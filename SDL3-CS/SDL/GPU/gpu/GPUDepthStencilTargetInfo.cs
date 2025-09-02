@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,100 +20,96 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of a depth-stencil target used by a
-    /// render pass.</para>
-    /// <para>The load_op field determines what is done with the depth contents of the
-    /// texture at the beginning of the render pass.</para>
-    /// <list type="bullet">
-    /// <item>LOAD: Loads the depth values currently in the texture.</item>
-    /// <item>CLEAR: Clears the texture to a single depth.</item>
-    /// <item>DONT_CARE: The driver will do whatever it wants with the memory. This is
-    /// a good option if you know that every single pixel will be touched in the
-    /// render pass.</item>
-    /// </list>
-    /// <para>The store_op field determines what is done with the depth results of the
-    /// render pass.</para>
-    /// <list type="bullet">
-    /// <item>STORE: Stores the depth results in the texture.</item>
-    /// <item>DONT_CARE: The driver will do whatever it wants with the depth results.
-    /// This is often a good option for depth/stencil textures that don't need to
-    /// be reused again.</item>
-    /// </list>
-    /// <para>The stencil_load_op field determines what is done with the stencil contents
-    /// of the texture at the beginning of the render pass.</para>
-    /// <list type="bullet">
-    /// <item>LOAD: Loads the stencil values currently in the texture.</item>
-    /// <item>CLEAR: Clears the stencil values to a single value.</item>
-    /// <item>DONT_CARE: The driver will do whatever it wants with the memory. This is
-    /// a good option if you know that every single pixel will be touched in the
-    /// render pass.</item>
-    /// </list>
-    /// <para>The stencil_store_op field determines what is done with the stencil results
-    /// of the render pass.</para>
-    /// <list type="bullet">
-    /// <item>STORE: Stores the stencil results in the texture.</item>
-    /// <item>DONT_CARE: The driver will do whatever it wants with the stencil results.
-    /// This is often a good option for depth/stencil textures that don't need to
-    /// be reused again.</item>
-    /// </list>
-    /// <para>Note that depth/stencil targets do not support multisample resolves.</para>
+    ///     <para> A structure specifying the parameters of a depth-stencil target used by a render pass. </para>
+    ///     <para>
+    ///         The load_op field determines what is done with the depth contents of the texture at the beginning of the render
+    ///         pass.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item> LOAD: Loads the depth values currently in the texture. </item>
+    ///         <item> CLEAR: Clears the texture to a single depth. </item>
+    ///         <item>
+    ///             DONT_CARE: The driver will do whatever it wants with the memory. This is a good option if you know that every
+    ///             single pixel will be touched in the render pass.
+    ///         </item>
+    ///     </list>
+    ///     <para> The store_op field determines what is done with the depth results of the render pass. </para>
+    ///     <list type="bullet">
+    ///         <item> STORE: Stores the depth results in the texture. </item>
+    ///         <item>
+    ///             DONT_CARE: The driver will do whatever it wants with the depth results. This is often a good option for
+    ///             depth/stencil textures that don't need to be reused again.
+    ///         </item>
+    ///     </list>
+    ///     <para>
+    ///         The stencil_load_op field determines what is done with the stencil contents of the texture at the beginning of
+    ///         the render pass.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item> LOAD: Loads the stencil values currently in the texture. </item>
+    ///         <item> CLEAR: Clears the stencil values to a single value. </item>
+    ///         <item>
+    ///             DONT_CARE: The driver will do whatever it wants with the memory. This is a good option if you know that every
+    ///             single pixel will be touched in the render pass.
+    ///         </item>
+    ///     </list>
+    ///     <para> The stencil_store_op field determines what is done with the stencil results of the render pass. </para>
+    ///     <list type="bullet">
+    ///         <item> STORE: Stores the stencil results in the texture. </item>
+    ///         <item>
+    ///             DONT_CARE: The driver will do whatever it wants with the stencil results. This is often a good option for
+    ///             depth/stencil textures that don't need to be reused again.
+    ///         </item>
+    ///     </list>
+    ///     <para> Note that depth/stencil targets do not support multisample resolves. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="BeginGPURenderPass(nint, nint, uint, nint)"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUDepthStencilTargetInfo
     {
-        /// <summary>
-        /// The texture that will be used as the depth stencil target by the render pass.
-        /// </summary>
+        /// <summary> The texture that will be used as the depth stencil target by the render pass. </summary>
         public IntPtr Texture;
-        
+
         /// <summary>
-        /// The value to clear the depth component to at the beginning of the render pass. Ignored if public GPU_LOADOP_CLEAR is not used.
+        ///     The value to clear the depth component to at the beginning of the render pass. Ignored if public GPU_LOADOP_CLEAR
+        ///     is not used.
         /// </summary>
         public float ClearDepth;
-        
-        /// <summary>
-        /// What is done with the depth contents at the beginning of the render pass.
-        /// </summary>
+
+        /// <summary> What is done with the depth contents at the beginning of the render pass. </summary>
         public GPULoadOp LoadOp;
-        
-        /// <summary>
-        /// What is done with the depth results of the render pass.
-        /// </summary>
+
+        /// <summary> What is done with the depth results of the render pass. </summary>
         public GPUStoreOp StoreOp;
-        
-        /// <summary>
-        /// What is done with the stencil contents at the beginning of the render pass.
-        /// </summary>
+
+        /// <summary> What is done with the stencil contents at the beginning of the render pass. </summary>
         public GPULoadOp StencilLoadOp;
-        
-        /// <summary>
-        /// What is done with the stencil results of the render pass.
-        /// </summary>
+
+        /// <summary> What is done with the stencil results of the render pass. </summary>
         public GPUStoreOp StencilStoreOp;
-        
+
+        /// <summary> true cycles the texture if the texture is bound and any load ops are not LOAD </summary>
+        public byte Cycle;
+
         /// <summary>
-        /// true cycles the texture if the texture is bound and any load ops are not LOAD 
+        ///     The value to clear the stencil component to at the beginning of the render pass. Ignored if public
+        ///     GPU_LOADOP_CLEAR is not used.
         /// </summary>
-        public Byte Cycle;
-        
-        /// <summary>
-        /// The value to clear the stencil component to at the beginning of the render pass. Ignored if public GPU_LOADOP_CLEAR is not used.
-        /// </summary>
-        public Byte ClearStencil;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
+        public byte ClearStencil;
+
+        byte _padding1;
+
+        byte _padding2;
     }
 }

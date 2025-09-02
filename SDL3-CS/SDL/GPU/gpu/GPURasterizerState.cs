@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,71 +20,58 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of the graphics pipeline rasterizer
-    /// state.</para>
-    /// <para>Note that <see cref="GPUFillMode.Line"/> is not supported on many Android devices.
-    /// For those devices, the fill mode will automatically fall back to FILL.</para>
-    /// <para>Also note that the D3D12 driver will enable depth clamping even if
-    /// enable_depth_clip is true. If you need this clamp+clip behavior, consider
-    /// enabling depth clip and then manually clamping depth in your fragment
-    /// shaders on Metal and Vulkan.</para>
+    ///     <para> A structure specifying the parameters of the graphics pipeline rasterizer state. </para>
+    ///     <para>
+    ///         Note that <see cref="GPUFillMode.Line"/> is not supported on many Android devices. For those devices, the fill
+    ///         mode will automatically fall back to FILL.
+    ///     </para>
+    ///     <para>
+    ///         Also note that the D3D12 driver will enable depth clamping even if enable_depth_clip is true. If you need this
+    ///         clamp+clip behavior, consider enabling depth clip and then manually clamping depth in your fragment shaders on Metal
+    ///         and Vulkan.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUGraphicsPipelineCreateInfo"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPURasterizerState
     {
-        /// <summary>
-        /// Whether polygons will be filled in or drawn as lines.
-        /// </summary>
+        /// <summary> Whether polygons will be filled in or drawn as lines. </summary>
         public GPUFillMode FillMode;
-        
-        /// <summary>
-        /// The facing direction in which triangles will be culled.
-        /// </summary>
+
+        /// <summary> The facing direction in which triangles will be culled. </summary>
         public GPUCullMode CullMode;
-        
-        /// <summary>
-        /// The vertex winding that will cause a triangle to be determined as front-facing.
-        /// </summary>
+
+        /// <summary> The vertex winding that will cause a triangle to be determined as front-facing. </summary>
         public GPUFrontFace FrontFace;
-        
-        /// <summary>
-        /// A scalar factor controlling the depth value added to each fragment.
-        /// </summary>
+
+        /// <summary> A scalar factor controlling the depth value added to each fragment. </summary>
         public float DepthBiasConstantFactor;
-        
-        /// <summary>
-        /// The maximum depth bias of a fragment.
-        /// </summary>
+
+        /// <summary> The maximum depth bias of a fragment. </summary>
         public float DepthBiasClamp;
-        
-        /// <summary>
-        /// A scalar factor applied to a fragment's slope in depth calculations.
-        /// </summary>
+
+        /// <summary> A scalar factor applied to a fragment's slope in depth calculations. </summary>
         public float DepthBiasSlopeFactor;
-        
-        /// <summary>
-        /// true to bias fragment depth values.
-        /// </summary>
-        public Byte EnableDepthBias;
-        
-        /// <summary>
-        /// true to enable depth clip, false to enable depth clamp.
-        /// </summary>
-        public Byte EnableDepthClip;
-        
-        private Byte _padding1;
-        
-        private Byte _padding2;
+
+        /// <summary> true to bias fragment depth values. </summary>
+        public byte EnableDepthBias;
+
+        /// <summary> true to enable depth clip, false to enable depth clamp. </summary>
+        public byte EnableDepthClip;
+
+        byte _padding1;
+
+        byte _padding2;
     }
 }

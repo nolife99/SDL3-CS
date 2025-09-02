@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,66 +20,48 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public partial class ShaderCross
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SPIRVInfo : IDisposable
     {
-        /// <summary>
-        /// The SPIRV bytecode.
-        /// </summary>
+        /// <summary> The SPIRV bytecode. </summary>
         public IntPtr ByteCode;
-        
-        /// <summary>
-        /// The length of the SPIRV bytecode.
-        /// </summary>
+
+        /// <summary> The length of the SPIRV bytecode. </summary>
         public UIntPtr ByteCodeSize;
 
-        private IntPtr entrypoint;
-        
-        /// <summary>
-        /// The entry point function name for the shader in UTF-8.
-        /// </summary>
+        IntPtr entrypoint;
+
+        /// <summary> The entry point function name for the shader in UTF-8. </summary>
         public string Entrypoint
         {
             get => Marshal.PtrToStringUTF8(entrypoint)!;
             set => entrypoint = SDL.StringToPointer(value);
         }
 
-        /// <summary>
-        /// The shader stage to transpile the shader with.
-        /// </summary>
+        /// <summary> The shader stage to transpile the shader with. </summary>
         public ShaderStage ShaderStage;
 
-        private byte enableDebug;
+        byte enableDebug;
 
-        /// <summary>
-        /// Allows debug info to be emitted when relevant. Can be useful for graphics debuggers like RenderDoc.
-        /// </summary>
+        /// <summary> Allows debug info to be emitted when relevant. Can be useful for graphics debuggers like RenderDoc. </summary>
         public bool EnableDebug => Convert.ToBoolean(enableDebug);
 
-        private IntPtr name;
-        
-        /// <summary>
-        /// A UTF-8 name to associate with the shader. Optional, can be NULL.
-        /// </summary>
-        public string? Name
-        {
-            get => Marshal.PtrToStringUTF8(name);
-            set => name = SDL.StringToPointer(value);
-        }
+        IntPtr name;
 
-        /// <summary>
-        /// A properties ID for extensions. Should be 0 if no extensions are needed.
-        /// </summary>
+        /// <summary> A UTF-8 name to associate with the shader. Optional, can be NULL. </summary>
+        public string? Name { get => Marshal.PtrToStringUTF8(name); set => name = SDL.StringToPointer(value); }
+
+        /// <summary> A properties ID for extensions. Should be 0 if no extensions are needed. </summary>
         public uint Props;
-
 
         public void Dispose()
         {

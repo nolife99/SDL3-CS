@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,18 +20,19 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure used for thread-safe initialization and shutdown.</para>
-    /// <para>Here is an example of using this:</para>
-    /// <code>
+    ///     <para> A structure used for thread-safe initialization and shutdown. </para>
+    ///     <para> Here is an example of using this: </para>
+    ///     <code>
     /// static SDL_InitState init;
     ///
     ///    bool InitSystem(void)
@@ -73,18 +75,18 @@ public static partial class SDL
     ///        SDL_SetInitialized(ref init, false);
     ///    }
     /// </code>
-    /// <para>Note that this doesn't protect any resources created during initialization,
-    /// or guarantee that nobody is using those resources during cleanup. You
-    /// should use other mechanisms to protect those, if that's a concern for your
-    /// code.</para>
+    ///     <para>
+    ///         Note that this doesn't protect any resources created during initialization, or guarantee that nobody is using
+    ///         those resources during cleanup. You should use other mechanisms to protect those, if that's a concern for your code.
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct InitState
     {
         public AtomicInt status;
-        public UInt64 Thread;
+        public ulong Thread;
 
-        private IntPtr _reserved;
+        IntPtr _reserved;
     }
 }

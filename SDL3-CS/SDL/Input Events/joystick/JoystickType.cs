@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,29 +28,24 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>An enum of some common joystick types.</para>
-    /// <para>In some cases, SDL can identify a low-level joystick as being a certain
-    /// type of device, and will report it through <see cref="GetJoystickType"/> (or
-    /// <see cref="GetJoystickTypeForID"/>).</para>
-    /// <para>This is by no means a complete list of everything that can be plugged into
-    /// a computer.</para>
-    /// <para>You may refer to
-    /// <a href="https://learn.microsoft.com/en-us/windows/win32/xinput/xinput-and-controller-subtypes">XInput Controller Types</a>
-    /// table for a general understanding of each joystick type.</para>
+    ///     <para> An enum of some common joystick types. </para>
+    ///     <para>
+    ///         In some cases, SDL can identify a low-level joystick as being a certain type of device, and will report it
+    ///         through <see cref="GetJoystickType"/> (or <see cref="GetJoystickTypeForID"/>).
+    ///     </para>
+    ///     <para> This is by no means a complete list of everything that can be plugged into a computer. </para>
+    ///     <para>
+    ///         You may refer to
+    ///         <a href="https://learn.microsoft.com/en-us/windows/win32/xinput/xinput-and-controller-subtypes">
+    ///             XInput Controller
+    ///             Types
+    ///         </a>
+    ///         table for a general understanding of each joystick type.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum JoystickType : ushort
     {
-        Unknown,
-        Gamepad,
-        Wheel,
-        ArcadeStick,
-        FlightStick,
-        DancePad,
-        Guitar,
-        DrumKit,
-        ArcadePad,
-        Throttle,
-        Count
+        Unknown, Gamepad, Wheel, ArcadeStick, FlightStick, DancePad, Guitar, DrumKit, ArcadePad, Throttle, Count
     }
 }

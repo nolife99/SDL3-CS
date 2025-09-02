@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,29 +25,37 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>An <see cref="GUID"/> is a 128-bit identifier for an input device that identifies
-    /// that device across runs of SDL programs on the same platform.</para>
-    /// <para>If the device is detached and then re-attached to a different port, or if
-    /// the base system is rebooted, the device should still report the same GUID.</para>
-    /// <para>GUIDs are as precise as possible but are not guaranteed to distinguish
-    /// physically distinct but equivalent devices. For example, two game
-    /// controllers from the same vendor with the same product ID and revision may
-    /// have the same GUID.</para>
-    /// <para>GUIDs may be platform-dependent (i.e., the same device may report different
-    /// GUIDs on different operating systems).</para>
+    ///     <para>
+    ///         An <see cref="GUID"/> is a 128-bit identifier for an input device that identifies that device across runs of SDL
+    ///         programs on the same platform.
+    ///     </para>
+    ///     <para>
+    ///         If the device is detached and then re-attached to a different port, or if the base system is rebooted, the device
+    ///         should still report the same GUID.
+    ///     </para>
+    ///     <para>
+    ///         GUIDs are as precise as possible but are not guaranteed to distinguish physically distinct but equivalent
+    ///         devices. For example, two game controllers from the same vendor with the same product ID and revision may have the
+    ///         same GUID.
+    ///     </para>
+    ///     <para>
+    ///         GUIDs may be platform-dependent (i.e., the same device may report different GUIDs on different operating
+    ///         systems).
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
-    public struct GUID 
+    public struct GUID
     {
         public unsafe fixed byte Data[16];
     }

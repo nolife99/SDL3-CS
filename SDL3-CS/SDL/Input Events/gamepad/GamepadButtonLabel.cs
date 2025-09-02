@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,23 +28,16 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>The set of gamepad button labels</para>
-    /// <para>This isn't a complete set, just the face buttons to make it easy to show
-    /// button prompts.</para>
-    /// <para>For a complete set, you should look at the button and gamepad type and have
-    /// a set of symbols that work well with your art style.</para>
+    ///     <para> The set of gamepad button labels </para>
+    ///     <para> This isn't a complete set, just the face buttons to make it easy to show button prompts. </para>
+    ///     <para>
+    ///         For a complete set, you should look at the button and gamepad type and have a set of symbols that work well with
+    ///         your art style.
+    ///     </para>
     /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum GamepadButtonLabel
     {
-        Unknown,
-        A,
-        B,
-        X,
-        Y,
-        Cross,
-        Circle,
-        Square,
-        Triangle
+        Unknown, A, B, X, Y, Cross, Circle, Square, Triangle
     }
 }

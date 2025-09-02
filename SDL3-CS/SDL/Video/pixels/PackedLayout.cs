@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,26 +20,17 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Packed component layout.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Packed component layout. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     public enum PackedLayout
     {
-        None,
-        Layout332,
-        Layout4444,
-        Layout1555,
-        Layout5551,
-        Layout565,
-        Layout8888,
-        Layout2101010,
-        Layout1010102
+        None, Layout332, Layout4444, Layout1555, Layout5551, Layout565, Layout8888, Layout2101010, Layout1010102
     }
 }

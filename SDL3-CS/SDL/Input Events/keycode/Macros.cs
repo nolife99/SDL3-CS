@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* SDL3# - C# Wrapper for SDL3
  *
  * Copyright (c) 2024-2025 Eduard Gushchin.
@@ -24,6 +25,7 @@
  * Eduard "edwardgushchin" Gushchin <eduardgushchin@yandex.ru>
  *
  */
+
 #endregion
 
 namespace SDL3;
@@ -32,7 +34,5 @@ public static partial class SDL
 {
     [Macro]
     public static Keycode ScancodeToKeycode(Scancode scancode)
-    {
-        return (Keycode)((uint)scancode | (uint)Keycode.ScanCodeMask);
-    }
+        => (Keycode)((uint)scancode | (uint)Keycode.ScanCodeMask);
 }

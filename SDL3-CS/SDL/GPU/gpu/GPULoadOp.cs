@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,33 +20,25 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class SDL
 {
-    /// <summary>
-    /// Specifies how the contents of a texture attached to a render pass are
-    /// treated at the beginning of the render pass.
-    /// </summary>
-    /// <since>This enum is available since SDL 3.2.0</since>
+    /// <summary> Specifies how the contents of a texture attached to a render pass are treated at the beginning of the render pass. </summary>
+    /// <since> This enum is available since SDL 3.2.0 </since>
     /// <seealso cref="BeginGPURenderPass(nint, nint, uint, nint)"/>
     public enum GPULoadOp
     {
-        /// <summary>
-        /// The previous contents of the texture will be preserved.
-        /// </summary>
+        /// <summary> The previous contents of the texture will be preserved. </summary>
         Load,
-        
-        /// <summary>
-        /// The contents of the texture will be cleared to a color.
-        /// </summary>
+
+        /// <summary> The contents of the texture will be cleared to a color. </summary>
         Clear,
-        
-        /// <summary>
-        /// The previous contents of the texture need not be preserved. The contents will be undefined.
-        /// </summary>
-        DontCare,
+
+        /// <summary> The previous contents of the texture need not be preserved. The contents will be undefined. </summary>
+        DontCare
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,63 +20,48 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Mouse motion event structure (event.motion.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Mouse motion event structure (event.motion.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct MouseMotionEvent
     {
         /// <summary>
-        /// <see cref="EventType.MouseMotion"/>
+        ///     <see cref="EventType.MouseMotion"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The window with mouse focus, if any
-        /// </summary>
-        public UInt32 WindowID;
-        
-        /// <summary>
-        /// The mouse instance id in relative mode, <see cref="TouchMouseID"/> for touch events, or 0
-        /// </summary>
-        public UInt32 Which;
-        
-        /// <summary>
-        /// The current button state
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The window with mouse focus, if any </summary>
+        public uint WindowID;
+
+        /// <summary> The mouse instance id in relative mode, <see cref="TouchMouseID"/> for touch events, or 0 </summary>
+        public uint Which;
+
+        /// <summary> The current button state </summary>
         public MouseButtonFlags State;
-        
-        /// <summary>
-        /// X coordinate, relative to window
-        /// </summary>
+
+        /// <summary> X coordinate, relative to window </summary>
         public float X;
-        
-        /// <summary>
-        /// Y coordinate, relative to window
-        /// </summary>
+
+        /// <summary> Y coordinate, relative to window </summary>
         public float Y;
-        
-        /// <summary>
-        /// The relative motion in the X direction
-        /// </summary>
+
+        /// <summary> The relative motion in the X direction </summary>
         public float XRel;
-        
+
         //The relative motion in the Y direction
         public float YRel;
     }

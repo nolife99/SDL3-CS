@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,26 +20,23 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public partial class Mixer
 {
-    /// <summary>
-    /// The internal format for an audio chunk
-    /// </summary>
+    /// <summary> The internal format for an audio chunk </summary>
     public struct Chunk
     {
         public int Allocated;
-        
-        public IntPtr ABuf;
-        
+
+        public nint ABuf;
+
         public uint ALen;
 
-        /// <summary>
-        /// Per-sample volume, 0-128
-        /// </summary>
+        /// <summary> Per-sample volume, 0-128 </summary>
         public byte Volume;
     }
 }

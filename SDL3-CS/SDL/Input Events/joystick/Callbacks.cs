@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,47 +20,43 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void VirtualJoystickUpdateCallback(IntPtr userdata);
+    public delegate void VirtualJoystickCleanupCallback(nint userdata);
 
-    
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void VirtualJoystickSetPlayerIndexCallback(IntPtr userdata, int playerIndex);
-    
-    
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public delegate bool VirtualJoystickRumbleCallback(IntPtr userdata, ushort lowFrequencyRumble, ushort highFrequencyRumble);
-    
-    
+    public delegate bool VirtualJoystickRumbleCallback(nint userdata,
+        ushort lowFrequencyRumble,
+        ushort highFrequencyRumble);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public delegate bool VirtualJoystickRumbleTriggersCallback(IntPtr userdata, ushort leftRumble, ushort rightRumble);
-    
-    
+    public delegate bool VirtualJoystickRumbleTriggersCallback(nint userdata, ushort leftRumble, ushort rightRumble);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public delegate bool VirtualJoystickSetLEDCallback(IntPtr userdata, byte red, byte green, byte blue);
-    
-    
+    public delegate bool VirtualJoystickSendEffectCallback(nint userdata, nint data, int size);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public delegate bool VirtualJoystickSendEffectCallback(IntPtr userdata, IntPtr data, int size);
-    
-    
+    public delegate bool VirtualJoystickSetLEDCallback(nint userdata, byte red, byte green, byte blue);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void VirtualJoystickSetPlayerIndexCallback(nint userdata, int playerIndex);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public delegate bool VirtualJoystickSetSensorsEnabledCallback(IntPtr userdata, bool enabled);
-    
-    
+    public delegate bool VirtualJoystickSetSensorsEnabledCallback(nint userdata, bool enabled);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void VirtualJoystickCleanupCallback(IntPtr userdata);
+    public delegate void VirtualJoystickUpdateCallback(nint userdata);
 }

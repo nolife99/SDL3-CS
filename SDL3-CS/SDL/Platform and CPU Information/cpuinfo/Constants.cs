@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -27,11 +29,12 @@ public static partial class SDL
 {
     /// <code>#define SDL_CACHELINE_SIZE  128</code>
     /// <summary>
-    /// <para>A guess for the cacheline size used for padding.</para>
-    /// <para>Most x86 processors have a 64 byte cache line. The 64-bit PowerPC
-    /// processors have a 128 byte cache line. We use the larger value to be
-    /// generally safe.</para>
+    ///     <para> A guess for the cacheline size used for padding. </para>
+    ///     <para>
+    ///         Most x86 processors have a 64 byte cache line. The 64-bit PowerPC processors have a 128 byte cache line. We use
+    ///         the larger value to be generally safe.
+    ///     </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     public const int CacheLineSize = 128;
 }

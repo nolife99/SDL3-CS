@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,43 +20,35 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying the parameters of a graphics pipeline vertex input
-    /// state.</para>
+    ///     <para> A structure specifying the parameters of a graphics pipeline vertex input state. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="GPUGraphicsPipelineCreateInfo"/>
     /// <seealso cref="GPUVertexBufferDescription"/>
     /// <seealso cref="GPUVertexAttribute"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUVertexInputState
     {
-        /// <summary>
-        /// A pointer to an array of vertex buffer descriptions.
-        /// </summary>
+        /// <summary> A pointer to an array of vertex buffer descriptions. </summary>
         public IntPtr VertexBufferDescriptions;
-        
-        /// <summary>
-        /// The number of vertex buffer descriptions in the above array.
-        /// </summary>
-        public UInt32 NumVertexBuffers;
-        
-        /// <summary>
-        /// A pointer to an array of vertex attribute descriptions.
-        /// </summary>
+
+        /// <summary> The number of vertex buffer descriptions in the above array. </summary>
+        public uint NumVertexBuffers;
+
+        /// <summary> A pointer to an array of vertex attribute descriptions. </summary>
         public IntPtr VertexAttributes;
-        
-        /// <summary>
-        /// The number of vertex attribute descriptions in the above array.
-        /// </summary>
-        public UInt32 NumVertexAttributes;
+
+        /// <summary> The number of vertex attribute descriptions in the above array. </summary>
+        public uint NumVertexAttributes;
     }
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,26 +20,24 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// The structure that describes a virtual joystick touchpad.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> The structure that describes a virtual joystick touchpad. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="VirtualJoystickDesc"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct VirtualJoystickTouchpadDesc
     {
-        /// <summary>
-        /// the number of simultaneous fingers on this touchpad
-        /// </summary>
+        /// <summary> the number of simultaneous fingers on this touchpad </summary>
         public UInt16 NFingers;
-        private unsafe fixed UInt16 Padding[3];
+
+        unsafe fixed UInt16 Padding[3];
     }
 }

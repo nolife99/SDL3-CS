@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,69 +20,47 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
-public static partial class SDL
+using System.Runtime.InteropServices;
+
+/// <summary> The structure that defines a display mode. </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.GetFullscreenDisplayModes"/>
+/// <seealso cref="SDL.GetDesktopDisplayMode(uint)"/>
+/// <seealso cref="SDL.GetCurrentDisplayMode(uint)"/>
+/// <seealso cref="SDL.SetWindowFullscreenMode(nint, nint)"/>
+/// <seealso cref="SDL.GetWindowFullscreenMode(nint)"/>
+[StructLayout(LayoutKind.Sequential)]
+public struct DisplayMode
 {
-    /// <summary>
-    /// The structure that defines a display mode.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
-    /// <seealso cref="GetFullscreenDisplayModes"/>
-    /// <seealso cref="GetDesktopDisplayMode(uint)"/>
-    /// <seealso cref="GetCurrentDisplayMode(uint)"/>
-    /// <seealso cref="SetWindowFullscreenMode(nint, nint)"/>
-    /// <seealso cref="GetWindowFullscreenMode(nint)"/>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DisplayMode
-    {
-        /// <summary>
-        /// The display this mode is associated with
-        /// </summary>
-        public UInt32 DisplayID;
-        
-        /// <summary>
-        /// Pixel format
-        /// </summary>
-        public PixelFormat Format;
-        
-        /// <summary>
-        /// Width 
-        /// </summary>
-        public int W;
-        
-        /// <summary>
-        /// Height 
-        /// </summary>
-        public int H;
-        
-        /// <summary>
-        /// Scale converting size to pixels (e.g. a 1920x1080 mode with 2.0 scale would have 3840x2160 pixels)
-        /// </summary>
-        public float PixelDensity;
-        
-        /// <summary>
-        /// Refresh rate (or 0.0f for unspecified)
-        /// </summary>
-        public float RefreshRate;
-        
-        /// <summary>
-        /// Precise refresh rate numerator (or 0 for unspecified)
-        /// </summary>
-        public int RefreshRateNumerator;
-        
-        /// <summary>
-        /// Precise refresh rate denominator
-        /// </summary>
-        public int RefreshRateDenominator;
-        
-        /// <summary>
-        /// Private
-        /// </summary>
-        private IntPtr _internal;
-    }
+    /// <summary> The display this mode is associated with </summary>
+    public uint DisplayID;
+
+    /// <summary> Pixel format </summary>
+    public SDL.PixelFormat Format;
+
+    /// <summary> Width </summary>
+    public int W;
+
+    /// <summary> Height </summary>
+    public int H;
+
+    /// <summary> Scale converting size to pixels (e.g. a 1920x1080 mode with 2.0 scale would have 3840x2160 pixels) </summary>
+    public float PixelDensity;
+
+    /// <summary> Refresh rate (or 0.0f for unspecified) </summary>
+    public float RefreshRate;
+
+    /// <summary> Precise refresh rate numerator (or 0 for unspecified) </summary>
+    public int RefreshRateNumerator;
+
+    /// <summary> Precise refresh rate denominator </summary>
+    public int RefreshRateDenominator;
+
+    /// <summary> Private </summary>
+    IntPtr _internal;
 }

@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,62 +20,50 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Keyboard IME candidates event structure (event.edit_candidates.*)
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Keyboard IME candidates event structure (event.edit_candidates.*) </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct TextEditingCandidatesEvent
     {
         /// <summary>
-        /// <see cref="EventType.TextEditingCandidates"/>
+        ///     <see cref="EventType.TextEditingCandidates"/>
         /// </summary>
         public EventType Type;
-        
-        private UInt32 _reserved;
-        
-        /// <summary>
-        /// In nanoseconds, populated using <see cref="GetTicksNS"/>
-        /// </summary>
-        public UInt64 Timestamp;
-        
-        /// <summary>
-        /// The window with keyboard focus, if any
-        /// </summary>
-        public UInt32 WindowID;
-        
-        /// <summary>
-        /// The list of candidates, or <c>null</c> if there are no candidates available
-        /// </summary>
+
+        uint _reserved;
+
+        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
+        public ulong Timestamp;
+
+        /// <summary> The window with keyboard focus, if any </summary>
+        public uint WindowID;
+
+        /// <summary> The list of candidates, or <c> null </c> if there are no candidates available </summary>
         public IntPtr Candidates;
-        
-        /// <summary>
-        /// The number of strings in <c>candidates</c>
-        /// </summary>
-        public Int32 NumCandidates;
-        
-        /// <summary>
-        /// The index of the selected candidate, or -1 if no candidate is selected
-        /// </summary>
-        public Int32 SelectedCandidate;
-        
-        /// <summary>
-        /// true if the list is horizontal, false if it's vertical
-        /// </summary>
-        [MarshalAs(UnmanagedType.I1)] public bool Horizontal;
 
-        private Byte _padding1;
+        /// <summary> The number of strings in <c> candidates </c> </summary>
+        public int NumCandidates;
 
-        private Byte _padding2;
+        /// <summary> The index of the selected candidate, or -1 if no candidate is selected </summary>
+        public int SelectedCandidate;
 
-        private Byte _padding3;
+        /// <summary> true if the list is horizontal, false if it's vertical </summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public bool Horizontal;
+
+        byte _padding1;
+
+        byte _padding2;
+
+        byte _padding3;
     }
 }

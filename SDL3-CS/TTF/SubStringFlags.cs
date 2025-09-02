@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,42 +20,31 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
 
 public static partial class TTF
 {
-    /// <summary>
-    /// Flags for <see cref="SubString"/>
-    /// </summary>
-    /// <since>This datatype is available since SDL_ttf 3.0.0.</since>
+    /// <summary> Flags for <see cref="SubString"/> </summary>
+    /// <since> This datatype is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="SubString"/>
     public enum SubStringFlags
     {
-        /// <summary>
-        /// The mask for the flow direction for this substring
-        /// </summary>
+        /// <summary> The mask for the flow direction for this substring </summary>
         DirectionMask = 0x000000FF,
-        
-        /// <summary>
-        /// This substring contains the beginning of the text
-        /// </summary>
+
+        /// <summary> This substring contains the beginning of the text </summary>
         TextStart = 0x00000100,
-        
-        /// <summary>
-        /// This substring contains the beginning of line <c>LineIndex</c>
-        /// </summary>
+
+        /// <summary> This substring contains the beginning of line <c> LineIndex </c> </summary>
         LineStart = 0x00000200,
-        
-        /// <summary>
-        /// This substring contains the end of line <c>LineIndex</c> 
-        /// </summary>
+
+        /// <summary> This substring contains the end of line <c> LineIndex </c> </summary>
         LineEnd = 0x00000400,
-        
-        /// <summary>
-        /// This substring contains the end of the text
-        /// </summary>
+
+        /// <summary> This substring contains the end of the text </summary>
         TextEnd = 0x00000800
     }
 }

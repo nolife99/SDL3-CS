@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,35 +20,28 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// A structure specifying the parameters of an indexed dispatch command.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> A structure specifying the parameters of an indexed dispatch command. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="DispatchGPUComputeIndirect"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUIndirectDispatchCommand
     {
-        /// <summary>
-        /// The number of local workgroups to dispatch in the X dimension.
-        /// </summary>
-        public UInt32 GroupcountX;
-        
-        /// <summary>
-        /// The number of local workgroups to dispatch in the Y dimension.
-        /// </summary>
-        public UInt32 GroupcountY;
-        
-        /// <summary>
-        /// The number of local workgroups to dispatch in the Z dimension.
-        /// </summary>
-        public UInt32 GroupcountZ;
+        /// <summary> The number of local workgroups to dispatch in the X dimension. </summary>
+        public uint GroupcountX;
+
+        /// <summary> The number of local workgroups to dispatch in the Y dimension. </summary>
+        public uint GroupcountY;
+
+        /// <summary> The number of local workgroups to dispatch in the Z dimension. </summary>
+        public uint GroupcountZ;
     }
 }

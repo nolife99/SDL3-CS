@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,35 +20,28 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class SDL
 {
-    /// <summary>
-    /// Format specifier for audio data.
-    /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <summary> Format specifier for audio data. </summary>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="AudioFormat"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct AudioSpec
     {
-        /// <summary>
-        /// Audio data format
-        /// </summary>
+        /// <summary> Audio data format </summary>
         public AudioFormat Format;
 
-        /// <summary>
-        /// Number of channels: 1 mono, 2 stereo, etc
-        /// </summary>
+        /// <summary> Number of channels: 1 mono, 2 stereo, etc </summary>
         public int Channels;
 
-        /// <summary>
-        /// sample rate: sample frames per second
-        /// </summary>
+        /// <summary> sample rate: sample frames per second </summary>
         public int Freq;
     }
 }

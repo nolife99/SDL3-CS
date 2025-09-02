@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,32 +20,33 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure that represents a color as RGBA components.</para>
-    /// <para>The bits of this structure can be directly reinterpreted as an
-    /// integer-packed color which uses the PixelFormat.RGBA32 format
-    /// (<see cref="PixelFormat.ABGR8888"/> on little-endian systems and
-    /// <see cref="PixelFormat.RGBA8888"/> on big-endian systems).</para>
+    ///     <para> A structure that represents a color as RGBA components. </para>
+    ///     <para>
+    ///         The bits of this structure can be directly reinterpreted as an integer-packed color which uses the
+    ///         PixelFormat.RGBA32 format (<see cref="PixelFormat.ABGR8888"/> on little-endian systems and
+    ///         <see cref="PixelFormat.RGBA8888"/> on big-endian systems).
+    ///     </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     [StructLayout(LayoutKind.Sequential)]
     public struct Color
     {
         public byte R;
-        
+
         public byte G;
-        
+
         public byte B;
-        
+
         public byte A;
     }
 }
-

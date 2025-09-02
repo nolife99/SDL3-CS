@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -26,62 +28,53 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    /// <para>Used to indicate that you don't care what the window position is.</para>
-    /// <para>If you _really_ don't care, <see cref="WindowPosUndefined"/> is the same, but always
-    /// uses the primary display instead of specifying one.</para>
+    ///     <para> Used to indicate that you don't care what the window position is. </para>
+    ///     <para>
+    ///         If you _really_ don't care, <see cref="WindowPosUndefined"/> is the same, but always uses the primary display
+    ///         instead of specifying one.
+    ///     </para>
     /// </summary>
-    /// <param name="x">the SDL_DisplayID of the display to use.</param>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <param name="x"> the SDL_DisplayID of the display to use. </param>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static uint WindowPosUndefinedDisplay(int x) => WindowposUndefinedMask | (uint)x;
 
-    
     /// <summary>
-    /// <para>Used to indicate that you don't care what the window position/display is.</para>
-    /// <para>This always uses the primary display.</para>
+    ///     <para> Used to indicate that you don't care what the window position/display is. </para>
+    ///     <para> This always uses the primary display. </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static uint WindowPosUndefined() => WindowPosUndefinedDisplay(0);
-    
-    
+
     /// <summary>
-    /// <para> Used to indicate that you don't care what the window position/display is.</para>
-    /// <para>This always uses the primary display.</para>
+    ///     <para> Used to indicate that you don't care what the window position/display is. </para>
+    ///     <para> This always uses the primary display. </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static bool WindowPosIsUndefined(uint x) => (x & 0xFFFF0000u) == WindowposUndefinedMask;
-    
-    
+
     /// <summary>
-    /// <para>Used to indicate that the window position should be centered.</para>
-    /// <para><see cref="WindowPosCentered"/> is the same, but always uses the primary display
-    /// instead of specifying one.</para>
+    ///     <para> Used to indicate that the window position should be centered. </para>
+    ///     <para> <see cref="WindowPosCentered"/> is the same, but always uses the primary display instead of specifying one. </para>
     /// </summary>
-    /// <param name="x">the SDL_DisplayID of the display to use.</param>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <param name="x"> the SDL_DisplayID of the display to use. </param>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static uint WindowPosCenteredDisplay(int x) => WindowposCenteredMask | (uint)x;
-    
-    
+
     /// <summary>
-    /// <para>Used to indicate that the window position should be centered.</para>
-    /// <para>This always uses the primary display.</para>
+    ///     <para> Used to indicate that the window position should be centered. </para>
+    ///     <para> This always uses the primary display. </para>
     /// </summary>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static uint WindowPosCentered() => WindowPosCenteredDisplay(0);
-    
-    
-    /// <summary>
-    /// A macro to test if the window position is marked as "centered."
-    /// </summary>
-    /// <param name="x">the window position value.</param>
-    /// <since>This macro is available since SDL 3.2.0</since>
+
+    /// <summary> A macro to test if the window position is marked as "centered." </summary>
+    /// <param name="x"> the window position value. </param>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static bool WindowPosIsCentered(uint x) => (x & 0xFFFF0000u) == WindowposCenteredMask;
-    
-    
-    
 }

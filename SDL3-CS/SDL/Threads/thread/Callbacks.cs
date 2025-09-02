@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,33 +20,33 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <code>typedef int (SDLCALL * SDL_ThreadFunction) (void *data);</code>
     /// <summary>
-    /// <para>The function passed to <see cref="CreateThread"/> as the new thread's entry point.</para>
+    ///     <para> The function passed to <see cref="CreateThread"/> as the new thread's entry point. </para>
     /// </summary>
-    /// <param name="data">what was passed as <c>data</c> to <see cref="CreateThread"/>.</param>
-    /// <returns>a value that can be reported through <see cref="WaitThread"/>.</returns>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <param name="data"> what was passed as <c> data </c> to <see cref="CreateThread"/>. </param>
+    /// <returns> a value that can be reported through <see cref="WaitThread"/>. </returns>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int ThreadFunction(IntPtr data);
-    
-    
+    public delegate int ThreadFunction(nint data);
+
     /// <code>typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);</code>
     /// <summary>
-    /// <para>The callback used to cleanup data passed to <see cref="SetTLS"/>.</para>
-    /// <para>This is called when a thread exits, to allow an app to free any resources.</para>
+    ///     <para> The callback used to cleanup data passed to <see cref="SetTLS"/>. </para>
+    ///     <para> This is called when a thread exits, to allow an app to free any resources. </para>
     /// </summary>
-    /// <param name="value">a pointer previously handed to <see cref="SetTLS"/>.</param>
-    /// <since>This datatype is available since SDL 3.2.0</since>
+    /// <param name="value"> a pointer previously handed to <see cref="SetTLS"/>. </param>
+    /// <since> This datatype is available since SDL 3.2.0 </since>
     /// <seealso cref="SetTLS"/>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TLSDestructorCallback(IntPtr value);
+    public delegate void TLSDestructorCallback(nint value);
 }

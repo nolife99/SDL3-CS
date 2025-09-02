@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,6 +20,7 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
 namespace SDL3;
@@ -27,23 +29,26 @@ public static partial class SDL
 {
     /// <code>#define SDL_Unsupported() SDL_SetError("That operation is not supported")</code>
     /// <summary>
-    /// <para>A macro to standardize error reporting on unsupported operations.</para>
-    /// <para>This simply calls <see cref="SetError"/> with a standardized error string, for
-    /// convenience, consistency, and clarity.</para>
+    ///     <para> A macro to standardize error reporting on unsupported operations. </para>
+    ///     <para>
+    ///         This simply calls <see cref="SetError"/> with a standardized error string, for convenience, consistency, and
+    ///         clarity.
+    ///     </para>
     /// </summary>
-    /// <threadsafety>It is safe to call this macro from any thread.</threadsafety>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <threadsafety> It is safe to call this macro from any thread. </threadsafety>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static bool Unsupported() => SetError("That operation is not supported");
-    
-    
+
     /// <code>#define SDL_InvalidParamError(param) SDL_SetError("Parameter '%s' is invalid", (param))</code>
     /// <summary>
-    /// <para>A macro to standardize error reporting on unsupported operations.</para>
-    /// <para>This simply calls <see cref="SetError"/> with a standardized error string, for
-    /// convenience, consistency, and clarity.</para>
-    /// <para>A common usage pattern inside SDL is this:</para>
-    /// <code>bool MyFunction(string str) {
+    ///     <para> A macro to standardize error reporting on unsupported operations. </para>
+    ///     <para>
+    ///         This simply calls <see cref="SetError"/> with a standardized error string, for convenience, consistency, and
+    ///         clarity.
+    ///     </para>
+    ///     <para> A common usage pattern inside SDL is this: </para>
+    ///     <code>bool MyFunction(string str) {
     ///     if (!str) {
     ///         return InvalidParamError("str");  // returns false.
     ///     }
@@ -51,8 +56,8 @@ public static partial class SDL
     ///     return true;
     /// }</code>
     /// </summary>
-    /// <threadsafety>It is safe to call this macro from any thread.</threadsafety>
-    /// <since>This macro is available since SDL 3.2.0</since>
+    /// <threadsafety> It is safe to call this macro from any thread. </threadsafety>
+    /// <since> This macro is available since SDL 3.2.0 </since>
     [Macro]
     public static bool InvalidParamError(string param) => SetError($"Parameter '{param}' is invalid");
 }

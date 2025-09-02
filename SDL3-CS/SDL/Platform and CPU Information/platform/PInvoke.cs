@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,35 +20,35 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
+
+namespace SDL3;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SDL3;
-
 public static partial class SDL
 {
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetPlatform"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial IntPtr SDL_GetPlatform();
+    private static partial nint SDL_GetPlatform();
+
     /// <code>extern SDL_DECLSPEC const char * SDLCALL SDL_GetPlatform(void);</code>
     /// <summary>
-    /// <para>Get the name of the platform.</para>
-    /// <para>Here are the names returned for some (but not all) supported platforms:</para>
-    /// <list type="bullet">
-    /// <item>"Windows"</item>
-    /// <item>"macOS"</item>
-    /// <item>"Linux"</item>
-    /// <item>"iOS"</item>
-    /// <item>"Android"</item>
-    /// </list>
+    ///     <para> Get the name of the platform. </para>
+    ///     <para> Here are the names returned for some (but not all) supported platforms: </para>
+    ///     <list type="bullet">
+    ///         <item> "Windows" </item> <item> "macOS" </item> <item> "Linux" </item> <item> "iOS" </item> <item> "Android" </item>
+    ///     </list>
     /// </summary>
-    /// <returns>the name of the platform. If the correct platform name is not
-    /// available, returns a string beginning with the text "Unknown".</returns>
-    /// <since>This function is available since SDL 3.2.0</since>
+    /// <returns>
+    ///     the name of the platform. If the correct platform name is not available, returns a string beginning with the text
+    ///     "Unknown".
+    /// </returns>
+    /// <since> This function is available since SDL 3.2.0 </since>
     public static string GetPlatform()
     {
-        var value = SDL_GetPlatform(); 
-        return value == IntPtr.Zero ? "" : Marshal.PtrToStringUTF8(value)!;
+        var value = SDL_GetPlatform();
+        return value == nint.Zero ? "" : Marshal.PtrToStringUTF8(value)!;
     }
 }

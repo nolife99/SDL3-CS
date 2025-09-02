@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,55 +20,40 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#endregion
 
-using System.Runtime.InteropServices;
+#endregion
 
 namespace SDL3;
 
+using System.Runtime.InteropServices;
+
 public static partial class TTF
 {
-    /// <summary>
-    /// Draw sequence returned by <see cref="GetGPUTextDrawData"/>
-    /// </summary>
-    /// <since>This struct is available since SDL_ttf 3.0.0.</since>
+    /// <summary> Draw sequence returned by <see cref="GetGPUTextDrawData"/> </summary>
+    /// <since> This struct is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="GetGPUTextDrawData"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUAtlasDrawSequence
     {
-        /// <summary>
-        /// Texture atlas that stores the glyphs
-        /// </summary>
+        /// <summary> Texture atlas that stores the glyphs </summary>
         public IntPtr AtlasTexture;
-        
-        /// <summary>
-        /// An array of vertex positions
-        /// </summary>
+
+        /// <summary> An array of vertex positions </summary>
         public IntPtr XY;
-        
-        /// <summary>
-        /// An array of normalized texture coordinates for each vertex
-        /// </summary>
+
+        /// <summary> An array of normalized texture coordinates for each vertex </summary>
         public IntPtr UV;
-        
-        /// <summary>
-        /// Number of vertices
-        /// </summary>
+
+        /// <summary> Number of vertices </summary>
         public int NumVertices;
-        
-        /// <summary>
-        /// An array of indices into the 'vertices' arrays
-        /// </summary>
+
+        /// <summary> An array of indices into the 'vertices' arrays </summary>
         public IntPtr Indices;
-        
-        /// <summary>
-        /// Number of indices
-        /// </summary>
+
+        /// <summary> Number of indices </summary>
         public int NumIndices;
 
-        /// <summary>
-        /// The image type of this draw sequence
-        /// </summary>
+        /// <summary> The image type of this draw sequence </summary>
         public ImageType ImageType;
     }
 }

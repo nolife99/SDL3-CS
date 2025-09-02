@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -19,51 +20,40 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  */
+
 #endregion
 
-using System.Runtime.InteropServices;
-
 namespace SDL3;
+
+using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
     /// <summary>
-    /// <para>A structure specifying a location in a texture.</para>
-    /// <para>Used when copying data from one texture to another.</para>
+    ///     <para> A structure specifying a location in a texture. </para>
+    ///     <para> Used when copying data from one texture to another. </para>
     /// </summary>
-    /// <since>This struct is available since SDL 3.2.0</since>
+    /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="CopyGPUTextureToTexture"/>
     [StructLayout(LayoutKind.Sequential)]
     public struct GPUTextureLocation
     {
-        /// <summary>
-        /// The texture used in the copy operation.
-        /// </summary>
+        /// <summary> The texture used in the copy operation. </summary>
         public IntPtr Texture;
-        
-        /// <summary>
-        /// The mip level index of the location.
-        /// </summary>
-        public UInt32 MipLevel;
-        
-        /// <summary>
-        /// The layer index of the location.
-        /// </summary>
-        public UInt32 Layer;
-        
-        /// <summary>
-        /// The left offset of the location.
-        /// </summary>
-        public UInt32 X;
-        
-        /// <summary>
-        /// The top offset of the location.
-        /// </summary>
-        public UInt32 Y;
-        
-        /// <summary>
-        /// The front offset of the location.
-        /// </summary>
-        public UInt32 Z;
+
+        /// <summary> The mip level index of the location. </summary>
+        public uint MipLevel;
+
+        /// <summary> The layer index of the location. </summary>
+        public uint Layer;
+
+        /// <summary> The left offset of the location. </summary>
+        public uint X;
+
+        /// <summary> The top offset of the location. </summary>
+        public uint Y;
+
+        /// <summary> The front offset of the location. </summary>
+        public uint Z;
     }
 }
