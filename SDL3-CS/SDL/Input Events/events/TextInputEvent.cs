@@ -25,37 +25,56 @@
 
 namespace SDL3;
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
-public static partial class SDL
+/// <summary>
+/// <para> Keyboard text input event structure (event.text.*) </para>
+/// <para>
+/// This event will never be delivered unless text input is enabled by calling <see cref="SDL.StartTextInput"/>. Text
+/// input is disabled by default!
+/// </para>
+/// </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.StartTextInput"/>
+/// <seealso cref="SDL.StopTextInput"/>
+[StructLayout(LayoutKind.Sequential)]
+public struct TextInputEvent
 {
     /// <summary>
-    ///     <para> Keyboard text input event structure (event.text.*) </para>
-    ///     <para>
-    ///         This event will never be delivered unless text input is enabled by calling <see cref="StartTextInput"/>. Text
-    ///         input is disabled by default!
-    ///     </para>
+    /// <see cref="SDL.EventType.TextInput"/>
     /// </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    /// <seealso cref="StartTextInput"/>
-    /// <seealso cref="StopTextInput"/>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct TextInputEvent
+    public SDL.EventType Type;
+
+    uint _reserved;
+
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
+
+    /// <summary> The window with keyboard focus, if any </summary>
+    public uint WindowID;
+
+    nint text;
+
+    /// <summary> The input text, UTF-8 encoded </summary>
+    public unsafe Span<byte> Text
     {
-        /// <summary>
-        ///     <see cref="EventType.TextInput"/>
-        /// </summary>
-        public EventType Type;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new((void*)text, SDL.IndexOfNullByte(text));
+    }
 
-        uint _reserved;
+    /// <summary> The input text length in unicode characters </summary>
+    public int TextLength
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Encoding.UTF8.GetCharCount(Text);
+    }
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
-
-        /// <summary> The window with keyboard focus, if any </summary>
-        public uint WindowID;
-
-        /// <summary> The input text, UTF-8 encoded </summary>
-        public IntPtr Text;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<char> GetUnicodeText(Span<char> buffer)
+    {
+        Encoding.UTF8.GetChars(Text, buffer);
+        return buffer;
     }
 }

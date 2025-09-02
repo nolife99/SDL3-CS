@@ -88,7 +88,7 @@ public struct ClipboardEvent
             get
             {
                 var p = MimeTypes[_index];
-                return new((void*)p, SDL.StringLength(p));
+                return new((void*)p, SDL.IndexOfNullByte(p));
             }
         }
     }

@@ -75,6 +75,6 @@ public struct MessageBoxButtonData : IDisposable
     {
         Unpin();
 
-        ArrayPool<byte>.Shared.Return(Text);
+        if (Text is not null) ArrayPool<byte>.Shared.Return(Text);
     }
 }

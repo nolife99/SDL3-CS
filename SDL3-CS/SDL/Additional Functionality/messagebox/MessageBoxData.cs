@@ -36,16 +36,15 @@ public struct MessageBoxData : IDisposable
     readonly MessageBoxFlags Flags;
     readonly nint Window;
     readonly int NumButtons;
-    readonly byte[]? Title, Message;
+    readonly byte[]? Title, Message, ColorScheme;
     readonly MessageBoxButtonData[]? Buttons;
-    readonly MessageBoxColorScheme[]? ColorScheme;
 
     public MessageBoxData(MessageBoxFlags flags,
         nint window,
         scoped ReadOnlySpan<char> title,
         scoped ReadOnlySpan<char> message,
         scoped ReadOnlySpan<MessageBoxButtonData> buttons,
-        scoped ReadOnlySpan<MessageBoxColorScheme> colorScheme)
+        MessageBoxColorScheme? colorScheme = null)
     {
         Flags = flags;
         Window = window;
@@ -74,11 +73,11 @@ public struct MessageBoxData : IDisposable
             NumButtons = buttons.Length;
         }
 
-        if (!colorScheme.IsEmpty)
+        if (colorScheme.HasValue)
         {
-            ColorScheme = ArrayPool<MessageBoxColorScheme>.Shared.Rent(colorScheme.Length);
-            colorScheme.CopyTo(ColorScheme);
-            ColorScheme[colorScheme.Length] = Unsafe.NullRef<MessageBoxColorScheme>();
+            ColorScheme = ArrayPool<byte>.Shared.Rent(Unsafe.SizeOf<MessageBoxColorScheme>());
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(ColorScheme),
+                Nullable.GetValueRefOrDefaultRef(in colorScheme));
         }
     }
 
@@ -141,7 +140,7 @@ public struct MessageBoxData : IDisposable
 
         if (Title is not null) ArrayPool<byte>.Shared.Return(Title);
         if (Message is not null) ArrayPool<byte>.Shared.Return(Message);
+        if (ColorScheme is not null) ArrayPool<byte>.Shared.Return(ColorScheme);
         if (Buttons is not null) ArrayPool<MessageBoxButtonData>.Shared.Return(Buttons);
-        if (ColorScheme is not null) ArrayPool<MessageBoxColorScheme>.Shared.Return(ColorScheme);
     }
 }
