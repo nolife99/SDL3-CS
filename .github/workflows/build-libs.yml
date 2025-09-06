@@ -10,11 +10,28 @@ on:
 jobs:
   build:
     name: Build SDL for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-2025, windows-11-arm, macos-13, macos-latest]
+        include:
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+          - os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+          - os: windows-2025
+            runner: windows-2025
+          - os: windows-11-arm
+            runner: windows-11-arm
+          - os: macos-13
+            runner: macos-13
+          - os: macos-latest
+            runner: macos-latest
+          # pseudo targets for 32-bit builds
+          - os: linux-x86
+            runner: ubuntu-latest
+          - os: windows-x86
+            runner: windows-2025
 
     steps:
       - name: Clone SDL
@@ -25,26 +42,46 @@ jobs:
           fetch-depth: 0
           ref: release-${{ inputs.sdl-version }}
 
-      - name: Install Deps
+      # ---------- Linux 64/ARM deps ----------
+      - name: Install Deps (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
         shell: bash
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt-get update -y && sudo apt-get install -y \
-              cmake make ninja-build libasound2-dev libpulse-dev \
-              libaudio-dev libjack-dev libsndio-dev libusb-1.0-0-dev \
-              libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
-              libxfixes-dev libxi-dev libxss-dev libwayland-dev \
-              libdecor-0-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
-              fcitx-libs-dev
-          fi
+          sudo apt-get update -y && sudo apt-get install -y \
+            cmake make ninja-build libasound2-dev libpulse-dev \
+            libaudio-dev libjack-dev libsndio-dev libusb-1.0-0-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxfixes-dev libxi-dev libxss-dev libwayland-dev \
+            libdecor-0-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            fcitx-libs-dev
 
+      # ---------- Linux x86 (32-bit) deps ----------
+      - name: Install Deps (Linux x86)
+        if: matrix.os == 'linux-x86'
+        shell: bash
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            gcc-multilib g++-multilib \
+            libasound2-dev:i386 libpulse-dev:i386 libaudio-dev:i386 \
+            libjack-dev:i386 libsndio-dev:i386 libusb-1.0-0-dev:i386 \
+            libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 libxcursor-dev:i386 \
+            libxfixes-dev:i386 libxi-dev:i386 libxss-dev:i386 libwayland-dev:i386 \
+            libdbus-1-dev:i386 libudev-dev:i386
+
+      # ---------- Prepare CMake ----------
       - name: Prepare CMake
         shell: bash
         run: |
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          if [[ "${{ matrix.os }}" == "macos-13" || "${{ matrix.os }}" == "macos-latest" ]]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+          elif [[ "${{ matrix.os }}" == "linux-x86" ]]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+          elif [[ "${{ matrix.os }}" == "windows-x86" ]]; then
+            cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
           else
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
           fi
 
       - name: Build SDL ${{ inputs.sdl-version }}
