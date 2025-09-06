@@ -75,17 +75,17 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ matrix.os }}" == "macos-13" || "${{ matrix.os }}" == "macos-latest" ]]; then
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           elif [[ "${{ matrix.os }}" == "linux-x86" ]]; then
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32
           elif [[ "${{ matrix.os }}" == "windows-x86" ]]; then
-            cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+            cmake -S . -B build -A Win32 -DCMAKE_BUILD_TYPE=MinSizeRel
           else
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-Os" -DCMAKE_C_FLAGS_RELEASE="-Os" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=MinSizeRel
           fi
 
       - name: Build SDL ${{ inputs.sdl-version }}
-        run: cmake --build build --config Release
+        run: cmake --build build --config MinSizeRel
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
