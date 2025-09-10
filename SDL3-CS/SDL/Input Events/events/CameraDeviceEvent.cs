@@ -33,10 +33,10 @@ using System.Runtime.InteropServices;
 public struct CameraDeviceEvent
 {
     /// <summary>
-    /// <see cref="SDL.EventType.CameraDeviceAdded"/>, <see cref="SDL.EventType.CameraDeviceRemoved"/>,
-    /// <see cref="SDL.EventType.CameraDeviceApproved"/>, <see cref="SDL.EventType.CameraDeviceDenied"/>
+    /// <see cref="EventType.CameraDeviceAdded"/>, <see cref="EventType.CameraDeviceRemoved"/>,
+    /// <see cref="EventType.CameraDeviceApproved"/>, <see cref="EventType.CameraDeviceDenied"/>
     /// </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 

@@ -27,30 +27,27 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Joystick battery level change event structure (event.jbattery.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct JoyBatteryEvent
 {
-    /// <summary> Joystick battery level change event structure (event.jbattery.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct JoyBatteryEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.JoystickBatteryUpdated"/>
-        /// </summary>
-        public EventType Type;
+    /// <summary>
+    /// <see cref="EventType.JoystickBatteryUpdated"/>
+    /// </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 
-        /// <summary> The joystick battery state </summary>
-        public PowerState State;
+    /// <summary> The joystick battery state </summary>
+    public PowerState State;
 
-        /// <summary> The joystick battery percent charge remaining </summary>
-        public int Percent;
-    }
+    /// <summary> The joystick battery percent charge remaining </summary>
+    public int Percent;
 }

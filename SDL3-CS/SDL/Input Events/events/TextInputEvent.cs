@@ -43,9 +43,9 @@ using System.Text;
 public struct TextInputEvent
 {
     /// <summary>
-    /// <see cref="SDL.EventType.TextInput"/>
+    /// <see cref="EventType.TextInput"/>
     /// </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 
@@ -58,10 +58,10 @@ public struct TextInputEvent
     nint text;
 
     /// <summary> The input text, UTF-8 encoded </summary>
-    public unsafe Span<byte> Text
+    public unsafe ReadOnlySpan<byte> Text
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => new((void*)text, SDL.IndexOfNullByte(text));
+        get => MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)text);
     }
 
     /// <summary> The input text length in unicode characters </summary>

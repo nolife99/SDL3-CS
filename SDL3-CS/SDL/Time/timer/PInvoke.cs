@@ -33,8 +33,8 @@ public static partial class SDL
     /// <code>extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);</code>
     /// <summary> Get the number of milliseconds that have elapsed since the SDL library initialization. </summary>
     /// <returns>
-    ///     n unsigned 64‑bit integer that represents the number of milliseconds that have elapsed since the SDL library was
-    ///     initialized (typically via a call to SDL_Init).
+    /// n unsigned 64‑bit integer that represents the number of milliseconds that have elapsed since the SDL library was
+    /// initialized (typically via a call to SDL_Init).
     /// </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -56,12 +56,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);</code>
     /// <summary>
-    ///     <para> Get the current value of the high resolution counter. </para>
-    ///     <para> This function is typically used for profiling. </para>
-    ///     <para>
-    ///         The counter values are only meaningful relative to each other. Differences between values can be converted to
-    ///         times by using <see cref="GetPerformanceFrequency"/>.
-    ///     </para>
+    /// <para> Get the current value of the high resolution counter. </para>
+    /// <para> This function is typically used for profiling. </para>
+    /// <para>
+    /// The counter values are only meaningful relative to each other. Differences between values can be converted to times
+    /// by using <see cref="GetPerformanceFrequency"/>.
+    /// </para>
     /// </summary>
     /// <returns> the current counter value. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
@@ -85,11 +85,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);</code>
     /// <summary>
-    ///     <para> Wait a specified number of milliseconds before returning. </para>
-    ///     <para>
-    ///         This function waits a specified number of milliseconds before returning. It waits at least the specified time,
-    ///         but possibly longer due to OS scheduling.
-    ///     </para>
+    /// <para> Wait a specified number of milliseconds before returning. </para>
+    /// <para>
+    /// This function waits a specified number of milliseconds before returning. It waits at least the specified time, but
+    /// possibly longer due to OS scheduling.
+    /// </para>
     /// </summary>
     /// <param name="ms"> the number of milliseconds to delay. </param>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
@@ -102,11 +102,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);</code>
     /// <summary>
-    ///     <para> Wait a specified number of nanoseconds before returning. </para>
-    ///     <para>
-    ///         This function waits a specified number of nanoseconds before returning. It waits at least the specified time, but
-    ///         possibly longer due to OS scheduling.
-    ///     </para>
+    /// <para> Wait a specified number of nanoseconds before returning. </para>
+    /// <para>
+    /// This function waits a specified number of nanoseconds before returning. It waits at least the specified time, but
+    /// possibly longer due to OS scheduling.
+    /// </para>
     /// </summary>
     /// <param name="ns"> the number of nanoseconds to delay. </param>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
@@ -119,11 +119,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DelayPrecise(Uint64 ns);</code>
     /// <summary>
-    ///     <para> Wait a specified number of nanoseconds before returning. </para>
-    ///     <para>
-    ///         This function waits a specified number of nanoseconds before returning. It will attempt to wait as close to the
-    ///         requested time as possible, busy waiting if necessary, but could return later due to OS scheduling.
-    ///     </para>
+    /// <para> Wait a specified number of nanoseconds before returning. </para>
+    /// <para>
+    /// This function waits a specified number of nanoseconds before returning. It will attempt to wait as close to the
+    /// requested time as possible, busy waiting if necessary, but could return later due to OS scheduling.
+    /// </para>
     /// </summary>
     /// <param name="ns"> the number of nanoseconds to delay. </param>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
@@ -136,24 +136,24 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata);</code>
     /// <summary>
-    ///     <para> Call a callback function at a future time. </para>
-    ///     <para>
-    ///         The callback function is passed the current timer interval and the user supplied parameter from the
-    ///         <see cref="AddTimer"/> call and should return the next timer interval. If the value returned from the callback is 0,
-    ///         the timer is canceled and will be removed.
-    ///     </para>
-    ///     <para>
-    ///         The callback is run on a separate thread, and for short timeouts can potentially be called before this function
-    ///         returns.
-    ///     </para>
-    ///     <para>
-    ///         Timers take into account the amount of time it took to execute the callback. For example, if the callback took
-    ///         250 ms to execute and returned 1000 (ms), the timer would only wait another 750 ms before its next iteration.
-    ///     </para>
-    ///     <para>
-    ///         Timing may be inexact due to OS scheduling. Be sure to note the current time with <see cref="GetTicksNS"/> or
-    ///         <see cref="GetPerformanceCounter"/> in case your callback needs to adjust for variances.
-    ///     </para>
+    /// <para> Call a callback function at a future time. </para>
+    /// <para>
+    /// The callback function is passed the current timer interval and the user supplied parameter from the
+    /// <see cref="AddTimer"/> call and should return the next timer interval. If the value returned from the callback is 0, the
+    /// timer is canceled and will be removed.
+    /// </para>
+    /// <para>
+    /// The callback is run on a separate thread, and for short timeouts can potentially be called before this function
+    /// returns.
+    /// </para>
+    /// <para>
+    /// Timers take into account the amount of time it took to execute the callback. For example, if the callback took 250 ms
+    /// to execute and returned 1000 (ms), the timer would only wait another 750 ms before its next iteration.
+    /// </para>
+    /// <para>
+    /// Timing may be inexact due to OS scheduling. Be sure to note the current time with <see cref="GetTicksNS"/> or
+    /// <see cref="GetPerformanceCounter"/> in case your callback needs to adjust for variances.
+    /// </para>
     /// </summary>
     /// <param name="interval"> the timer delay, in milliseconds, passed to <c> callback </c>. </param>
     /// <param name="callback"> the <see cref="TimerCallback"/> function to call when the specified <c> interval </c> elapses. </param>
@@ -169,24 +169,24 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata);</code>
     /// <summary>
-    ///     <para> Call a callback function at a future time. </para>
-    ///     <para>
-    ///         The callback function is passed the current timer interval and the user supplied parameter from the
-    ///         <see cref="AddTimerNS"/> call and should return the next timer interval. If the value returned from the callback is
-    ///         0, the timer is canceled and will be removed.
-    ///     </para>
-    ///     <para>
-    ///         The callback is run on a separate thread, and for short timeouts can potentially be called before this function
-    ///         returns.
-    ///     </para>
-    ///     <para>
-    ///         Timers take into account the amount of time it took to execute the callback. For example, if the callback took
-    ///         250 ns to execute and returned 1000 (ns), the timer would only wait another 750 ns before its next iteration.
-    ///     </para>
-    ///     <para>
-    ///         Timing may be inexact due to OS scheduling. Be sure to note the current time with <see cref="GetTicksNS"/> or
-    ///         <see cref="GetPerformanceCounter"/> in case your callback needs to adjust for variances.
-    ///     </para>
+    /// <para> Call a callback function at a future time. </para>
+    /// <para>
+    /// The callback function is passed the current timer interval and the user supplied parameter from the
+    /// <see cref="AddTimerNS"/> call and should return the next timer interval. If the value returned from the callback is 0, the
+    /// timer is canceled and will be removed.
+    /// </para>
+    /// <para>
+    /// The callback is run on a separate thread, and for short timeouts can potentially be called before this function
+    /// returns.
+    /// </para>
+    /// <para>
+    /// Timers take into account the amount of time it took to execute the callback. For example, if the callback took 250 ns
+    /// to execute and returned 1000 (ns), the timer would only wait another 750 ns before its next iteration.
+    /// </para>
+    /// <para>
+    /// Timing may be inexact due to OS scheduling. Be sure to note the current time with <see cref="GetTicksNS"/> or
+    /// <see cref="GetPerformanceCounter"/> in case your callback needs to adjust for variances.
+    /// </para>
     /// </summary>
     /// <param name="interval"> the timer delay, in nanoseconds, passed to <c> callback </c>. </param>
     /// <param name="callback"> the <see cref="TimerCallback"/> function to call when the specified <c> interval </c> elapses. </param>

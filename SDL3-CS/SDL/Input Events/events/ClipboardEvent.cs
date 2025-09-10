@@ -25,8 +25,11 @@
 
 namespace SDL3;
 
+using System.Buffers;
+using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 /// <summary> An event triggered when the clipboard contents have changed (event.clipboard.*) </summary>
 /// <since> This struct is available since SDL 3.2.0 </since>
@@ -40,34 +43,36 @@ public struct ClipboardEvent
         get => owner != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => owner = value ? 1 : 0;
+        set => owner = value ? (byte)1 : (byte)0;
     }
 
     /// <summary> current mime types as an array of UTF8 strings </summary>
-    public unsafe MimeTypeEnumerator MimeType
+    public unsafe MimeTypeEnumerator MimeTypes
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => new(new((void*)mimeTypes, NumMimeTypes));
     }
 
     /// <summary>
-    /// <see cref="SDL.EventType.ClipboardUpdate"/>
+    /// <see cref="EventType.ClipboardUpdate"/>
     /// </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 
     /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
     public ulong Timestamp;
 
-    int owner, NumMimeTypes;
+    byte owner;
+    int NumMimeTypes;
 
-    IntPtr mimeTypes;
+    nint mimeTypes;
 
-    public ref struct MimeTypeEnumerator
+    public ref struct MimeTypeEnumerator : IEnumerator<ArraySegment<char>>
     {
         public readonly Span<nint> MimeTypes;
-        int _index;
+        int _index, currentStrLength;
+        char[]? currentUnicode;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal MimeTypeEnumerator(Span<nint> ptrs)
@@ -79,17 +84,49 @@ public struct ClipboardEvent
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MimeTypeEnumerator GetEnumerator() => this;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext() => ++_index < MimeTypes.Length;
+        public unsafe bool MoveNext()
+        {
+            if (++_index < MimeTypes.Length)
+            {
+                if (currentUnicode is not null) ArrayPool<char>.Shared.Return(currentUnicode);
 
-        public unsafe ReadOnlySpan<byte> Current
+                var utf8Text = MemoryMarshal.CreateReadOnlySpanFromNullTerminated((byte*)MimeTypes[_index]);
+                currentUnicode = ArrayPool<char>.Shared.Rent(currentStrLength = Encoding.UTF8.GetCharCount(utf8Text));
+
+                Encoding.UTF8.GetChars(utf8Text, currentUnicode);
+
+                return true;
+            }
+
+            if (currentUnicode is null) return false;
+
+            ArrayPool<char>.Shared.Return(currentUnicode);
+            currentUnicode = null;
+            return false;
+        }
+
+        public void Reset()
+        {
+            _index = -1;
+            if (currentUnicode is null) return;
+
+            ArrayPool<char>.Shared.Return(currentUnicode);
+            currentUnicode = null;
+        }
+
+        object? IEnumerator.Current => currentUnicode;
+
+        /// <inheritdoc/>
+        public ArraySegment<char> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                var p = MimeTypes[_index];
-                return new((void*)p, SDL.IndexOfNullByte(p));
-            }
+            get => new(currentUnicode, 0, currentStrLength);
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (currentUnicode is not null) ArrayPool<char>.Shared.Return(currentUnicode);
         }
     }
 }

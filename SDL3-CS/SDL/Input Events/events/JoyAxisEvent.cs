@@ -27,38 +27,31 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Joystick axis motion event structure (event.jaxis.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct JoyAxisEvent
 {
-    /// <summary> Joystick axis motion event structure (event.jaxis.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct JoyAxisEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.JoystickAxisMotion"/>
-        /// </summary>
-        public EventType Type;
+    /// <summary>
+    /// <see cref="EventType.JoystickAxisMotion"/>
+    /// </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 
-        /// <summary> The joystick axis index </summary>
-        public byte Axis;
+    /// <summary> The joystick axis index </summary>
+    public byte Axis;
 
-        byte _padding1;
+    byte _padding1, _padding2, _padding3;
 
-        byte _padding2;
+    /// <summary> The axis value (range: -32768 to 32767) </summary>
+    public short Value;
 
-        byte _padding3;
-
-        /// <summary> The axis value (range: -32768 to 32767) </summary>
-        public short Value;
-
-        byte _padding4;
-    }
+    byte _padding4;
 }

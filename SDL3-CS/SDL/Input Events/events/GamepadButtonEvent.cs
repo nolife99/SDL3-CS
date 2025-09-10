@@ -25,35 +25,44 @@
 
 namespace SDL3;
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Gamepad button event structure (event.gbutton.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct GamepadButtonEvent
 {
-    /// <summary> Gamepad button event structure (event.gbutton.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct GamepadButtonEvent
+    /// <summary> true if the button is pressed </summary>
+    public bool Down
     {
-        /// <summary> <see cref="EventType.GamepadButtonDown"/> or <see cref="EventType.GamepadButtonUp"/> </summary>
-        public EventType Type;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => down != 0;
 
-        uint _reserved;
-
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
-
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
-
-        /// <summary> The gamepad button (<see cref="GamepadButton"/>) </summary>
-        public byte Button;
-
-        /// <summary> true if the button is pressed </summary>
-        [MarshalAs(UnmanagedType.I1)]
-        public bool Down;
-
-        byte _padding1;
-
-        byte _padding2;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => down = value ? (byte)1 : (byte)0;
     }
+
+    /// <summary> <see cref="EventType.GamepadButtonDown"/> or <see cref="EventType.GamepadButtonUp"/> </summary>
+    public EventType Type;
+
+    uint _reserved;
+
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
+
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
+
+    /// <summary> The gamepad button </summary>
+    public GamepadButton Button
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Unsafe.As<byte, GamepadButton>(ref button);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => button = Unsafe.As<GamepadButton, byte>(ref value);
+    }
+
+    byte down, button, _padding1, _padding2;
 }

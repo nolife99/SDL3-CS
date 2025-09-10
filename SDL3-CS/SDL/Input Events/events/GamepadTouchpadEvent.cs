@@ -27,40 +27,37 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Gamepad touchpad event structure (event.gtouchpad.*) </summary>
+/// <since> TThis struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct GamepadTouchpadEvent
 {
-    /// <summary> Gamepad touchpad event structure (event.gtouchpad.*) </summary>
-    /// <since> TThis struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct GamepadTouchpadEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.GamepadTouchpadDown"/> or <see cref="EventType.GamepadTouchpadMotion"/> or
-        ///     <see cref="EventType.GamepadTouchpadUp"/>
-        /// </summary>
-        public EventType Type;
+    /// <summary>
+    /// <see cref="EventType.GamepadTouchpadDown"/> or <see cref="EventType.GamepadTouchpadMotion"/> or
+    /// <see cref="EventType.GamepadTouchpadUp"/>
+    /// </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 
-        /// <summary> The index of the touchpad </summary>
-        public int Touchpad;
+    /// <summary> The index of the touchpad </summary>
+    public int Touchpad;
 
-        /// <summary> The index of the finger on the touchpad </summary>
-        public int Finger;
+    /// <summary> The index of the finger on the touchpad </summary>
+    public int Finger;
 
-        /// <summary> Normalized in the range 0...1 with 0 being on the left </summary>
-        public float X;
+    /// <summary> Normalized in the range 0...1 with 0 being on the left </summary>
+    public float X;
 
-        /// <summary> Normalized in the range 0...1 with 0 being at the top </summary>
-        public float Y;
+    /// <summary> Normalized in the range 0...1 with 0 being at the top </summary>
+    public float Y;
 
-        /// <summary> Normalized in the range 0...1 </summary>
-        public float Pressure;
-    }
+    /// <summary> Normalized in the range 0...1 </summary>
+    public float Pressure;
 }

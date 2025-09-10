@@ -27,32 +27,29 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary>
+/// <para> Joystick device event structure (event.jdevice.*) </para>
+/// <para>
+/// SDL will send <see cref="EventType.JoystickAdded"/> events for devices that are already plugged in during
+/// <see cref="SDL.Init"/>.
+/// </para>
+/// </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+/// <seealso cref="GamepadDeviceEvent"/>
+[StructLayout(LayoutKind.Sequential)]
+public struct JoyDeviceEvent
 {
     /// <summary>
-    ///     <para> Joystick device event structure (event.jdevice.*) </para>
-    ///     <para>
-    ///         SDL will send <see cref="EventType.JoystickAdded"/> events for devices that are already plugged in during
-    ///         <see cref="Init"/>.
-    ///     </para>
+    /// <see cref="EventType.JoystickAdded"/> or <see cref="EventType.JoystickRemoved"/> or
+    /// <see cref="EventType.JoystickUpdateComplete"/>
     /// </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    /// <seealso cref="GamepadDeviceEvent"/>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct JoyDeviceEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.JoystickAdded"/> or <see cref="EventType.JoystickRemoved"/> or
-        ///     <see cref="EventType.JoystickUpdateComplete"/>
-        /// </summary>
-        public EventType Type;
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
-    }
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 }

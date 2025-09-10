@@ -33,7 +33,7 @@ using System.Runtime.InteropServices;
 public struct WindowEvent
 {
     /// <summary> EventType.Widnow... </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 

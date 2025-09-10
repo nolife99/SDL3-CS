@@ -33,13 +33,13 @@ using System.Text;
 public static unsafe partial class SDL
 {
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GUIDToString"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     SuppressGCTransition, MethodImpl(MethodImplOptions.AggressiveInlining)]
+     MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial void GUIDToStringNative(GUID guid,
         byte* pszGUID, // unmanaged UTF-8 buffer
         int cbGUID);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_StringToGUID"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     SuppressGCTransition, MethodImpl(MethodImplOptions.AggressiveInlining)]
+     MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial GUID StringToGUIDNative(byte* pchGUID);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID);</code>

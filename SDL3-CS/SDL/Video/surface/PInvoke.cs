@@ -30,240 +30,237 @@ using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
- /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormat format);</code>
- /// <summary>
- ///     <para> Allocate a new surface with a specific pixel format. </para>
- ///     <para> The pixels of the new surface are initialized to zero. </para>
- /// </summary>
- /// <param name="width"> the width of the surface. </param>
- /// <param name="height"> the height of the surface. </param>
- /// <param name="format"> the <see cref="PixelFormat"/> for the new surface's pixel format. </param>
- /// <returns>
- ///     the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
- ///     for more information.
- /// </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="CreateSurfaceFrom"/>
- /// <seealso cref="DestroySurface"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurface"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormat format);</code>
+    /// <summary>
+    /// <para> Allocate a new surface with a specific pixel format. </para>
+    /// <para> The pixels of the new surface are initialized to zero. </para>
+    /// </summary>
+    /// <param name="width"> the width of the surface. </param>
+    /// <param name="height"> the height of the surface. </param>
+    /// <param name="format"> the <see cref="PixelFormat"/> for the new surface's pixel format. </param>
+    /// <returns>
+    /// the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
+    /// for more information.
+    /// </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="CreateSurfaceFrom"/>
+    /// <seealso cref="DestroySurface"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurface"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint CreateSurface(int width, int height, PixelFormat format);
 
- /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void *pixels, int pitch);</code>
- /// <summary>
- ///     <para> Allocate a new surface with a specific pixel format and existing pixel data. </para>
- ///     <para>
- ///         No copy is made of the pixel data. Pixel data is not managed automatically; you must free the surface before you
- ///         free the pixel data.
- ///     </para>
- ///     <para>
- ///         Pitch is the offset in bytes from one row of pixels to the next, e.g. <c> width*4 </c> for
- ///         <see cref="PixelFormat.RGBA8888"/>.
- ///     </para>
- ///     <para>
- ///         You may pass <c> null </c> for pixels and 0 for pitch to create a surface that you will fill in with valid values
- ///         later.
- ///     </para>
- /// </summary>
- /// <param name="width"> the width of the surface. </param>
- /// <param name="height"> the height of the surface. </param>
- /// <param name="format"> the <see cref="PixelFormat"/> for the new surface's pixel format. </param>
- /// <param name="pixels"> a pointer to existing pixel data. </param>
- /// <param name="pitch"> the number of bytes between each row, including padding. </param>
- /// <returns>
- ///     the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
- ///     for more information.
- /// </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="CreateSurface"/>
- /// <seealso cref="DestroySurface"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurfaceFrom"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void *pixels, int pitch);</code>
+    /// <summary>
+    /// <para> Allocate a new surface with a specific pixel format and existing pixel data. </para>
+    /// <para>
+    /// No copy is made of the pixel data. Pixel data is not managed automatically; you must free the surface before you free
+    /// the pixel data.
+    /// </para>
+    /// <para>
+    /// Pitch is the offset in bytes from one row of pixels to the next, e.g. <c> width*4 </c> for
+    /// <see cref="PixelFormat.RGBA8888"/>.
+    /// </para>
+    /// <para>
+    /// You may pass <c> null </c> for pixels and 0 for pitch to create a surface that you will fill in with valid values
+    /// later.
+    /// </para>
+    /// </summary>
+    /// <param name="width"> the width of the surface. </param>
+    /// <param name="height"> the height of the surface. </param>
+    /// <param name="format"> the <see cref="PixelFormat"/> for the new surface's pixel format. </param>
+    /// <param name="pixels"> a pointer to existing pixel data. </param>
+    /// <param name="pitch"> the number of bytes between each row, including padding. </param>
+    /// <returns>
+    /// the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
+    /// for more information.
+    /// </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="CreateSurface"/>
+    /// <seealso cref="DestroySurface"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurfaceFrom"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial nint CreateSurfaceFrom(int width, int height, PixelFormat format, nint pixels, int pitch);
 
- /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);</code>
- /// <summary>
- ///     <para> Free a surface. </para> <para> It is safe to pass <c> null </c> to this function. </para>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> to free. </param>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <threadsafety> No other thread should be using the surface when it is freed. </threadsafety>
- /// <seealso cref="CreateSurface"/>
- /// <seealso cref="CreateSurfaceFrom"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroySurface"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);</code>
+    /// <summary>
+    /// <para> Free a surface. </para> <para> It is safe to pass <c> null </c> to this function. </para>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> to free. </param>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <threadsafety> No other thread should be using the surface when it is freed. </threadsafety>
+    /// <seealso cref="CreateSurface"/>
+    /// <seealso cref="CreateSurfaceFrom"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroySurface"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void DestroySurface(nint surface);
 
- /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);</code>
- /// <summary>
- ///     <para> Get the properties associated with a surface. </para>
- ///     <para> The following properties are understood by SDL: </para>
- ///     <list type="bullet">
- ///         <item>
- ///             <see cref="Props.SurfaceSDRWhitePointFloat"/>: for HDR10 and floating point surfaces, this defines the value
- ///             of 100% diffuse white, with higher values being displayed in the High Dynamic Range headroom. This defaults to
- ///             203 for HDR10 surfaces and 1.0 for floating point surfaces.
- ///         </item>
- ///         <item>
- ///             <see cref="Props.SurfaceHDRHeadroomFloat"/>: for HDR10 and floating point surfaces, this defines the maximum
- ///             dynamic range used by the content, in terms of the SDR white point. This defaults to 0.0, which disables tone
- ///             mapping.
- ///         </item>
- ///         <item>
- ///             <see cref="Props.SurfaceHDRHeadroomFloat"/>: for HDR10 and floating point surfaces, this defines the maximum
- ///             dynamic range used by the content, in terms of the SDR white point. This defaults to 0.0, which disables tone
- ///             mapping.
- ///         </item>
- ///         <item>
- ///             <see cref="Props.SurfaceTonemapOperatorString"/>: the tone mapping operator used when compressing from a
- ///             surface with high dynamic range to another with lower dynamic range. Currently this supports "chrome", which
- ///             uses the same tone mapping that Chrome uses for HDR content, the form "*=N", where N is a floating point scale
- ///             factor applied in linear space, and "none", which disables tone mapping. This defaults to "chrome".
- ///         </item>
- ///         <item>
- ///             <see cref="Props.SurfaceHotspotXNumber"/>: the hotspot pixel offset from the left edge of the image, if this
- ///             surface is being used as a cursor.
- ///         </item>
- ///         <item>
- ///             <see cref="Props.SurfaceHotspotYNumber"/>: the hotspot pixel offset from the top edge of the image, if this
- ///             surface is being used as a cursor.
- ///         </item>
- ///     </list>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
- /// <returns> a valid property ID on success or <c> 0 </c> on failure; call <see cref="GetError"/> for more information. </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceProperties"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);</code>
+    /// <summary>
+    /// <para> Get the properties associated with a surface. </para> <para> The following properties are understood by SDL: </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <see cref="Props.SurfaceSDRWhitePointFloat"/>: for HDR10 and floating point surfaces, this defines the value of 100%
+    /// diffuse white, with higher values being displayed in the High Dynamic Range headroom. This defaults to 203 for HDR10
+    /// surfaces and 1.0 for floating point surfaces.
+    /// </item>
+    /// <item>
+    /// <see cref="Props.SurfaceHDRHeadroomFloat"/>: for HDR10 and floating point surfaces, this defines the maximum dynamic
+    /// range used by the content, in terms of the SDR white point. This defaults to 0.0, which disables tone mapping.
+    /// </item>
+    /// <item>
+    /// <see cref="Props.SurfaceHDRHeadroomFloat"/>: for HDR10 and floating point surfaces, this defines the maximum dynamic
+    /// range used by the content, in terms of the SDR white point. This defaults to 0.0, which disables tone mapping.
+    /// </item>
+    /// <item>
+    /// <see cref="Props.SurfaceTonemapOperatorString"/>: the tone mapping operator used when compressing from a surface with
+    /// high dynamic range to another with lower dynamic range. Currently this supports "chrome", which uses the same tone mapping
+    /// that Chrome uses for HDR content, the form "*=N", where N is a floating point scale factor applied in linear space, and
+    /// "none", which disables tone mapping. This defaults to "chrome".
+    /// </item>
+    /// <item>
+    /// <see cref="Props.SurfaceHotspotXNumber"/>: the hotspot pixel offset from the left edge of the image, if this surface
+    /// is being used as a cursor.
+    /// </item>
+    /// <item>
+    /// <see cref="Props.SurfaceHotspotYNumber"/>: the hotspot pixel offset from the top edge of the image, if this surface
+    /// is being used as a cursor.
+    /// </item>
+    /// </list>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
+    /// <returns> a valid property ID on success or <c> 0 </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceProperties"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial uint GetSurfaceProperties(nint surface);
 
- /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace);</code>
- /// <summary>
- ///     <para> Set the colorspace used by a surface. </para>
- ///     <para> Setting the colorspace doesn't change the pixels, only how they are interpreted in color operations. </para>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
- /// <param name="colorspace"> an <see cref="Colorspace"/> value describing the surface colorspace. </param>
- /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
- /// <threadsafety> This function is not thread safe. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="GetSurfaceColorspace"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceColorspace"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace);</code>
+    /// <summary>
+    /// <para> Set the colorspace used by a surface. </para>
+    /// <para> Setting the colorspace doesn't change the pixels, only how they are interpreted in color operations. </para>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
+    /// <param name="colorspace"> an <see cref="Colorspace"/> value describing the surface colorspace. </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> This function is not thread safe. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="GetSurfaceColorspace"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceColorspace"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetSurfaceColorspace(nint surface, Colorspace colorspace);
 
- /// <code>extern SDL_DECLSPEC SDL_Colorspace SDLCALL SDL_GetSurfaceColorspace(SDL_Surface *surface);</code>
- /// <summary>
- ///     <para> Get the colorspace used by a surface. </para>
- ///     <para>
- ///         The colorspace defaults to <see cref="Colorspace.SRGBLinear"/> for floating point formats,
- ///         <see cref="Colorspace.HDR10"/> for 10-bit formats, <see cref="Colorspace.SRGB"/> for other RGB surfaces and
- ///         <see cref="Colorspace.BT709Full"/> for YUV textures.
- ///     </para>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
- /// <returns> the colorspace used by the surface, or <see cref="Colorspace.Unknown"/> if the surface is <c> null </c>. </returns>
- /// <threadsafety> This function is not thread safe. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="SetSurfaceColorspace"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceColorspace"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_Colorspace SDLCALL SDL_GetSurfaceColorspace(SDL_Surface *surface);</code>
+    /// <summary>
+    /// <para> Get the colorspace used by a surface. </para>
+    /// <para>
+    /// The colorspace defaults to <see cref="Colorspace.SRGBLinear"/> for floating point formats,
+    /// <see cref="Colorspace.HDR10"/> for 10-bit formats, <see cref="Colorspace.SRGB"/> for other RGB surfaces and
+    /// <see cref="Colorspace.BT709Full"/> for YUV textures.
+    /// </para>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
+    /// <returns> the colorspace used by the surface, or <see cref="Colorspace.Unknown"/> if the surface is <c> null </c>. </returns>
+    /// <threadsafety> This function is not thread safe. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="SetSurfaceColorspace"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceColorspace"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial Colorspace GetSurfaceColorspace(nint surface);
 
- /// <code>extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *surface);</code>
- /// <summary>
- ///     <para> Create a palette and associate it with a surface. </para>
- ///     <para>
- ///         This function creates a palette compatible with the provided surface. The palette is then returned for you to
- ///         modify, and the surface will automatically use the new palette in future operations. You do not need to destroy the
- ///         returned palette, it will be freed when the reference count reaches 0, usually when the surface is destroyed.
- ///     </para>
- ///     <para>
- ///         Bitmap surfaces (with format <see cref="PixelFormat.Index1LSB"/> or <see cref="PixelFormat.Index1MSB"/>) will
- ///         have the palette initialized with 0 as white and 1 as black. Other surfaces will get a palette initialized with
- ///         white in every entry.
- ///     </para>
- ///     <para> If this function is called for a surface that already has a palette, a new palette will be created to replace it. </para>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
- /// <returns>
- ///     a new <see cref="Palette"/> structure on success or <c> null </c> on failure (e.g. if the surface didn't have an
- ///     index format); call <see cref="GetError"/> for more information.
- /// </returns>
- /// <threadsafety> This function is not thread safe. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="SetPaletteColors"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurfacePalette"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *surface);</code>
+    /// <summary>
+    /// <para> Create a palette and associate it with a surface. </para>
+    /// <para>
+    /// This function creates a palette compatible with the provided surface. The palette is then returned for you to modify,
+    /// and the surface will automatically use the new palette in future operations. You do not need to destroy the returned
+    /// palette, it will be freed when the reference count reaches 0, usually when the surface is destroyed.
+    /// </para>
+    /// <para>
+    /// Bitmap surfaces (with format <see cref="PixelFormat.Index1LSB"/> or <see cref="PixelFormat.Index1MSB"/>) will have
+    /// the palette initialized with 0 as white and 1 as black. Other surfaces will get a palette initialized with white in every
+    /// entry.
+    /// </para>
+    /// <para> If this function is called for a surface that already has a palette, a new palette will be created to replace it. </para>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
+    /// <returns>
+    /// a new <see cref="Palette"/> structure on success or <c> null </c> on failure (e.g. if the surface didn't have an
+    /// index format); call <see cref="GetError"/> for more information.
+    /// </returns>
+    /// <threadsafety> This function is not thread safe. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="SetPaletteColors"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurfacePalette"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint CreateSurfacePalette(nint surface);
 
- /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette);</code>
- /// <summary>
- ///     <para> Set the palette used by a surface. </para> <para> A single palette can be shared with many surfaces. </para>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
- /// <param name="palette"> the <see cref="Palette"/> structure to use. </param>
- /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
- /// <threadsafety> This function is not thread safe. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="CreatePalette"/>
- /// <seealso cref="GetSurfacePalette"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfacePalette"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette);</code>
+    /// <summary>
+    /// <para> Set the palette used by a surface. </para> <para> A single palette can be shared with many surfaces. </para>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
+    /// <param name="palette"> the <see cref="Palette"/> structure to use. </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> This function is not thread safe. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="CreatePalette"/>
+    /// <seealso cref="GetSurfacePalette"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfacePalette"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetSurfacePalette(nint surface, nint palette);
 
- /// <code>extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetSurfacePalette(SDL_Surface *surface);</code>
- /// <summary> Get the palette used by a surface. </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
- /// <returns> a pointer to the palette used by the surface, or <c> null </c> if there is no palette used. </returns>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="SetSurfacePalette"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfacePalette"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetSurfacePalette(SDL_Surface *surface);</code>
+    /// <summary> Get the palette used by a surface. </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
+    /// <returns> a pointer to the palette used by the surface, or <c> null </c> if there is no palette used. </returns>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="SetSurfacePalette"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfacePalette"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint GetSurfacePalette(nint surface);
 
- /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image);</code>
- /// <summary>
- ///     <para> Add an alternate version of a surface. </para>
- ///     <para>
- ///         This function adds an alternate version of this surface, usually used for content with high DPI representations
- ///         like cursors or icons. The size, format, and content do not need to match the original surface, and these alternate
- ///         versions will not be updated when the original surface changes.
- ///     </para>
- ///     <para>
- ///         This function adds a reference to the alternate version, so you should call <see cref="DestroySurface"/> on the
- ///         image after this call.
- ///     </para>
- /// </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
- /// <param name="image"> a pointer to an alternate <see cref="Surface"/> to associate with this surface. </param>
- /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
- /// <threadsafety> This function is not thread safe. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="RemoveSurfaceAlternateImages"/>
- /// <seealso cref="GetSurfaceImages"/>
- /// <seealso cref="SurfaceHasAlternateImages"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddSurfaceAlternateImage"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image);</code>
+    /// <summary>
+    /// <para> Add an alternate version of a surface. </para>
+    /// <para>
+    /// This function adds an alternate version of this surface, usually used for content with high DPI representations like
+    /// cursors or icons. The size, format, and content do not need to match the original surface, and these alternate versions will
+    /// not be updated when the original surface changes.
+    /// </para>
+    /// <para>
+    /// This function adds a reference to the alternate version, so you should call <see cref="DestroySurface"/> on the image
+    /// after this call.
+    /// </para>
+    /// </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
+    /// <param name="image"> a pointer to an alternate <see cref="Surface"/> to associate with this surface. </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> This function is not thread safe. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="RemoveSurfaceAlternateImages"/>
+    /// <seealso cref="GetSurfaceImages"/>
+    /// <seealso cref="SurfaceHasAlternateImages"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddSurfaceAlternateImage"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool AddSurfaceAlternateImage(nint surface, nint image);
 
- /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasAlternateImages(SDL_Surface *surface);</code>
- /// <summary> Return whether a surface has alternate versions available. </summary>
- /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
- /// <returns> <c> true </c> if alternate versions are available or <c> false </c> otherwise. </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="AddSurfaceAlternateImage"/>
- /// <seealso cref="RemoveSurfaceAlternateImages"/>
- /// <seealso cref="GetSurfaceImages"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_SurfaceHasAlternateImages"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasAlternateImages(SDL_Surface *surface);</code>
+    /// <summary> Return whether a surface has alternate versions available. </summary>
+    /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
+    /// <returns> <c> true </c> if alternate versions are available or <c> false </c> otherwise. </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="AddSurfaceAlternateImage"/>
+    /// <seealso cref="RemoveSurfaceAlternateImages"/>
+    /// <seealso cref="GetSurfaceImages"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SurfaceHasAlternateImages"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SurfaceHasAlternateImages(nint surface);
 
@@ -273,21 +270,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface ** SDLCALL SDL_GetSurfaceImages(SDL_Surface *surface, int *count);</code>
     /// <summary>
-    ///     <para> Get an array including all versions of a surface. </para>
-    ///     <para>
-    ///         This returns all versions of a surface, with the surface being queried as the first element in the returned
-    ///         array.
-    ///     </para>
-    ///     <para>
-    ///         Freeing the array of surfaces does not affect the surfaces in the array. They are still referenced by the surface
-    ///         being queried and will be cleaned up normally.
-    ///     </para>
+    /// <para> Get an array including all versions of a surface. </para>
+    /// <para> This returns all versions of a surface, with the surface being queried as the first element in the returned array. </para>
+    /// <para>
+    /// Freeing the array of surfaces does not affect the surfaces in the array. They are still referenced by the surface
+    /// being queried and will be cleaned up normally.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
     /// <param name="count"> a pointer filled in with the number of surface pointers returned, may be <c> null </c>. </param>
     /// <returns>
-    ///     a <c> null </c> terminated array of <see cref="Surface"/> pointers or <c> null </c> on failure; call
-    ///     <see cref="GetError"/> for more information. This should be freed with <see cref="Free"/> when it is no longer needed.
+    /// a <c> null </c> terminated array of <see cref="Surface"/> pointers or <c> null </c> on failure; call
+    /// <see cref="GetError"/> for more information. This should be freed with <see cref="Free"/> when it is no longer needed.
     /// </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -310,11 +304,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_RemoveSurfaceAlternateImages(SDL_Surface *surface);</code>
     /// <summary>
-    ///     <para> Remove all alternate versions of a surface. </para>
-    ///     <para>
-    ///         This function removes a reference from all the alternative versions, destroying them if this is the last
-    ///         reference to them.
-    ///     </para>
+    /// <para> Remove all alternate versions of a surface. </para>
+    /// <para>
+    /// This function removes a reference from all the alternative versions, destroying them if this is the last reference to
+    /// them.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
     /// <threadsafety> This function is not thread safe. </threadsafety>
@@ -328,22 +322,22 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_LockSurface(SDL_Surface *surface);</code>
     /// <summary>
-    ///     <para> Set up a surface for directly accessing the pixels. </para>
-    ///     <para>
-    ///         Between calls to <see cref="LockSurface"/> / <see cref="UnlockSurface"/>, you can write to and read from
-    ///         <c> Surface.Pixels </c>, using the pixel format stored in <c> Surface.Format </c>. Once you are done accessing the
-    ///         surface, you should use <see cref="UnlockSurface"/> to release it.
-    ///     </para>
-    ///     <para>
-    ///         Not all surfaces require locking. If <c> MustLock(surface) </c> evaluates to 0, then you can read and write to
-    ///         the surface at any time, and the pixel format of the surface will not change.
-    ///     </para>
+    /// <para> Set up a surface for directly accessing the pixels. </para>
+    /// <para>
+    /// Between calls to <see cref="LockSurface"/> / <see cref="UnlockSurface"/>, you can write to and read from
+    /// <c> Surface.Pixels </c>, using the pixel format stored in <c> Surface.Format </c>. Once you are done accessing the surface,
+    /// you should use <see cref="UnlockSurface"/> to release it.
+    /// </para>
+    /// <para>
+    /// Not all surfaces require locking. If <c> MustLock(surface) </c> evaluates to 0, then you can read and write to the
+    /// surface at any time, and the pixel format of the surface will not change.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to be locked. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     This function is not thread safe. The locking referred to by this function is making the pixels available for
-    ///     direct access, not thread-safe locking.
+    /// This function is not thread safe. The locking referred to by this function is making the pixels available for
+    /// direct access, not thread-safe locking.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="MustLock"/>
@@ -356,8 +350,8 @@ public static partial class SDL
     /// <summary> Release a surface after directly accessing the pixels. </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to be unlocked. </param>
     /// <threadsafety>
-    ///     This function is not thread safe. The locking referred to by this function is making the pixels available for
-    ///     direct access, not thread-safe locking.
+    /// This function is not thread safe. The locking referred to by this function is making the pixels available for
+    /// direct access, not thread-safe locking.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="LockSurface"/>
@@ -367,17 +361,17 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio);</code>
     /// <summary>
-    ///     <para> Load a BMP image from a seekable SDL data stream. </para>
-    ///     <para> The new surface should be freed with <see cref="DestroySurface"/>. Not doing so will result in a memory leak. </para>
+    /// <para> Load a BMP image from a seekable SDL data stream. </para>
+    /// <para> The new surface should be freed with <see cref="DestroySurface"/>. Not doing so will result in a memory leak. </para>
     /// </summary>
     /// <param name="src"> the data stream for the surface. </param>
     /// <param name="closeio">
-    ///     if <c> true </c>, calls <see cref="CloseIO"/> on <c> src </c> before returning, even in the case of
-    ///     an error.
+    /// if <c> true </c>, calls <see cref="CloseIO"/> on <c> src </c> before returning, even in the case of
+    /// an error.
     /// </param>
     /// <returns>
-    ///     a pointer to a new <see cref="Surface"/> structure or <c> null </c> on failure; call <see cref="GetError"/> for
-    ///     more information.
+    /// a pointer to a new <see cref="Surface"/> structure or <c> null </c> on failure; call <see cref="GetError"/> for
+    /// more information.
     /// </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -389,13 +383,13 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP(const char *file);</code>
     /// <summary>
-    ///     <para> Load a BMP image from a file. </para>
-    ///     <para> The new surface should be freed with <see cref="DestroySurface"/>. Not doing so will result in a memory leak. </para>
+    /// <para> Load a BMP image from a file. </para>
+    /// <para> The new surface should be freed with <see cref="DestroySurface"/>. Not doing so will result in a memory leak. </para>
     /// </summary>
     /// <param name="file"> the BMP file to load. </param>
     /// <returns>
-    ///     a pointer to a new <see cref="Surface"/> structure or <c> null </c> on failure; call <see cref="GetError"/> for
-    ///     more information.
+    /// a pointer to a new <see cref="Surface"/> structure or <c> null </c> on failure; call <see cref="GetError"/> for
+    /// more information.
     /// </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -407,18 +401,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio);</code>
     /// <summary>
-    ///     <para> Save a surface to a seekable SDL data stream in BMP format. </para>
-    ///     <para>
-    ///         Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the BMP directly. Other RGB formats with
-    ///         8-bit or higher get converted to a 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit surface
-    ///         before they are saved. YUV and paletted 1-bit and 4-bit formats are not supported.
-    ///     </para>
+    /// <para> Save a surface to a seekable SDL data stream in BMP format. </para>
+    /// <para>
+    /// Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the BMP directly. Other RGB formats with 8-bit
+    /// or higher get converted to a 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit surface before they
+    /// are saved. YUV and paletted 1-bit and 4-bit formats are not supported.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure containing the image to be saved. </param>
     /// <param name="dst"> a data stream to save to. </param>
     /// <param name="closeio">
-    ///     if <c> true </c>, calls <see cref="CloseIO"/> on <c> dst </c> before returning, even in the case of
-    ///     an error.
+    /// if <c> true </c>, calls <see cref="CloseIO"/> on <c> dst </c> before returning, even in the case of
+    /// an error.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
@@ -431,12 +425,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);</code>
     /// <summary>
-    ///     <para> Save a surface to a file. </para>
-    ///     <para>
-    ///         Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the BMP directly. Other RGB formats with
-    ///         8-bit or higher get converted to a 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit surface
-    ///         before they are saved. YUV and paletted 1-bit and 4-bit formats are not supported.
-    ///     </para>
+    /// <para> Save a surface to a file. </para>
+    /// <para>
+    /// Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the BMP directly. Other RGB formats with 8-bit
+    /// or higher get converted to a 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit surface before they
+    /// are saved. YUV and paletted 1-bit and 4-bit formats are not supported.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure containing the image to be saved. </param>
     /// <param name="file"> a file to save to. </param>
@@ -451,11 +445,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled);</code>
     /// <summary>
-    ///     <para> Set the RLE acceleration hint for a surface. </para>
-    ///     <para>
-    ///         If RLE is enabled, color key and alpha blending blits are much faster, but the surface must be locked before
-    ///         directly accessing the pixels.
-    ///     </para>
+    /// <para> Set the RLE acceleration hint for a surface. </para>
+    /// <para>
+    /// If RLE is enabled, color key and alpha blending blits are much faster, but the surface must be locked before directly
+    /// accessing the pixels.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to optimize. </param>
     /// <param name="enabled"> <c> true </c> to enable RLE acceleration, <c> false </c> to disable it. </param>
@@ -472,8 +466,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);</code>
     /// <summary>
-    ///     <para> Returns whether the surface is RLE enabled. </para>
-    ///     <para> It is safe to pass a <c> null </c> <c> surface </c> here; it will return false. </para>
+    /// <para> Returns whether the surface is RLE enabled. </para>
+    /// <para> It is safe to pass a <c> null </c> <c> surface </c> here; it will return false. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
     /// <returns> <c> true </c> if the surface is RLE enabled, <c> false </c> otherwise. </returns>
@@ -487,12 +481,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key);</code>
     /// <summary>
-    ///     <para> Set the color key (transparent pixel) in a surface. </para>
-    ///     <para>
-    ///         The color key defines a pixel value that will be treated as transparent in a blit. For example, one can use this
-    ///         to specify that cyan pixels should be considered transparent, and therefore not rendered.
-    ///     </para>
-    ///     <para> It is a pixel of the format used by the surface, as generated by <see cref="MapRGB"/>. </para>
+    /// <para> Set the color key (transparent pixel) in a surface. </para>
+    /// <para>
+    /// The color key defines a pixel value that will be treated as transparent in a blit. For example, one can use this to
+    /// specify that cyan pixels should be considered transparent, and therefore not rendered.
+    /// </para>
+    /// <para> It is a pixel of the format used by the surface, as generated by <see cref="MapRGB"/>. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
     /// <param name="enabled"> <c> true </c> to enable color key, false to disable color key. </param>
@@ -510,8 +504,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface);</code>
     /// <summary>
-    ///     <para> Returns whether the surface has a color key. </para>
-    ///     <para> It is safe to pass a <c> null </c> <c> surface </c> here; it will return false. </para>
+    /// <para> Returns whether the surface has a color key. </para>
+    /// <para> It is safe to pass a <c> null </c> <c> surface </c> here; it will return false. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
     /// <returns> <c> true </c> if the surface has a color key, <c> false </c> otherwise. </returns>
@@ -526,9 +520,9 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key);</code>
     /// <summary>
-    ///     <para> Get the color key (transparent pixel) for a surface. </para>
-    ///     <para> The color key is a pixel of the format used by the surface, as generated by <see cref="MapRGB"/>. </para>
-    ///     <para> If the surface doesn't have color key enabled this function returns false. </para>
+    /// <para> Get the color key (transparent pixel) for a surface. </para>
+    /// <para> The color key is a pixel of the format used by the surface, as generated by <see cref="MapRGB"/>. </para>
+    /// <para> If the surface doesn't have color key enabled this function returns false. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to query. </param>
     /// <param name="key"> a pointer filled in with the transparent pixel. </param>
@@ -544,12 +538,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);</code>
     /// <summary>
-    ///     <para> Set an additional color value multiplied into blit operations. </para>
-    ///     <para>
-    ///         When this surface is blitted, during the blit operation each source color channel is modulated by the appropriate
-    ///         color value according to the following formula:
-    ///     </para>
-    ///     <code>srcC = srcC * (color / 255)</code>
+    /// <para> Set an additional color value multiplied into blit operations. </para>
+    /// <para>
+    /// When this surface is blitted, during the blit operation each source color channel is modulated by the appropriate
+    /// color value according to the following formula:
+    /// </para>
+    /// <code>srcC = srcC * (color / 255)</code>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
     /// <param name="r"> the red color value multiplied into blit operations. </param>
@@ -583,12 +577,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha);</code>
     /// <summary>
-    ///     <para> Set an additional alpha value used in blit operations. </para>
-    ///     <para>
-    ///         When this surface is blitted, during the blit operation the source alpha value is modulated by this alpha value
-    ///         according to the following formula:
-    ///     </para>
-    ///     <code>srcA = srcA * (alpha / 255)</code>
+    /// <para> Set an additional alpha value used in blit operations. </para>
+    /// <para>
+    /// When this surface is blitted, during the blit operation the source alpha value is modulated by this alpha value
+    /// according to the following formula:
+    /// </para>
+    /// <code>srcA = srcA * (alpha / 255)</code>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
     /// <param name="alpha"> the alpha value multiplied into blit operations. </param>
@@ -618,11 +612,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode);</code>
     /// <summary>
-    ///     <para> Set the blend mode used for blit operations. </para>
-    ///     <para>
-    ///         To copy a surface to another surface (or texture) without blending with the existing data, the blendmode of the
-    ///         SOURCE surface should be set to <see cref="BlendMode.None"/>.
-    ///     </para>
+    /// <para> Set the blend mode used for blit operations. </para>
+    /// <para>
+    /// To copy a surface to another surface (or texture) without blending with the existing data, the blendmode of the
+    /// SOURCE surface should be set to <see cref="BlendMode.None"/>.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to update. </param>
     /// <param name="blendMode"> the <see cref="BlendMode"/> to use for blit blending. </param>
@@ -650,14 +644,14 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect);</code>
     /// <summary>
-    ///     <para> Set the clipping rectangle for a surface. </para>
-    ///     <para> When <c> surface </c> is the destination of a blit, only the area within the clip rectangle is drawn into. </para>
-    ///     <para> Note that blits are automatically clipped to the edges of the source and destination surfaces. </para>
+    /// <para> Set the clipping rectangle for a surface. </para>
+    /// <para> When <c> surface </c> is the destination of a blit, only the area within the clip rectangle is drawn into. </para>
+    /// <para> Note that blits are automatically clipped to the edges of the source and destination surfaces. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to be clipped. </param>
     /// <param name="rect">
-    ///     the <see cref="Rect"/> structure representing the clipping rectangle, or <c> null </c> to disable
-    ///     clipping.
+    /// the <see cref="Rect"/> structure representing the clipping rectangle, or <c> null </c> to disable
+    /// clipping.
     /// </param>
     /// <returns> true if the rectangle intersects the surface, otherwise false and blits will be completely clipped. </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
@@ -670,14 +664,14 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect);</code>
     /// <summary>
-    ///     <para> Set the clipping rectangle for a surface. </para>
-    ///     <para> When <c> surface </c> is the destination of a blit, only the area within the clip rectangle is drawn into. </para>
-    ///     <para> Note that blits are automatically clipped to the edges of the source and destination surfaces. </para>
+    /// <para> Set the clipping rectangle for a surface. </para>
+    /// <para> When <c> surface </c> is the destination of a blit, only the area within the clip rectangle is drawn into. </para>
+    /// <para> Note that blits are automatically clipped to the edges of the source and destination surfaces. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure to be clipped. </param>
     /// <param name="rect">
-    ///     the <see cref="Rect"/> structure representing the clipping rectangle, or <c> null </c> to disable
-    ///     clipping.
+    /// the <see cref="Rect"/> structure representing the clipping rectangle, or <c> null </c> to disable
+    /// clipping.
     /// </param>
     /// <returns> true if the rectangle intersects the surface, otherwise false and blits will be completely clipped. </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -689,8 +683,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect);</code>
     /// <summary>
-    ///     <para> Get the clipping rectangle for a surface. </para>
-    ///     <para> When <c> surface </c> is the destination of a blit, only the area within the clip rectangle is drawn into. </para>
+    /// <para> Get the clipping rectangle for a surface. </para>
+    /// <para> When <c> surface </c> is the destination of a blit, only the area within the clip rectangle is drawn into. </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> structure representing the surface to be clipped. </param>
     /// <param name="rect"> an <see cref="Rect"/> structure filled in with the clipping rectangle for the surface. </param>
@@ -716,9 +710,9 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);</code>
     /// <summary>
-    ///     <para> Creates a new surface identical to the existing surface. </para>
-    ///     <para> If the original surface has alternate images, the new surface will have a reference to them as well. </para>
-    ///     <para> The returned surface should be freed with <see cref="DestroySurface"/>. </para>
+    /// <para> Creates a new surface identical to the existing surface. </para>
+    /// <para> If the original surface has alternate images, the new surface will have a reference to them as well. </para>
+    /// <para> The returned surface should be freed with <see cref="DestroySurface"/>. </para>
     /// </summary>
     /// <param name="surface"> the surface to duplicate. </param>
     /// <returns> a copy of the surface or <c> null </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -731,8 +725,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_ScaleMode scaleMode);</code>
     /// <summary>
-    ///     <para> Creates a new surface identical to the existing surface, scaled to the desired size. </para>
-    ///     <para> The returned surface should be freed with <see cref="DestroySurface"/>. </para>
+    /// <para> Creates a new surface identical to the existing surface, scaled to the desired size. </para>
+    /// <para> The returned surface should be freed with <see cref="DestroySurface"/>. </para>
     /// </summary>
     /// <param name="surface"> the surface to duplicate and scale. </param>
     /// <param name="width"> the width of the new surface. </param>
@@ -747,23 +741,23 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format);</code>
     /// <summary>
-    ///     <para> Copy an existing surface to a new surface of the specified format. </para>
-    ///     <para>
-    ///         This function is used to optimize images for faster <c> repeat </c> blitting. This is accomplished by converting
-    ///         the original and storing the result as a new surface. The new, optimized surface can then be used as the source for
-    ///         future blits, making them faster.
-    ///     </para>
-    ///     <para>
-    ///         If you are converting to an indexed surface and want to map colors to a palette, you can use
-    ///         <see cref="ConvertSurfaceAndColorspace"/> instead.
-    ///     </para>
-    ///     <para> If the original surface has alternate images, the new surface will have a reference to them as well. </para>
+    /// <para> Copy an existing surface to a new surface of the specified format. </para>
+    /// <para>
+    /// This function is used to optimize images for faster <c> repeat </c> blitting. This is accomplished by converting the
+    /// original and storing the result as a new surface. The new, optimized surface can then be used as the source for future
+    /// blits, making them faster.
+    /// </para>
+    /// <para>
+    /// If you are converting to an indexed surface and want to map colors to a palette, you can use
+    /// <see cref="ConvertSurfaceAndColorspace"/> instead.
+    /// </para>
+    /// <para> If the original surface has alternate images, the new surface will have a reference to them as well. </para>
     /// </summary>
     /// <param name="surface"> the existing <see cref="Surface"/> structure to convert. </param>
     /// <param name="format"> the new pixel format. </param>
     /// <returns>
-    ///     the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
-    ///     for more information.
+    /// the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
+    /// for more information.
     /// </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -775,12 +769,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);</code>
     /// <summary>
-    ///     <para> Copy an existing surface to a new surface of the specified format and colorspace. </para>
-    ///     <para>
-    ///         This function converts an existing surface to a new format and colorspace and returns the new surface. This will
-    ///         perform any pixel format and colorspace conversion needed.
-    ///     </para>
-    ///     <para> If the original surface has alternate images, the new surface will have a reference to them as well. </para>
+    /// <para> Copy an existing surface to a new surface of the specified format and colorspace. </para>
+    /// <para>
+    /// This function converts an existing surface to a new format and colorspace and returns the new surface. This will
+    /// perform any pixel format and colorspace conversion needed.
+    /// </para>
+    /// <para> If the original surface has alternate images, the new surface will have a reference to them as well. </para>
     /// </summary>
     /// <param name="surface"> the existing <see cref="Surface"/> structure to convert. </param>
     /// <param name="format"> the new pixel format. </param>
@@ -788,8 +782,8 @@ public static partial class SDL
     /// <param name="colorspace"> the new colorspace. </param>
     /// <param name="props"> an SDL_PropertiesID with additional color properties, or 0. </param>
     /// <returns>
-    ///     the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
-    ///     for more information.
+    /// the new <see cref="Surface"/> structure that is created or <c> null </c> on failure; call <see cref="GetError"/>
+    /// for more information.
     /// </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -815,8 +809,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso
@@ -845,8 +839,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso
@@ -875,8 +869,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso
@@ -905,8 +899,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso
@@ -939,8 +933,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="ConvertPixels(int, int, PixelFormat, byte[], int, PixelFormat, out byte[], int)"/>
@@ -976,8 +970,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="ConvertPixels(int, int, PixelFormat, byte[], int, PixelFormat, out byte[], int)"/>
@@ -1013,8 +1007,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="ConvertPixels(int, int, PixelFormat, byte[], int, PixelFormat, out byte[], int)"/>
@@ -1050,8 +1044,8 @@ public static partial class SDL
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="ConvertPixels(int, int, PixelFormat, byte[], int, PixelFormat, out byte[], int)"/>
@@ -1073,8 +1067,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch, bool linear);</code>
     /// <summary>
-    ///     <para> Premultiply the alpha on a block of pixels. </para>
-    ///     <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
+    /// <para> Premultiply the alpha on a block of pixels. </para>
+    /// <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
     /// </summary>
     /// <param name="width"> the width of the block to convert, in pixels. </param>
     /// <param name="height"> the height of the block to convert, in pixels. </param>
@@ -1085,13 +1079,13 @@ public static partial class SDL
     /// <param name="dst"> a pointer to be filled in with premultiplied pixel data. </param>
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <param name="linear">
-    ///     true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
-    ///     sRGB space.
+    /// true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
+    /// sRGB space.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PremultiplyAlpha"),
@@ -1109,8 +1103,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch, bool linear);</code>
     /// <summary>
-    ///     <para> Premultiply the alpha on a block of pixels. </para>
-    ///     <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
+    /// <para> Premultiply the alpha on a block of pixels. </para>
+    /// <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
     /// </summary>
     /// <param name="width"> the width of the block to convert, in pixels. </param>
     /// <param name="height"> the height of the block to convert, in pixels. </param>
@@ -1121,13 +1115,13 @@ public static partial class SDL
     /// <param name="dst"> a pointer to be filled in with premultiplied pixel data. </param>
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <param name="linear">
-    ///     true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
-    ///     sRGB space.
+    /// true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
+    /// sRGB space.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PremultiplyAlpha"),
@@ -1145,8 +1139,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch, bool linear);</code>
     /// <summary>
-    ///     <para> Premultiply the alpha on a block of pixels. </para>
-    ///     <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
+    /// <para> Premultiply the alpha on a block of pixels. </para>
+    /// <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
     /// </summary>
     /// <param name="width"> the width of the block to convert, in pixels. </param>
     /// <param name="height"> the height of the block to convert, in pixels. </param>
@@ -1157,13 +1151,13 @@ public static partial class SDL
     /// <param name="dst"> a pointer to be filled in with premultiplied pixel data. </param>
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <param name="linear">
-    ///     true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
-    ///     sRGB space.
+    /// true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
+    /// sRGB space.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PremultiplyAlpha"),
@@ -1181,8 +1175,8 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch, bool linear);</code>
     /// <summary>
-    ///     <para> Premultiply the alpha on a block of pixels. </para>
-    ///     <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
+    /// <para> Premultiply the alpha on a block of pixels. </para>
+    /// <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
     /// </summary>
     /// <param name="width"> the width of the block to convert, in pixels. </param>
     /// <param name="height"> the height of the block to convert, in pixels. </param>
@@ -1193,13 +1187,13 @@ public static partial class SDL
     /// <param name="dst"> a pointer to be filled in with premultiplied pixel data. </param>
     /// <param name="dstPitch"> the pitch of the destination pixels, in bytes. </param>
     /// <param name="linear">
-    ///     true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
-    ///     sRGB space.
+    /// true to convert from sRGB to linear space for the alpha multiplication, false to do multiplication in
+    /// sRGB space.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
-    ///     The same destination pixels should not be used from two threads at once. It is safe to use the same source
-    ///     pixels from multiple threads.
+    /// The same destination pixels should not be used from two threads at once. It is safe to use the same source
+    /// pixels from multiple threads.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PremultiplyAlpha"),
@@ -1217,13 +1211,13 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, bool linear);</code>
     /// <summary>
-    ///     <para> Premultiply the alpha in a surface. </para>
-    ///     <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
+    /// <para> Premultiply the alpha in a surface. </para>
+    /// <para> This is safe to use with src == dst, but not for other overlapping areas. </para>
     /// </summary>
     /// <param name="surface"> the surface to modify. </param>
     /// <param name="linear">
-    ///     <c> true </c> to convert from sRGB to linear space for the alpha multiplication, false to do
-    ///     multiplication in sRGB space.
+    /// <c> true </c> to convert from sRGB to linear space for the alpha multiplication, false to do
+    /// multiplication in sRGB space.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
@@ -1235,12 +1229,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a);</code>
     /// <summary>
-    ///     <para> Clear a surface with a specific color, with floating point precision. </para>
-    ///     <para> This function handles all surface formats, and ignores any clip rectangle. </para>
-    ///     <para>
-    ///         If the surface is YUV, the color is assumed to be in the sRGB colorspace, otherwise the color is assumed to be in
-    ///         the colorspace of the suface.
-    ///     </para>
+    /// <para> Clear a surface with a specific color, with floating point precision. </para>
+    /// <para> This function handles all surface formats, and ignores any clip rectangle. </para>
+    /// <para>
+    /// If the surface is YUV, the color is assumed to be in the sRGB colorspace, otherwise the color is assumed to be in the
+    /// colorspace of the suface.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the <see cref="Surface"/> to clear. </param>
     /// <param name="r"> the red component of the pixel, normally in the range 0-1. </param>
@@ -1256,21 +1250,21 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color);</code>
     /// <summary>
-    ///     <para> Perform a fast fill of a rectangle with a specific color. </para>
-    ///     <para>
-    ///         <c> color </c> should be a pixel of the format used by the surface, and can be generated by <see cref="MapRGB"/>
-    ///         or <see cref="MapRGBA"/>. If the color value contains an alpha component then the destination is simply filled with
-    ///         that alpha information, no blending takes place.
-    ///     </para>
-    ///     <para>
-    ///         If there is a clip rectangle set on the destination (set via <see cref="SetSurfaceClipRect(nint, nint)"/>), then
-    ///         this function will fill based on the intersection of the clip rectangle and <c> rect </c>.
-    ///     </para>
+    /// <para> Perform a fast fill of a rectangle with a specific color. </para>
+    /// <para>
+    /// <c> color </c> should be a pixel of the format used by the surface, and can be generated by <see cref="MapRGB"/> or
+    /// <see cref="MapRGBA"/>. If the color value contains an alpha component then the destination is simply filled with that alpha
+    /// information, no blending takes place.
+    /// </para>
+    /// <para>
+    /// If there is a clip rectangle set on the destination (set via <see cref="SetSurfaceClipRect(nint, nint)"/>), then this
+    /// function will fill based on the intersection of the clip rectangle and <c> rect </c>.
+    /// </para>
     /// </summary>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the drawing target. </param>
     /// <param name="rect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to fill, or <c> null </c> to fill the entire
-    ///     surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to fill, or <c> null </c> to fill the entire
+    /// surface.
     /// </param>
     /// <param name="color"> the color to fill with. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1284,21 +1278,21 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color);</code>
     /// <summary>
-    ///     <para> Perform a fast fill of a rectangle with a specific color. </para>
-    ///     <para>
-    ///         <c> color </c> should be a pixel of the format used by the surface, and can be generated by <see cref="MapRGB"/>
-    ///         or <see cref="MapRGBA"/>. If the color value contains an alpha component then the destination is simply filled with
-    ///         that alpha information, no blending takes place.
-    ///     </para>
-    ///     <para>
-    ///         If there is a clip rectangle set on the destination (set via <see cref="SetSurfaceClipRect(nint, nint)"/>), then
-    ///         this function will fill based on the intersection of the clip rectangle and <c> rect </c>.
-    ///     </para>
+    /// <para> Perform a fast fill of a rectangle with a specific color. </para>
+    /// <para>
+    /// <c> color </c> should be a pixel of the format used by the surface, and can be generated by <see cref="MapRGB"/> or
+    /// <see cref="MapRGBA"/>. If the color value contains an alpha component then the destination is simply filled with that alpha
+    /// information, no blending takes place.
+    /// </para>
+    /// <para>
+    /// If there is a clip rectangle set on the destination (set via <see cref="SetSurfaceClipRect(nint, nint)"/>), then this
+    /// function will fill based on the intersection of the clip rectangle and <c> rect </c>.
+    /// </para>
     /// </summary>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the drawing target. </param>
     /// <param name="rect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to fill, or <c> null </c> to fill the entire
-    ///     surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to fill, or <c> null </c> to fill the entire
+    /// surface.
     /// </param>
     /// <param name="color"> the color to fill with. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1312,16 +1306,16 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color);</code>
     /// <summary>
-    ///     <para> Perform a fast fill of a set of rectangles with a specific color. </para>
-    ///     <para>
-    ///         <c> color </c> should be a pixel of the format used by the surface, and can be generated by <see cref="MapRGB"/>
-    ///         or <see cref="MapRGBA"/>. If the color value contains an alpha component then the destination is simply filled with
-    ///         that alpha information, no blending takes place.
-    ///     </para>
-    ///     <para>
-    ///         If there is a clip rectangle set on the destination (set via <see cref="SetSurfaceClipRect(nint, nint)"/>), then
-    ///         this function will fill based on the intersection of the clip rectangle and `rect`.
-    ///     </para>
+    /// <para> Perform a fast fill of a set of rectangles with a specific color. </para>
+    /// <para>
+    /// <c> color </c> should be a pixel of the format used by the surface, and can be generated by <see cref="MapRGB"/> or
+    /// <see cref="MapRGBA"/>. If the color value contains an alpha component then the destination is simply filled with that alpha
+    /// information, no blending takes place.
+    /// </para>
+    /// <para>
+    /// If there is a clip rectangle set on the destination (set via <see cref="SetSurfaceClipRect(nint, nint)"/>), then this
+    /// function will fill based on the intersection of the clip rectangle and `rect`.
+    /// </para>
     /// </summary>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the drawing target. </param>
     /// <param name="rects"> an array of <see cref="Rect"/> representing the rectangles to fill. </param>
@@ -1341,14 +1335,14 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Performs a fast blit from the source surface to the destination surface with clipping. </para>
-    ///     <para>
-    ///         If either <c> srcrect </c> or <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or
-    ///         <c> dst </c>) is copied while ensuring clipping to <c> dst.clip_rect </c>.
-    ///     </para>
-    ///     <para> The blit function should not be called on a locked surface. </para>
-    ///     <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
-    ///     <code>
+    /// <para> Performs a fast blit from the source surface to the destination surface with clipping. </para>
+    /// <para>
+    /// If either <c> srcrect </c> or <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>)
+    /// is copied while ensuring clipping to <c> dst.clip_rect </c>.
+    /// </para>
+    /// <para> The blit function should not be called on a locked surface. </para>
+    /// <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
+    /// <code>
     ///  RGBA->RGB:
     ///       Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///        alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1358,7 +1352,7 @@ public static partial class SDL
     ///        if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1367,7 +1361,7 @@ public static partial class SDL
     ///   both:
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     source color key.
-    ///
+    /// 
     /// RGBA->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1377,7 +1371,7 @@ public static partial class SDL
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGB:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1390,14 +1384,14 @@ public static partial class SDL
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
-    ///     entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
+    /// entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
-    ///     <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
-    ///     width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
+    /// the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
+    /// <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
+    /// width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1409,14 +1403,14 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Performs a fast blit from the source surface to the destination surface. </para>
-    ///     <para>
-    ///         This assumes that the source and destination rectangles are the same size. If either <c> srcrect </c> or
-    ///         <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>) is copied. The final blit
-    ///         rectangles are saved in <c> srcrect </c> and <c> dstrect </c> after all clipping is performed.
-    ///     </para>
-    ///     <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
-    ///     <code>
+    /// <para> Performs a fast blit from the source surface to the destination surface. </para>
+    /// <para>
+    /// This assumes that the source and destination rectangles are the same size. If either <c> srcrect </c> or
+    /// <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>) is copied. The final blit rectangles
+    /// are saved in <c> srcrect </c> and <c> dstrect </c> after all clipping is performed.
+    /// </para>
+    /// <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
+    /// <code>
     ///  RGBA->RGB:
     ///       Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///        alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1426,7 +1420,7 @@ public static partial class SDL
     ///        if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1435,7 +1429,7 @@ public static partial class SDL
     ///   both:
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     source color key.
-    ///
+    /// 
     /// RGBA->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1445,7 +1439,7 @@ public static partial class SDL
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGB:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1458,14 +1452,14 @@ public static partial class SDL
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
-    ///     entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
+    /// entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
-    ///     <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
-    ///     width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
+    /// the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
+    /// <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
+    /// width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1477,14 +1471,14 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Performs a fast blit from the source surface to the destination surface. </para>
-    ///     <para>
-    ///         This assumes that the source and destination rectangles are the same size. If either <c> srcrect </c> or
-    ///         <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>) is copied. The final blit
-    ///         rectangles are saved in <c> srcrect </c> and <c> dstrect </c> after all clipping is performed.
-    ///     </para>
-    ///     <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
-    ///     <code>
+    /// <para> Performs a fast blit from the source surface to the destination surface. </para>
+    /// <para>
+    /// This assumes that the source and destination rectangles are the same size. If either <c> srcrect </c> or
+    /// <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>) is copied. The final blit rectangles
+    /// are saved in <c> srcrect </c> and <c> dstrect </c> after all clipping is performed.
+    /// </para>
+    /// <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
+    /// <code>
     ///  RGBA->RGB:
     ///       Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///        alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1494,7 +1488,7 @@ public static partial class SDL
     ///        if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1503,7 +1497,7 @@ public static partial class SDL
     ///   both:
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     source color key.
-    ///
+    /// 
     /// RGBA->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1513,7 +1507,7 @@ public static partial class SDL
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGB:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1526,14 +1520,14 @@ public static partial class SDL
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
-    ///     entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
+    /// entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
-    ///     <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
-    ///     width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
+    /// the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
+    /// <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
+    /// width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1545,14 +1539,14 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Performs a fast blit from the source surface to the destination surface. </para>
-    ///     <para>
-    ///         This assumes that the source and destination rectangles are the same size. If either <c> srcrect </c> or
-    ///         <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>) is copied. The final blit
-    ///         rectangles are saved in <c> srcrect </c> and <c> dstrect </c> after all clipping is performed.
-    ///     </para>
-    ///     <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
-    ///     <code>
+    /// <para> Performs a fast blit from the source surface to the destination surface. </para>
+    /// <para>
+    /// This assumes that the source and destination rectangles are the same size. If either <c> srcrect </c> or
+    /// <c> dstrect </c> are <c> null </c>, the entire surface (<c> src </c> or <c> dst </c>) is copied. The final blit rectangles
+    /// are saved in <c> srcrect </c> and <c> dstrect </c> after all clipping is performed.
+    /// </para>
+    /// <para> The blit semantics for surfaces with and without blending and colorkey are defined as follows: </para>
+    /// <code>
     ///  RGBA->RGB:
     ///       Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///        alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1562,7 +1556,7 @@ public static partial class SDL
     ///        if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1571,7 +1565,7 @@ public static partial class SDL
     ///   both:
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     source color key.
-    ///
+    /// 
     /// RGBA->RGBA:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -1581,7 +1575,7 @@ public static partial class SDL
     ///     if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
     ///     RGB values of the source color key, ignoring alpha in the
     ///     comparison.
-    ///
+    /// 
     /// RGB->RGB:
     ///   Source surface blend mode set to SDL_BLENDMODE_BLEND:
     ///     alpha-blend (using the source per-surface alpha)
@@ -1594,14 +1588,14 @@ public static partial class SDL
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
-    ///     entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c>to copy the
+    /// entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
-    ///     <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
-    ///     width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
+    /// the <see cref="Rect"/> structure representing the x and y position in the destination surface, or
+    /// <c> null </c> for (0,0). The width and height are ignored, and are copied from <c> srcrect </c>. If you want a specific
+    /// width and height, you should use <see cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1613,18 +1607,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform low-level surface blitting only. </para>
-    ///     <para>
-    ///         This is a semi-private blit function and it performs low-level surface blitting, assuming the input rectangles
-    ///         have already been clipped.
-    ///     </para>
+    /// <para> Perform low-level surface blitting only. </para>
+    /// <para>
+    /// This is a semi-private blit function and it performs low-level surface blitting, assuming the input rectangles have
+    /// already been clipped.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect"> the <see cref="Rect"/> structure representing the rectangle to be copied, may not be <c> null </c>. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, may
-    ///     not be <c> null </c>.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, may
+    /// not be <c> null </c>.
     /// </param>
     /// <returns> <c> true on </c> success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1639,13 +1633,13 @@ public static partial class SDL
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1661,13 +1655,13 @@ public static partial class SDL
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1684,13 +1678,13 @@ public static partial class SDL
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1707,13 +1701,13 @@ public static partial class SDL
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1731,18 +1725,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary>
-    ///     <para> Perform low-level surface scaled blitting only. </para>
-    ///     <para>
-    ///         This is a semi-private function and it performs low-level surface blitting, assuming the input rectangles have
-    ///         already been clipped.
-    ///     </para>
+    /// <para> Perform low-level surface scaled blitting only. </para>
+    /// <para>
+    /// This is a semi-private function and it performs low-level surface blitting, assuming the input rectangles have
+    /// already been clipped.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect"> the <see cref="Rect"/> structure representing the rectangle to be copied, may not be <c> null </c>. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, may
-    ///     not be <c> null </c>.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, may
+    /// not be <c> null </c>.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1762,13 +1756,13 @@ public static partial class SDL
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
-    ///     surface..
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
+    /// surface..
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     NULL to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// NULL to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1785,13 +1779,13 @@ public static partial class SDL
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
-    ///     surface..
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
+    /// surface..
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     NULL to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// NULL to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1807,13 +1801,13 @@ public static partial class SDL
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
-    ///     surface..
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
+    /// surface..
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     NULL to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// NULL to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1829,13 +1823,13 @@ public static partial class SDL
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
-    ///     surface..
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or NULL to copy the entire
+    /// surface..
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     NULL to fill the entire destination surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// NULL to fill the entire destination surface.
     /// </param>
     /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -1849,18 +1843,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
+    /// <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1873,18 +1867,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
+    /// <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1897,18 +1891,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
+    /// <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1921,18 +1915,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
+    /// <para> Perform a tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para> The pixels in <c> srcrect </c> will be repeated as many times as needed to completely fill <c> dstrect </c>. </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1945,26 +1939,26 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
-    ///         <c> dstrect </c>.
-    ///     </para>
+    /// <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
+    /// <c> dstrect </c>.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="scale">
-    ///     the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
-    ///     of 2 would fill 64x64 tiles.
+    /// the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
+    /// of 2 would fill 64x64 tiles.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -1982,26 +1976,26 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
-    ///         <c> dstrect </c>.
-    ///     </para>
+    /// <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
+    /// <c> dstrect </c>.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="scale">
-    ///     the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
-    ///     of 2 would fill 64x64 tiles.
+    /// the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
+    /// of 2 would fill 64x64 tiles.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2019,26 +2013,26 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
-    ///         <c> dstrect </c>.
-    ///     </para>
+    /// <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
+    /// <c> dstrect </c>.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="scale">
-    ///     the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
-    ///     of 2 would fill 64x64 tiles.
+    /// the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
+    /// of 2 would fill 64x64 tiles.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2056,26 +2050,26 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
-    ///         <c> dstrect </c>.
-    ///     </para>
+    /// <para> Perform a scaled and tiled blit to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in <c> srcrect </c> will be scaled and repeated as many times as needed to completely fill
+    /// <c> dstrect </c>.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    ///     the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
     /// </param>
     /// <param name="scale">
-    ///     the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
-    ///     of 2 would fill 64x64 tiles.
+    /// the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale
+    /// of 2 would fill 64x64 tiles.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2093,32 +2087,32 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and
-    ///         the sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into
-    ///         the corners of the destination rectangle. The sides and center are then stretched into place to cover the remaining
-    ///         destination rectangle.
-    ///     </para>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    ///     <c> null </c> to use the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
     /// </param>
     /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
     /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
     /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
     /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
     /// <param name="scale">
-    ///     the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    ///     for an unscaled blit.
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2140,32 +2134,32 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and
-    ///         the sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into
-    ///         the corners of the destination rectangle. The sides and center are then stretched into place to cover the remaining
-    ///         destination rectangle.
-    ///     </para>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    ///     <c> null </c> to use the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
     /// </param>
     /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
     /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
     /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
     /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
     /// <param name="scale">
-    ///     the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    ///     for an unscaled blit.
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2187,32 +2181,32 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and
-    ///         the sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into
-    ///         the corners of the destination rectangle. The sides and center are then stretched into place to cover the remaining
-    ///         destination rectangle.
-    ///     </para>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    ///     <c> null </c> to use the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
     /// </param>
     /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
     /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
     /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
     /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
     /// <param name="scale">
-    ///     the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    ///     for an unscaled blit.
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2234,32 +2228,32 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
-    ///     <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    ///     <para>
-    ///         The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and
-    ///         the sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into
-    ///         the corners of the destination rectangle. The sides and center are then stretched into place to cover the remaining
-    ///         destination rectangle.
-    ///     </para>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
     /// </summary>
     /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
     /// <param name="srcrect">
-    ///     the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    ///     <c> null </c> to use the entire surface.
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
     /// </param>
     /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
     /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
     /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
     /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
     /// <param name="scale">
-    ///     the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    ///     for an unscaled blit.
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
     /// </param>
     /// <param name="scaleMode"> scale algorithm to be used. </param>
     /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
     /// <param name="dstrect">
-    ///     the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    ///     <c> null </c> to fill the entire surface.
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
     /// </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
@@ -2281,18 +2275,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);</code>
     /// <summary>
-    ///     <para> Map an RGB triple to an opaque pixel value for a surface. </para>
-    ///     <para>
-    ///         This function maps the RGB color value to the specified pixel format and returns the pixel value best
-    ///         approximating the given RGB color value for the given pixel format.
-    ///     </para>
-    ///     <para> If the surface has a palette, the index of the closest matching color in the palette will be returned. </para>
-    ///     <para> If the surface pixel format has an alpha component it will be returned as all 1 bits (fully opaque). </para>
-    ///     <para>
-    ///         If the pixel format bpp (color depth) is less than 32-bpp then the unused upper bits of the return value can
-    ///         safely be ignored (e.g., with a 16-bpp format the return value can be assigned to a Uint16, and similarly a Uint8
-    ///         for an 8-bpp format).
-    ///     </para>
+    /// <para> Map an RGB triple to an opaque pixel value for a surface. </para>
+    /// <para>
+    /// This function maps the RGB color value to the specified pixel format and returns the pixel value best approximating
+    /// the given RGB color value for the given pixel format.
+    /// </para>
+    /// <para> If the surface has a palette, the index of the closest matching color in the palette will be returned. </para>
+    /// <para> If the surface pixel format has an alpha component it will be returned as all 1 bits (fully opaque). </para>
+    /// <para>
+    /// If the pixel format bpp (color depth) is less than 32-bpp then the unused upper bits of the return value can safely
+    /// be ignored (e.g., with a 16-bpp format the return value can be assigned to a Uint16, and similarly a Uint8 for an 8-bpp
+    /// format).
+    /// </para>
     /// </summary>
     /// <param name="surface"> the surface to use for the pixel format and palette. </param>
     /// <param name="r"> the red component of the pixel in the range 0-255. </param>
@@ -2308,21 +2302,21 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a);</code>
     /// <summary>
-    ///     <para> Map an RGBA quadruple to a pixel value for a surface. </para>
-    ///     <para>
-    ///         This function maps the RGBA color value to the specified pixel format and returns the pixel value best
-    ///         approximating the given RGBA color value for the given pixel format.
-    ///     </para>
-    ///     <para>
-    ///         If the surface pixel format has no alpha component the alpha value will be ignored (as it will be in formats with
-    ///         a palette).
-    ///     </para>
-    ///     <para> If the surface has a palette, the index of the closest matching color in the palette will be returned. </para>
-    ///     <para>
-    ///         If the pixel format bpp (color depth) is less than 32-bpp then the unused upper bits of the return value can
-    ///         safely be ignored (e.g., with a 16-bpp format the return value can be assigned to a Uint16, and similarly a Uint8
-    ///         for an 8-bpp format).
-    ///     </para>
+    /// <para> Map an RGBA quadruple to a pixel value for a surface. </para>
+    /// <para>
+    /// This function maps the RGBA color value to the specified pixel format and returns the pixel value best approximating
+    /// the given RGBA color value for the given pixel format.
+    /// </para>
+    /// <para>
+    /// If the surface pixel format has no alpha component the alpha value will be ignored (as it will be in formats with a
+    /// palette).
+    /// </para>
+    /// <para> If the surface has a palette, the index of the closest matching color in the palette will be returned. </para>
+    /// <para>
+    /// If the pixel format bpp (color depth) is less than 32-bpp then the unused upper bits of the return value can safely
+    /// be ignored (e.g., with a 16-bpp format the return value can be assigned to a Uint16, and similarly a Uint8 for an 8-bpp
+    /// format).
+    /// </para>
     /// </summary>
     /// <param name="surface"> the surface to use for the pixel format and palette. </param>
     /// <param name="r"> the red component of the pixel in the range 0-255. </param>
@@ -2339,16 +2333,15 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);</code>
     /// <summary>
-    ///     <para> Retrieves a single pixel from a surface. </para>
-    ///     <para>
-    ///         This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
-    ///         game engine.
-    ///     </para>
-    ///     <para>
-    ///         Like <see cref="GetRGBA(uint, in PixelFormatDetails, IntPtr, out byte, out byte, out byte, out byte)"/>, this
-    ///         uses the entire 0..255 range when converting color components from pixel formats with less than 8 bits per RGB
-    ///         component.
-    ///     </para>
+    /// <para> Retrieves a single pixel from a surface. </para>
+    /// <para>
+    /// This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
+    /// game engine.
+    /// </para>
+    /// <para>
+    /// Like <see cref="GetRGBA(uint, in PixelFormatDetails, IntPtr, out byte, out byte, out byte, out byte)"/>, this uses
+    /// the entire 0..255 range when converting color components from pixel formats with less than 8 bits per RGB component.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the surface to read. </param>
     /// <param name="x"> the horizontal coordinate, 0 &lt;= x &lt; width. </param>
@@ -2373,30 +2366,30 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a);</code>
     /// <summary>
-    ///     <para> Retrieves a single pixel from a surface. </para>
-    ///     <para>
-    ///         This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
-    ///         game engine.
-    ///     </para>
+    /// <para> Retrieves a single pixel from a surface. </para>
+    /// <para>
+    /// This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
+    /// game engine.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the surface to read. </param>
     /// <param name="x"> the horizontal coordinate, 0 &lt;= x &lt; width. </param>
     /// <param name="y"> the vertical coordinate, 0 &lt;= y &lt; height. </param>
     /// <param name="r">
-    ///     a pointer filled in with the red channel, normally in the range 0-1, or <c> null </c> to ignore this
-    ///     channel.
+    /// a pointer filled in with the red channel, normally in the range 0-1, or <c> null </c> to ignore this
+    /// channel.
     /// </param>
     /// <param name="g">
-    ///     a pointer filled in with the green channel, normally in the range 0-1, or <c> null </c> to ignore this
-    ///     channel.
+    /// a pointer filled in with the green channel, normally in the range 0-1, or <c> null </c> to ignore this
+    /// channel.
     /// </param>
     /// <param name="b">
-    ///     a pointer filled in with the blue channel, normally in the range 0-1, or <c> null </c> to ignore this
-    ///     channel.
+    /// a pointer filled in with the blue channel, normally in the range 0-1, or <c> null </c> to ignore this
+    /// channel.
     /// </param>
     /// <param name="a">
-    ///     a pointer filled in with the alpha channel, normally in the range 0-1, or <c> null </c> to ignore this
-    ///     channel.
+    /// a pointer filled in with the alpha channel, normally in the range 0-1, or <c> null </c> to ignore this
+    /// channel.
     /// </param>
     /// <returns> true on success or false on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> This function is not thread safe. </threadsafety>
@@ -2414,15 +2407,15 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a);</code>
     /// <summary>
-    ///     <para> Writes a single pixel to a surface. </para>
-    ///     <para>
-    ///         This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
-    ///         game engine.
-    ///     </para>
-    ///     <para>
-    ///         Like <see cref="MapRGBA"/>, this uses the entire 0..255 range when converting color components from pixel formats
-    ///         with less than 8 bits per RGB component.
-    ///     </para>
+    /// <para> Writes a single pixel to a surface. </para>
+    /// <para>
+    /// This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
+    /// game engine.
+    /// </para>
+    /// <para>
+    /// Like <see cref="MapRGBA"/>, this uses the entire 0..255 range when converting color components from pixel formats
+    /// with less than 8 bits per RGB component.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the surface to write. </param>
     /// <param name="x"> the horizontal coordinate, 0 &lt;= x &lt; width. </param>
@@ -2441,11 +2434,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, float g, float b, float a);</code>
     /// <summary>
-    ///     <para> Writes a single pixel to a surface. </para>
-    ///     <para>
-    ///         This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
-    ///         game engine.
-    ///     </para>
+    /// <para> Writes a single pixel to a surface. </para>
+    /// <para>
+    /// This function prioritizes correctness over speed: it is suitable for unit tests, but is not intended for use in a
+    /// game engine.
+    /// </para>
     /// </summary>
     /// <param name="surface"> the surface to write. </param>
     /// <param name="x"> the horizontal coordinate, 0 &lt;= x &lt; width. </param>

@@ -33,10 +33,10 @@ using System.Runtime.InteropServices;
 public struct CommonEvent
 {
     /// <summary>
-    /// Event type, shared with all events, Uint32 to cover user events which are not in the <see cref="SDL.EventType"/>
+    /// Event type, shared with all events, Uint32 to cover user events which are not in the <see cref="EventType"/>
     /// enumeration
     /// </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 

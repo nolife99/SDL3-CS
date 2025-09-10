@@ -27,39 +27,32 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Joystick trackball motion event structure (event.jball.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct JoyBallEvent
 {
-    /// <summary> Joystick trackball motion event structure (event.jball.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct JoyBallEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.JoystickBallMotion"/>
-        /// </summary>
-        public EventType Type;
+    /// <summary>
+    /// <see cref="EventType.JoystickBallMotion"/>
+    /// </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 
-        /// <summary> The joystick trackball index </summary>
-        public byte Ball;
+    /// <summary> The joystick trackball index </summary>
+    public byte Ball;
 
-        byte _padding1;
+    byte _padding1, _padding2, _padding3;
 
-        byte _padding2;
+    /// <summary> The relative motion in the X direction </summary>
+    public short XRel;
 
-        byte _padding3;
-
-        /// <summary> The relative motion in the X direction </summary>
-        public Int16 XRel;
-
-        /// <summary> The relative motion in the Y direction </summary>
-        public Int16 YRel;
-    }
+    /// <summary> The relative motion in the Y direction </summary>
+    public short YRel;
 }

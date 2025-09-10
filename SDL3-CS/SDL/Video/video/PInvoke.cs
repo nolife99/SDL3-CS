@@ -1119,8 +1119,7 @@ public static partial class SDL
     /// <seealso cref="SetWindowMouseGrab"/>
     /// <seealso cref="ShowWindow"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetWindowFlags"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl), typeof(CallConvSuppressGCTransition)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial WindowFlags GetWindowFlags(nint window);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowTitle(SDL_Window *window, const char *title);</code>

@@ -33,10 +33,10 @@ using System.Runtime.InteropServices;
 public struct DropEvent
 {
     /// <summary>
-    /// <see cref="SDL.EventType.DropBegin"/> or <see cref="SDL.EventType.DropFile"/> or
-    /// <see cref="SDL.EventType.DropText"/> or <see cref="SDL.EventType.DropComplete"/> or <see cref="SDL.EventType.DropPosition"/>
+    /// <see cref="EventType.DropBegin"/> or <see cref="EventType.DropFile"/> or <see cref="EventType.DropText"/> or
+    /// <see cref="EventType.DropComplete"/> or <see cref="EventType.DropPosition"/>
     /// </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 
@@ -53,11 +53,11 @@ public struct DropEvent
     public float Y;
 
     /// <summary> The source app that sent this drop event, or <c> null </c>if that isn't available </summary>
-    public IntPtr Source;
+    public nint Source;
 
     /// <summary>
-    /// The text for <see cref="SDL.EventType.DropText"/> and the file name for <see cref="SDL.EventType.DropFile"/>,
+    /// The text for <see cref="EventType.DropText"/> and the file name for <see cref="EventType.DropFile"/>,
     /// <c> null </c> for other events
     /// </summary>
-    public IntPtr Data;
+    public nint Data;
 }

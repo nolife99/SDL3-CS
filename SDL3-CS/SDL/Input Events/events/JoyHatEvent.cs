@@ -27,43 +27,29 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Joystick hat position change event structure (event.jhat.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct JoyHatEvent
 {
-    /// <summary> Joystick hat position change event structure (event.jhat.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct JoyHatEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.JoystickHatMotion"/>
-        /// </summary>
-        public EventType Type;
+    /// <summary>
+    /// <see cref="EventType.JoystickHatMotion"/>
+    /// </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 
-        /// <summary> The joystick hat index </summary>
-        public byte Hat;
+    /// <summary> The joystick hat index </summary>
+    public byte Hat;
 
-        /// <summary> The hat position value. </summary>
-        /// <seealso cref="JoystickHat.LeftUp"/>
-        /// <seealso cref="JoystickHat.Up"/>
-        /// <seealso cref="JoystickHat.RightUp"/>
-        /// <seealso cref="JoystickHat.Left"/>
-        /// <seealso cref="JoystickHat.Centered"/>
-        /// <seealso cref="JoystickHat.Right"/>
-        /// <seealso cref="JoystickHat.LeftDown"/>
-        /// <seealso cref="JoystickHat.Down"/>
-        /// <seealso cref="JoystickHat.RightDown"/>
-        public byte Value;
+    /// <summary> The hat position value. </summary>
+    public JoystickHat Value;
 
-        byte _padding1;
-
-        byte _padding2;
-    }
+    byte _padding1, _padding2;
 }

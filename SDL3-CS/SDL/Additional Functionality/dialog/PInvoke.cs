@@ -37,11 +37,11 @@ public static unsafe partial class SDL
     static void DialogFileThunk(nint userdata, nint filelist, int filter)
     {
         var ctx = (DialogCallbackContext*)userdata;
-        var managedCallback = (Action<nint, ArraySegment<ArraySegment<char>>, int>)ctx -> ManagedCallback.Target!;
+        var managedCallback = (Action<nint, ArraySegment<ArraySegment<char>>, int>)ctx->ManagedCallback.Target!;
 
         ArraySegment<ArraySegment<char>> result = default;
 
-        if (filelist != nint.Zero)
+        if (filelist != 0)
         {
             // char** fl = (char**)filelist
             var fl = (byte**)filelist;
@@ -58,13 +58,13 @@ public static unsafe partial class SDL
                 var p = fl[i];
                 if (p == null) break;
 
-                var byteLen = IndexOfNullByte((nint)p);
+                var pBytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(p);
 
                 // rent a char[] big enough for decoded chars
-                var charCount = Encoding.UTF8.GetCharCount(p, byteLen);
+                var charCount = Encoding.UTF8.GetCharCount(pBytes);
                 var charBuffer = ArrayPool<char>.Shared.Rent(charCount);
 
-                fixed (char* cbuf = charBuffer) Encoding.UTF8.GetChars(p, byteLen, cbuf, charCount);
+                Encoding.UTF8.GetChars(pBytes, charBuffer);
 
                 arr[i] = new(charBuffer, 0, charCount);
             }
@@ -73,7 +73,7 @@ public static unsafe partial class SDL
         }
 
         // invoke managed callback with original userdata + pooled memory
-        managedCallback(ctx -> OriginalUserdata, result, filter);
+        managedCallback(ctx->OriginalUserdata, result, filter);
 
         foreach (var arr in result)
             if (arr.Array is not null)
@@ -82,28 +82,35 @@ public static unsafe partial class SDL
         if (result.Array is not null) ArrayPool<ArraySegment<char>>.Shared.Return(result.Array);
 
         // cleanup wrapper context
-        ctx -> ManagedCallback.Free();
-        NativeMemory.Free(ctx);
+        ctx->ManagedCallback.Free();
+
+        var pinned = ctx->ManagedMemory;
+        ArrayPool<byte>.Shared.Return((byte[])pinned.Target);
+
+        pinned.Free();
     }
 
     static DialogCallbackContext* CreateContext(Action<nint, ArraySegment<ArraySegment<char>>, int> callback,
         nint userdata)
     {
         // We wrap the delegate + user data in a single object to pass to SDL. Using a managed delegate greatly
-        // reduces the amount of code the user has to write
+        // reduces the amount of boilerplate code the user has to write
 
         var handle = GCHandle.Alloc(callback);
 
-        var ctxPtr = (DialogCallbackContext*)NativeMemory.Alloc((nuint)Marshal.SizeOf<DialogCallbackContext>());
-        ctxPtr -> OriginalUserdata = userdata;
-        ctxPtr -> ManagedCallback = handle;
+        var arr = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<DialogCallbackContext>());
+        var arrPinned = GCHandle.Alloc(arr, GCHandleType.Pinned);
+
+        var ctxPtr = (DialogCallbackContext*)arrPinned.AddrOfPinnedObject();
+        ctxPtr->OriginalUserdata = userdata;
+        ctxPtr->ManagedCallback = handle;
+        ctxPtr->ManagedMemory = arrPinned;
 
         return ctxPtr;
     }
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowOpenFileDialog"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining),
-     SuppressGCTransition]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial void SDL_ShowOpenFileDialog(DialogFileCallback callback,
         void* userdata,
         nint window,
@@ -166,6 +173,8 @@ public static unsafe partial class SDL
         scoped ReadOnlySpan<char> defaultLocation,
         bool allowMany)
     {
+        ArgumentNullException.ThrowIfNull(callback);
+
         scoped Span<byte> path = default;
         byte[]? pathArray = null;
 
@@ -199,8 +208,7 @@ public static unsafe partial class SDL
     }
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowSaveFileDialog"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining),
-     SuppressGCTransition]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial void SDL_ShowSaveFileDialog(DialogFileCallback callback,
         void* userdata,
         nint window,
@@ -258,6 +266,8 @@ public static unsafe partial class SDL
         scoped ReadOnlySpan<DialogFileFilter> filters,
         scoped ReadOnlySpan<char> defaultLocation)
     {
+        ArgumentNullException.ThrowIfNull(callback);
+
         scoped Span<byte> path = default;
         byte[]? pathArray = null;
 
@@ -290,8 +300,7 @@ public static unsafe partial class SDL
     }
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowOpenFolderDialog"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining),
-     SuppressGCTransition]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial void SDL_ShowOpenFolderDialog(DialogFileCallback callback,
         void* userdata,
         nint window,
@@ -345,6 +354,8 @@ public static unsafe partial class SDL
         scoped ReadOnlySpan<char> defaultLocation,
         bool allowMany)
     {
+        ArgumentNullException.ThrowIfNull(callback);
+
         scoped Span<byte> path = default;
         byte[]? pathArray = null;
 
@@ -408,8 +419,7 @@ public static unsafe partial class SDL
     /// <seealso cref="ShowSaveFileDialog"/>
     /// <seealso cref="ShowOpenFolderDialog"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowFileDialogWithProperties"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining),
-     SuppressGCTransition]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial void ShowFileDialogWithProperties(FileDialogType type,
         DialogFileCallback callback,
         nint userdata,
@@ -419,6 +429,6 @@ public static unsafe partial class SDL
     struct DialogCallbackContext
     {
         public IntPtr OriginalUserdata;
-        public GCHandle ManagedCallback;
+        public GCHandle ManagedCallback, ManagedMemory;
     }
 }

@@ -34,13 +34,13 @@ public static partial class SDL
     public static uint FourCC(char a, char b, char c, char d) => (uint)(a | b << 8 | c << 16 | d << 24);
 
     /// <summary>
-    ///     <para> A macro to initialize an SDL interface. </para>
-    ///     <para>
-    ///         This macro will initialize an SDL interface structure and should be called before you fill out the fields with
-    ///         your implementation.
-    ///     </para>
-    ///     <para> You can use it like this: </para>
-    ///     <code>
+    /// <para> A macro to initialize an SDL interface. </para>
+    /// <para>
+    /// This macro will initialize an SDL interface structure and should be called before you fill out the fields with your
+    /// implementation.
+    /// </para>
+    /// <para> You can use it like this: </para>
+    /// <code>
     /// 	SDL_IOStreamInterface iface;
     ///
     ///  SDL_INIT_INTERFACE(&amp;iface);
@@ -50,8 +50,8 @@ public static partial class SDL
     ///
     ///  stream = SDL_OpenIO(&amp;iface, NULL);
     ///  </code>
-    ///     <para> If you are using designated initializers, you can use the size of the interface as the version, e.g. </para>
-    ///     <code>
+    /// <para> If you are using designated initializers, you can use the size of the interface as the version, e.g. </para>
+    /// <code>
     ///  SDL_IOStreamInterface iface = {
     ///  .version = sizeof(iface),
     ///  .seek = ...
@@ -78,18 +78,18 @@ public static partial class SDL
         }
         finally
         {
-            Marshal.FreeHGlobal(ptr);
+            Free(ptr);
         }
     }
 
     /// <summary>
-    ///     <para> A macro to initialize an SDL interface. </para>
-    ///     <para>
-    ///         This macro will initialize an SDL interface structure and should be called before you fill out the fields with
-    ///         your implementation.
-    ///     </para>
-    ///     <para> You can use it like this: </para>
-    ///     <code>
+    /// <para> A macro to initialize an SDL interface. </para>
+    /// <para>
+    /// This macro will initialize an SDL interface structure and should be called before you fill out the fields with your
+    /// implementation.
+    /// </para>
+    /// <para> You can use it like this: </para>
+    /// <code>
     /// 	SDL_IOStreamInterface iface;
     ///
     ///  SDL_INIT_INTERFACE(&amp;iface);
@@ -99,8 +99,8 @@ public static partial class SDL
     ///
     ///  stream = SDL_OpenIO(&amp;iface, NULL);
     ///  </code>
-    ///     <para> If you are using designated initializers, you can use the size of the interface as the version, e.g. </para>
-    ///     <code>
+    /// <para> If you are using designated initializers, you can use the size of the interface as the version, e.g. </para>
+    /// <code>
     ///  SDL_IOStreamInterface iface = {
     ///  .version = sizeof(iface),
     ///  .seek = ...
@@ -127,18 +127,18 @@ public static partial class SDL
         }
         finally
         {
-            Marshal.FreeHGlobal(ptr);
+            Free(ptr);
         }
     }
 
     /// <summary>
-    ///     <para> A macro to initialize an SDL interface. </para>
-    ///     <para>
-    ///         This macro will initialize an SDL interface structure and should be called before you fill out the fields with
-    ///         your implementation.
-    ///     </para>
-    ///     <para> You can use it like this: </para>
-    ///     <code>
+    /// <para> A macro to initialize an SDL interface. </para>
+    /// <para>
+    /// This macro will initialize an SDL interface structure and should be called before you fill out the fields with your
+    /// implementation.
+    /// </para>
+    /// <para> You can use it like this: </para>
+    /// <code>
     /// 	SDL_IOStreamInterface iface;
     ///
     ///  SDL_INIT_INTERFACE(&amp;iface);
@@ -148,8 +148,8 @@ public static partial class SDL
     ///
     ///  stream = SDL_OpenIO(&amp;iface, NULL);
     ///  </code>
-    ///     <para> If you are using designated initializers, you can use the size of the interface as the version, e.g. </para>
-    ///     <code>
+    /// <para> If you are using designated initializers, you can use the size of the interface as the version, e.g. </para>
+    /// <code>
     ///  SDL_IOStreamInterface iface = {
     ///  .version = sizeof(iface),
     ///  .seek = ...
@@ -176,7 +176,7 @@ public static partial class SDL
         }
         finally
         {
-            Marshal.FreeHGlobal(ptr);
+            Free(ptr);
         }
     }
 }

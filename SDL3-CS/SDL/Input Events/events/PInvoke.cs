@@ -92,7 +92,11 @@ public static partial class SDL
     /// <seealso cref="PushEvent"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PeepEvents"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
      MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial int PeepEvents(nint events, int numevents, EventAction action, uint minType, uint maxType);
+    public static partial int PeepEvents(nint events,
+        int numevents,
+        EventAction action,
+        EventType minType,
+        EventType maxType);
 
     /// <code>extern SDL_DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action, Uint32 minType, Uint32 maxType);</code>
     /// <summary>
@@ -130,7 +134,7 @@ public static partial class SDL
     /// <seealso cref="PumpEvents"/>
     /// <seealso cref="PushEvent"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int PeepEvents(Span<Event> events, EventAction action, uint minType, uint maxType)
+    public static unsafe int PeepEvents(Span<Event> events, EventAction action, EventType minType, EventType maxType)
     {
         fixed (void* evs = events) return PeepEvents((nint)evs, events.Length, action, minType, maxType);
     }

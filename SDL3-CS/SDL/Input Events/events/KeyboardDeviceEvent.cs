@@ -27,22 +27,19 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Keyboard device event structure (event.kdevice.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct KeyboardDeviceEvent
 {
-    /// <summary> Keyboard device event structure (event.kdevice.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct KeyboardDeviceEvent
-    {
-        /// <summary> <see cref="EventType.KeyboardAdded"/> or <see cref="EventType.KeyboardRemoved"/> </summary>
-        public EventType Type;
+    /// <summary> <see cref="EventType.KeyboardAdded"/> or <see cref="EventType.KeyboardRemoved"/> </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The keyboard instance id </summary>
-        public uint Which;
-    }
+    /// <summary> The keyboard instance id </summary>
+    public uint Which;
 }

@@ -33,7 +33,7 @@ using System.Runtime.InteropServices;
 public struct DisplayEvent
 {
     /// <summary> EventType.Display... </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 

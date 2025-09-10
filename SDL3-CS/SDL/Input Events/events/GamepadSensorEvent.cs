@@ -27,33 +27,30 @@ namespace SDL3;
 
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Gamepad sensor event structure (event.gsensor.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct GamepadSensorEvent
 {
-    /// <summary> Gamepad sensor event structure (event.gsensor.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct GamepadSensorEvent
-    {
-        /// <summary>
-        ///     <see cref="EventType.GamepadSensorUpdate"/>
-        /// </summary>
-        public EventType Type;
+    /// <summary>
+    /// <see cref="EventType.GamepadSensorUpdate"/>
+    /// </summary>
+    public EventType Type;
 
-        uint _reserved;
+    uint _reserved;
 
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
 
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
 
-        /// <summary> The type of the sensor, one of the values of <see cref="SensorType"/> </summary>
-        public int Sensor;
+    /// <summary> The type of the sensor, one of the values of <see cref="SDL.SensorType"/> </summary>
+    public int Sensor;
 
-        /// <summary> Up to 3 values from the sensor, as defined in SDL_sensor.h </summary>
-        public unsafe fixed float Data[3];
+    /// <summary> Up to 3 values from the sensor, as defined in SDL_sensor.h </summary>
+    public unsafe fixed float Data[3];
 
-        /// <summary> The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock </summary>
-        public ulong SensorTimestamp;
-    }
+    /// <summary> The timestamp of the sensor reading in nanoseconds, not necessarily synchronized with the system clock </summary>
+    public ulong SensorTimestamp;
 }

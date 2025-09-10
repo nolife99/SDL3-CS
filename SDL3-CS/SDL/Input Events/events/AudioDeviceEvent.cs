@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 
 /// <summary> Audio device event structure (event.adevice.*) </summary>
 /// <remarks>
-/// Note that SDL will send a <see cref="SDL.EventType.AudioDeviceAdded"/> event for every device it discovers during
+/// Note that SDL will send a <see cref="EventType.AudioDeviceAdded"/> event for every device it discovers during
 /// initialization. After that, this event will only arrive when a device is hotplugged during the program's run.
 /// </remarks>
 /// <since> This struct is available since SDL 3.2.0 </since>
@@ -44,14 +44,14 @@ public struct AudioDeviceEvent
         get => recording != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => recording = value ? 1 : 0;
+        set => recording = value ? (byte)1 : (byte)0;
     }
 
     /// <summary>
-    /// <see cref="SDL.EventType.AudioDeviceAdded"/>, or <see cref="SDL.EventType.AudioDeviceRemoved"/>, or
-    /// <see cref="SDL.EventType.AudioDeviceFormatChanged"/>
+    /// <see cref="EventType.AudioDeviceAdded"/>, or <see cref="EventType.AudioDeviceRemoved"/>, or
+    /// <see cref="EventType.AudioDeviceFormatChanged"/>
     /// </summary>
-    public SDL.EventType Type;
+    public EventType Type;
 
     uint _reserved;
 
@@ -61,7 +61,5 @@ public struct AudioDeviceEvent
     /// <summary> SDL_AudioDeviceID for the device being added or removed or changing </summary>
     public uint Which;
 
-    int recording;
-
-    byte _padding1, _padding2, _padding3;
+    byte recording, _padding1, _padding2, _padding3;
 }

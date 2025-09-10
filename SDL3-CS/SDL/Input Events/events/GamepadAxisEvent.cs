@@ -25,40 +25,41 @@
 
 namespace SDL3;
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public static partial class SDL
+/// <summary> Gamepad axis motion event structure (event.gaxis.*) </summary>
+/// <since> This struct is available since SDL 3.2.0 </since>
+[StructLayout(LayoutKind.Sequential)]
+public struct GamepadAxisEvent
 {
-    /// <summary> Gamepad axis motion event structure (event.gaxis.*) </summary>
-    /// <since> This struct is available since SDL 3.2.0 </since>
-    [StructLayout(LayoutKind.Sequential)]
-    public struct GamepadAxisEvent
+    /// <summary>
+    /// <see cref="EventType.GamepadAxisMotion"/>
+    /// </summary>
+    public EventType Type;
+
+    uint _reserved;
+
+    /// <summary> In nanoseconds, populated using <see cref="SDL.GetTicksNS"/> </summary>
+    public ulong Timestamp;
+
+    /// <summary> The joystick instance id </summary>
+    public uint Which;
+
+    /// <summary> The gamepad axis </summary>
+    public GamepadAxis Axis
     {
-        /// <summary>
-        ///     <see cref="EventType.GamepadAxisMotion"/>
-        /// </summary>
-        public EventType Type;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Unsafe.As<byte, GamepadAxis>(ref axis);
 
-        uint _reserved;
-
-        /// <summary> In nanoseconds, populated using <see cref="GetTicksNS"/> </summary>
-        public ulong Timestamp;
-
-        /// <summary> The joystick instance id </summary>
-        public uint Which;
-
-        /// <summary> The gamepad axis (<see cref="GamepadAxis"/>) </summary>
-        public byte Axis;
-
-        byte _padding1;
-
-        byte _padding2;
-
-        byte _padding3;
-
-        /// <summary> The axis value (range: -32768 to 32767) </summary>
-        public Int16 Value;
-
-        UInt16 _padding4;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => axis = Unsafe.As<GamepadAxis, byte>(ref value);
     }
+
+    byte axis, _padding1, _padding2, _padding3;
+
+    /// <summary> The axis value (range: -32768 to 32767) </summary>
+    public short Value;
+
+    ushort _padding4;
 }

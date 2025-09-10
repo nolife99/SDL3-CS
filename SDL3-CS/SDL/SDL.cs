@@ -27,7 +27,6 @@ namespace SDL3;
 
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text;
@@ -35,8 +34,6 @@ using System.Text;
 public static partial class SDL
 {
     const string SDLLibrary = "SDL3";
-
-    static readonly unsafe delegate*<byte*, int> _indexOfNullBytePtr = (delegate*<byte*, int>)getStrlenFuncPtr();
 
     static SDL() => AssemblyLoadContext.Default.ResolvingUnmanagedDll += OnResolvingUnmanagedDll;
 
@@ -88,12 +85,12 @@ public static partial class SDL
     /// </returns>
     /// <remarks>
     /// <para>
-    /// This method allocates unmanaged memory using <see cref="Marshal.AllocHGlobal(int)"/> and copies the structure data
-    /// into the allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>.
+    /// This method allocates unmanaged memory using <see cref="Malloc"/> and copies the structure data into the allocated
+    /// memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>.
     /// </para>
     /// <para>
-    /// The caller is responsible for releasing the allocated memory by calling <see cref="Marshal.FreeHGlobal(IntPtr)"/>
-    /// when the memory is no longer needed to prevent memory leaks.
+    /// The caller is responsible for releasing the allocated memory by calling <see cref="Free"/> when the memory is no
+    /// longer needed to prevent memory leaks.
     /// </para>
     /// <para>
     /// Be cautious when working with unmanaged memory, as improper memory management can lead to resource leaks or
@@ -110,7 +107,7 @@ public static partial class SDL
     {
         if (!structure.HasValue) return nint.Zero;
 
-        var ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+        var ptr = Malloc((nuint)Marshal.SizeOf<T>());
 
         Marshal.StructureToPtr(structure, ptr, false);
 
@@ -132,13 +129,13 @@ public static partial class SDL
     /// </returns>
     /// <remarks>
     /// <para>
-    /// This method allocates unmanaged memory using <see cref="Marshal.AllocHGlobal(int)"/> and copies each element of the
-    /// array into the allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>. The structures are stored
-    /// contiguously in memory.
+    /// This method allocates unmanaged memory using <see cref="Free"/> and copies each element of the array into the
+    /// allocated memory using <see cref="Marshal.StructureToPtr(object, IntPtr, bool)"/>. The structures are stored contiguously in
+    /// memory.
     /// </para>
     /// <para>
-    /// The caller is responsible for releasing the allocated memory by calling <see cref="Marshal.FreeHGlobal(IntPtr)"/>
-    /// when the memory is no longer needed to prevent memory leaks.
+    /// The caller is responsible for releasing the allocated memory by calling <see cref="Free"/> when the memory is no
+    /// longer needed to prevent memory leaks.
     /// </para>
     /// <para>
     /// Be cautious when working with unmanaged memory, as improper memory management can lead to resource leaks or
@@ -156,7 +153,7 @@ public static partial class SDL
         if (array.IsEmpty) return nint.Zero;
 
         var sizeOfT = Marshal.SizeOf<T>();
-        var unmanagedPointer = Marshal.AllocHGlobal(sizeOfT * array.Length);
+        var unmanagedPointer = Malloc((nuint)(sizeOfT * array.Length));
 
         for (var i = 0; i < array.Length; i++)
         {
@@ -339,8 +336,8 @@ public static partial class SDL
     /// <see cref="IntPtr.Zero"/> if <paramref name="str"/> is <c> null </c>.
     /// </returns>
     /// <remarks>
-    /// The returned pointer must be freed manually using <see cref="Marshal.FreeHGlobal(IntPtr)"/> to avoid memory leaks.
-    /// If the returned pointer is <see cref="IntPtr.Zero"/>, no deallocation is needed.
+    /// The returned pointer must be freed manually using <see cref="Free"/> to avoid memory leaks. If the returned
+    /// pointer is <see cref="IntPtr.Zero"/>, no deallocation is needed.
     /// </remarks>
     public static unsafe nint StringToPointer(scoped ReadOnlySpan<char> str)
     {
@@ -351,7 +348,7 @@ public static partial class SDL
         utf16[str.Length] = '\0';
 
         var byteCount = Encoding.UTF8.GetByteCount(utf16);
-        var unmanagedPointer = Marshal.AllocHGlobal(byteCount);
+        var unmanagedPointer = Malloc((nuint)byteCount);
 
         Encoding.UTF8.GetBytes(utf16, new(unmanagedPointer.ToPointer(), byteCount));
         return unmanagedPointer;
@@ -403,14 +400,6 @@ public static partial class SDL
 
         return array;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOfNullByte(nint bytes) => _indexOfNullBytePtr((byte*)bytes);
-
-    static nint getStrlenFuncPtr()
-        => Type.GetType("System.SpanHelpers, System.Private.CoreLib")
-            ?.GetMethod("IndexOfNullByte", BindingFlags.Static | BindingFlags.NonPublic, null, [typeof(byte*)], null)
-            ?.MethodHandle.GetFunctionPointer() ?? 0;
 
     /// <summary> Indicates that a method is a <c> #define </c> macro. </summary>
     [AttributeUsage(AttributeTargets.Method), EditorBrowsable(EditorBrowsableState.Never)]
