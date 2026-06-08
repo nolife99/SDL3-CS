@@ -3,183 +3,411 @@ name: Build SDL_mixer
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  resolve:
+    name: Resolve official stable releases
+    runs-on: ubuntu-24.04
+    outputs:
+      sdl_tag: ${{ steps.releases.outputs.sdl_tag }}
+      addon_tag: ${{ steps.releases.outputs.addon_tag }}
+
+    steps:
+      - name: Resolve latest non-prerelease tags
+        id: releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            async function resolveStable(owner, repo, outputName) {
+              const { data } = await github.rest.repos.getLatestRelease({ owner, repo });
+              if (data.draft || data.prerelease) {
+                core.setFailed(`${owner}/${repo} returned a non-stable release: ${data.tag_name}`);
+                return;
+              }
+              core.setOutput(outputName, data.tag_name);
+              core.info(`${owner}/${repo} -> ${data.tag_name}`);
+              core.summary.addRaw(`- ${owner}/${repo}: ${data.tag_name}\n`);
+            }
+
+            await resolveStable('libsdl-org', 'SDL', 'sdl_tag');
+            await resolveStable('libsdl-org', 'SDL_mixer', 'addon_tag');
+            await core.summary.write();
+
   build:
-    name: Build SDL_mixer for ${{ matrix.os }} (${{ matrix.arch_label }})
-    runs-on: ${{ matrix.os }}
+    needs: resolve
+    name: SDL_mixer ${{ matrix.rid }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Windows
-          - os: windows-2025
-            host_os: Windows
-            arch_label: x64
-            vs_arch: x64
-          - os: windows-11-arm
-            host_os: Windows
-            arch_label: arm64
-            vs_arch: ARM64
-          # macOS
-          - os: macos-15-intel
-            host_os: macOS
-            arch_label: x64
-            cmake_osx_arch: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
-          - os: macos-latest
-            host_os: macOS
-            arch_label: arm64
-            cmake_osx_arch: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
-          # Linux
-          - os: ubuntu-latest
-            host_os: Linux
-            arch_label: x64
-          - os: ubuntu-24.04-arm
-            host_os: Linux
-            arch_label: arm64
+          - runner: windows-2025
+            platform: windows
+            arch: x64
+            rid: win-x64
+            cmake_arch: x64
+          - runner: windows-2025
+            platform: windows
+            arch: x86
+            rid: win-x86
+            cmake_arch: Win32
+          - runner: windows-11-arm
+            platform: windows
+            arch: arm64
+            rid: win-arm64
+            cmake_arch: ARM64
+          - runner: macos-15-intel
+            platform: macos
+            arch: x64
+            rid: osx-x64
+            osx_arch: x86_64
+          - runner: macos-latest
+            platform: macos
+            arch: arm64
+            rid: osx-arm64
+            osx_arch: arm64
+          - runner: ubuntu-24.04
+            platform: linux
+            arch: x64
+            rid: linux-x64
+          - runner: ubuntu-24.04
+            platform: linux
+            arch: x86
+            rid: linux-x86
+          - runner: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+            rid: linux-arm64
 
     env:
-      INSTALL_PREFIX: ${{ github.workspace }}/install
       BUILD_DIR: ${{ github.workspace }}/build
-      CMAKE_BUILD_TYPE: Release
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      CMAKE_BUILD_TYPE: MinSizeRel
 
     steps:
-      # ---------- Sources ----------
-      - name: Checkout SDL
+      - name: Checkout official SDL ${{ needs.resolve.outputs.sdl_tag }}
         uses: actions/checkout@v4
         with:
-          repository: edwardgushchin/SDL
+          repository: libsdl-org/SDL
+          ref: ${{ needs.resolve.outputs.sdl_tag }}
           fetch-depth: 1
-          submodules: recursive
+          submodules: false
           path: SDL
 
-      - name: Checkout SDL_mixer
+      - name: Checkout official SDL_mixer ${{ needs.resolve.outputs.addon_tag }}
         uses: actions/checkout@v4
         with:
-          repository: edwardgushchin/SDL_mixer
+          repository: libsdl-org/SDL_mixer
+          ref: ${{ needs.resolve.outputs.addon_tag }}
           fetch-depth: 1
-          submodules: recursive
+          submodules: false
           path: SDL_mixer
 
-      # ---------- Linux deps (без libibus-1.0-*) ----------
-      - name: Install Linux deps
-        if: matrix.host_os == 'Linux'
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux' && matrix.arch != 'x86'
         shell: bash
         run: |
-          set -eux
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            build-essential cmake make ninja-build pkg-config \
-            libasound2-dev libpulse-dev libaudio-dev libjack-dev libsndio-dev \
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang lld ninja-build pkg-config \
+            libasound2-dev libpulse-dev libpipewire-0.3-dev \
             libusb-1.0-0-dev libdbus-1-dev libudev-dev \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
             libxi-dev libxss-dev libxtst-dev libxrender-dev \
             libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev \
             libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
-            libpipewire-0.3-dev \
-            libogg-dev libvorbis-dev libmpg123-dev libopusfile-dev libflac-dev
+            libvulkan-dev
 
-      # ---------- macOS flags ----------
-      - name: Prepare CMake flags (macOS)
-        if: matrix.host_os == 'macOS'
-        id: prep
+      - name: Install Linux x86 cross-build dependencies
+        if: matrix.platform == 'linux' && matrix.arch == 'x86'
         shell: bash
-        run: echo "extra=${{ matrix.cmake_osx_arch }}" >> "$GITHUB_OUTPUT"
+        run: |
+          set -euxo pipefail
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang lld ninja-build pkg-config gcc-multilib g++-multilib \
+            libasound2-dev:i386 libpulse-dev:i386 \
+            libusb-1.0-0-dev:i386 libdbus-1-dev:i386 libudev-dev:i386 \
+            libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 libxcursor-dev:i386 \
+            libxfixes-dev:i386 libxi-dev:i386 libxss-dev:i386 libxtst-dev:i386 \
+            libxrender-dev:i386 libwayland-dev:i386 wayland-protocols \
+            libxkbcommon-dev:i386 libdrm-dev:i386 \
+            libgbm-dev:i386 libgl1-mesa-dev:i386 libegl1-mesa-dev:i386 \
+            libgles2-mesa-dev:i386
 
-      # ---------- SDL base: Configure ----------
       - name: Configure SDL (Windows)
-        if: matrix.host_os == 'Windows'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $args = @(
-            "-S","SDL",
-            "-B","$env:BUILD_DIR/SDL",
-            "-G","Visual Studio 17 2022",
-            "-A","${{ matrix.vs_arch }}",
+            '-S', 'SDL',
+            '-B', "$env:BUILD_DIR/SDL",
+            '-G', 'Visual Studio 17 2022',
+            '-A', '${{ matrix.cmake_arch }}',
             "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
             "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
-            "-DSDL_INSTALL=ON",
-            "-DSDL_TESTS=OFF",
-            "-DSDL_EXAMPLES=OFF"
+            '-DCMAKE_INSTALL_LIBDIR=lib',
+            '-DCMAKE_INSTALL_BINDIR=bin',
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON',
+            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
+            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
+            '-DSDL_SHARED=ON',
+            '-DSDL_STATIC=OFF',
+            '-DSDL_INSTALL=ON',
+            '-DSDL_INSTALL_DOCS=OFF',
+            '-DSDL_TEST_LIBRARY=OFF',
+            '-DSDL_TESTS=OFF',
+            '-DSDL_EXAMPLES=OFF'
           )
           & cmake @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure SDL (Unix)
-        if: matrix.host_os != 'Windows'
+        if: matrix.platform != 'windows'
         shell: bash
         run: |
-          cmake -S SDL -B "$BUILD_DIR/SDL" \
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
-            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
-            -DSDL_INSTALL=ON \
-            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
-            ${{ steps.prep.outputs.extra }}
+          set -euxo pipefail
+          cflags='-Oz -ffunction-sections -fdata-sections -fno-ident -flto'
+          ldflags='-flto'
+          extra=()
 
-      # ---------- SDL base: Build/Install ----------
+          if [[ '${{ matrix.platform }}' == 'linux' ]]; then
+            export CC=clang CXX=clang++
+            ldflags+=' -fuse-ld=lld -Wl,-O2 -Wl,--gc-sections -Wl,--icf=all -Wl,--as-needed -Wl,--strip-all'
+          else
+            ldflags+=' -Wl,-dead_strip -Wl,-x'
+            extra+=(
+              '-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}'
+              '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0'
+            )
+          fi
+
+          if [[ '${{ matrix.arch }}' == 'x86' ]]; then
+            cflags+=' -m32'
+            ldflags+=' -m32'
+            export PKG_CONFIG_PATH=
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            extra+=(
+              '-DSDL_PIPEWIRE=OFF'
+              '-DSDL_WAYLAND_LIBDECOR=OFF'
+              '-DSDL_VULKAN=OFF'
+              '-DSDL_RENDER_VULKAN=OFF'
+            )
+          fi
+
+          cmake -S SDL -B "$BUILD_DIR/SDL" -G Ninja \
+            -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+            -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DCMAKE_INSTALL_BINDIR=bin \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON \
+            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags" \
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags" \
+            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags" \
+            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags" \
+            -DSDL_SHARED=ON \
+            -DSDL_STATIC=OFF \
+            -DSDL_INSTALL=ON \
+            -DSDL_INSTALL_DOCS=OFF \
+            -DSDL_TEST_LIBRARY=OFF \
+            -DSDL_TESTS=OFF \
+            -DSDL_EXAMPLES=OFF \
+            "${extra[@]}"
+
       - name: Build SDL (Windows)
-        if: matrix.host_os == 'Windows'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: cmake --build "$env:BUILD_DIR/SDL" --config $env:CMAKE_BUILD_TYPE --parallel
 
       - name: Build SDL (Unix)
-        if: matrix.host_os != 'Windows'
+        if: matrix.platform != 'windows'
         shell: bash
-        run: cmake --build "$BUILD_DIR/SDL" --config ${CMAKE_BUILD_TYPE} --parallel
+        run: cmake --build "$BUILD_DIR/SDL" --config "$CMAKE_BUILD_TYPE" --parallel
 
-      - name: Install SDL
+      - name: Install SDL (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: cmake --install "$env:BUILD_DIR/SDL" --config $env:CMAKE_BUILD_TYPE
+
+      - name: Install SDL (Unix)
+        if: matrix.platform != 'windows'
         shell: bash
-        run: cmake --install "$BUILD_DIR/SDL" --config ${CMAKE_BUILD_TYPE}
+        run: cmake --install "$BUILD_DIR/SDL" --config "$CMAKE_BUILD_TYPE" --strip
 
-      # ---------- SDL_mixer: Configure ----------
+      # Minimal practical decoder set: WAV, MP3, Ogg Vorbis, and FLAC.
+      # The in-tree dr_mp3, stb_vorbis, and dr_flac decoders avoid large codec DLLs.
       - name: Configure SDL_mixer (Windows)
-        if: matrix.host_os == 'Windows'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $args = @(
-            "-S","SDL_mixer",
-            "-B","$env:BUILD_DIR/SDL_mixer",
-            "-G","Visual Studio 17 2022",
-            "-A","${{ matrix.vs_arch }}",
+            '-S', 'SDL_mixer',
+            '-B', "$env:BUILD_DIR/SDL_mixer",
+            '-G', 'Visual Studio 17 2022',
+            '-A', '${{ matrix.cmake_arch }}',
             "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
             "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
             "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX",
-            "-DSDL3MIXER_VENDORED=ON"
+            '-DCMAKE_INSTALL_LIBDIR=lib',
+            '-DCMAKE_INSTALL_BINDIR=bin',
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON',
+            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
+            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
+            '-DBUILD_SHARED_LIBS=ON',
+            '-DSDLMIXER_INSTALL=ON',
+            '-DSDLMIXER_INSTALL_MAN=OFF',
+            '-DSDLMIXER_TESTS=OFF',
+            '-DSDLMIXER_EXAMPLES=OFF',
+            '-DSDLMIXER_VENDORED=OFF',
+            '-DSDLMIXER_DEPS_SHARED=OFF',
+            '-DSDLMIXER_STRICT=ON',
+            '-DSDLMIXER_AIFF=OFF',
+            '-DSDLMIXER_WAVE=ON',
+            '-DSDLMIXER_VOC=OFF',
+            '-DSDLMIXER_AU=OFF',
+            '-DSDLMIXER_FLAC=ON',
+            '-DSDLMIXER_FLAC_LIBFLAC=OFF',
+            '-DSDLMIXER_FLAC_DRFLAC=ON',
+            '-DSDLMIXER_GME=OFF',
+            '-DSDLMIXER_MOD=OFF',
+            '-DSDLMIXER_MP3=ON',
+            '-DSDLMIXER_MP3_DRMP3=ON',
+            '-DSDLMIXER_MP3_MPG123=OFF',
+            '-DSDLMIXER_MIDI=OFF',
+            '-DSDLMIXER_OPUS=OFF',
+            '-DSDLMIXER_VORBIS_STB=ON',
+            '-DSDLMIXER_VORBIS_VORBISFILE=OFF',
+            '-DSDLMIXER_VORBIS_TREMOR=OFF',
+            '-DSDLMIXER_WAVPACK=OFF'
           )
           & cmake @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure SDL_mixer (Unix)
-        if: matrix.host_os != 'Windows'
+        if: matrix.platform != 'windows'
         shell: bash
         run: |
-          cmake -S SDL_mixer -B "$BUILD_DIR/SDL_mixer" \
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
-            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
-            -DCMAKE_PREFIX_PATH="${INSTALL_PREFIX}" \
-            -DSDL3MIXER_VENDORED=ON \
-            ${{ steps.prep.outputs.extra }}
+          set -euxo pipefail
+          cflags='-Oz -ffunction-sections -fdata-sections -fno-ident -flto'
+          ldflags='-flto'
+          extra=()
 
-      # ---------- SDL_mixer: Build/Install ----------
+          if [[ '${{ matrix.platform }}' == 'linux' ]]; then
+            export CC=clang CXX=clang++
+            ldflags+=' -fuse-ld=lld -Wl,-O2 -Wl,--gc-sections -Wl,--icf=all -Wl,--as-needed -Wl,--strip-all'
+          else
+            ldflags+=' -Wl,-dead_strip -Wl,-x'
+            extra+=(
+              '-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}'
+              '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0'
+            )
+          fi
+
+          if [[ '${{ matrix.arch }}' == 'x86' ]]; then
+            cflags+=' -m32'
+            ldflags+=' -m32'
+            export PKG_CONFIG_PATH=
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
+          fi
+
+          cmake -S SDL_mixer -B "$BUILD_DIR/SDL_mixer" -G Ninja \
+            -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+            -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
+            -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DCMAKE_INSTALL_BINDIR=bin \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON \
+            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags" \
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags" \
+            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags" \
+            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags" \
+            -DBUILD_SHARED_LIBS=ON \
+            -DSDLMIXER_INSTALL=ON \
+            -DSDLMIXER_INSTALL_MAN=OFF \
+            -DSDLMIXER_TESTS=OFF \
+            -DSDLMIXER_EXAMPLES=OFF \
+            -DSDLMIXER_VENDORED=OFF \
+            -DSDLMIXER_DEPS_SHARED=OFF \
+            -DSDLMIXER_STRICT=ON \
+            -DSDLMIXER_AIFF=OFF \
+            -DSDLMIXER_WAVE=ON \
+            -DSDLMIXER_VOC=OFF \
+            -DSDLMIXER_AU=OFF \
+            -DSDLMIXER_FLAC=ON \
+            -DSDLMIXER_FLAC_LIBFLAC=OFF \
+            -DSDLMIXER_FLAC_DRFLAC=ON \
+            -DSDLMIXER_GME=OFF \
+            -DSDLMIXER_MOD=OFF \
+            -DSDLMIXER_MP3=ON \
+            -DSDLMIXER_MP3_DRMP3=ON \
+            -DSDLMIXER_MP3_MPG123=OFF \
+            -DSDLMIXER_MIDI=OFF \
+            -DSDLMIXER_OPUS=OFF \
+            -DSDLMIXER_VORBIS_STB=ON \
+            -DSDLMIXER_VORBIS_VORBISFILE=OFF \
+            -DSDLMIXER_VORBIS_TREMOR=OFF \
+            -DSDLMIXER_WAVPACK=OFF \
+            "${extra[@]}"
+
       - name: Build SDL_mixer (Windows)
-        if: matrix.host_os == 'Windows'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: cmake --build "$env:BUILD_DIR/SDL_mixer" --config $env:CMAKE_BUILD_TYPE --parallel
 
       - name: Build SDL_mixer (Unix)
-        if: matrix.host_os != 'Windows'
+        if: matrix.platform != 'windows'
         shell: bash
-        run: cmake --build "$BUILD_DIR/SDL_mixer" --config ${CMAKE_BUILD_TYPE} --parallel
+        run: cmake --build "$BUILD_DIR/SDL_mixer" --config "$CMAKE_BUILD_TYPE" --parallel
 
-      - name: Install SDL_mixer
+      - name: Install SDL_mixer (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: cmake --install "$env:BUILD_DIR/SDL_mixer" --config $env:CMAKE_BUILD_TYPE
+
+      - name: Install SDL_mixer (Unix)
+        if: matrix.platform != 'windows'
         shell: bash
-        run: cmake --install "$BUILD_DIR/SDL_mixer" --config ${CMAKE_BUILD_TYPE}
+        run: cmake --install "$BUILD_DIR/SDL_mixer" --config "$CMAKE_BUILD_TYPE" --strip
 
-      # ---------- Artifacts ----------
-      - name: Upload artifacts
+      - name: Remove non-runtime Windows build files
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Get-ChildItem $env:INSTALL_PREFIX -Recurse -File -Include *.pdb,*.exp,*.ilk |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+
+      - name: Verify installed binaries (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem $env:INSTALL_PREFIX -Recurse -File
+          $files | ForEach-Object { $_.FullName }
+          if (-not ($files | Where-Object Name -eq 'SDL3_mixer.dll')) {
+            throw 'SDL3_mixer.dll was not installed.'
+          }
+
+      - name: Verify installed binaries (Unix)
+        if: matrix.platform != 'windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          find "$INSTALL_PREFIX" -maxdepth 4 -type f -print
+          test -n "$(find "$INSTALL_PREFIX" -type f \( -name 'libSDL3_mixer.so*' -o -name 'libSDL3_mixer*.dylib' \) -print -quit)"
+
+      - name: Upload SDL_mixer ${{ matrix.rid }}
         uses: actions/upload-artifact@v4
         with:
-          name: SDL_mixer-${{ matrix.os }}-${{ matrix.arch_label }}
-          path: |
-            ${{ env.BUILD_DIR }}/SDL_mixer/**/*.dll
-            ${{ env.BUILD_DIR }}/SDL_mixer/**/*.so*
-            ${{ env.BUILD_DIR }}/SDL_mixer/**/*.dylib
-            ${{ env.INSTALL_PREFIX }}/
-
+          name: SDL_mixer-${{ matrix.rid }}
+          path: ${{ env.INSTALL_PREFIX }}/
+          if-no-files-found: error
+          compression-level: 9
