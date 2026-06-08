@@ -2,57 +2,28 @@ name: Build SDL_shadercross
 
 on:
   workflow_dispatch:
+    inputs:
+      sdl-ref:
+        description: SDL branch, tag, or commit
+        required: true
+        default: main
+        type: string
+      sdl-shadercross-ref:
+        description: SDL_shadercross branch, tag, or commit
+        required: true
+        default: main
+        type: string
+      spirv-cross-ref:
+        description: SPIRV-Cross branch, tag, or commit
+        required: true
+        default: main
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  resolve:
-    name: Resolve official stable releases
-    runs-on: ubuntu-24.04
-    outputs:
-      sdl_tag: ${{ steps.releases.outputs.sdl_tag }}
-      dxc_tag: ${{ steps.releases.outputs.dxc_tag }}
-      shadercross_sha: ${{ steps.releases.outputs.shadercross_sha }}
-
-    steps:
-      - name: Resolve latest non-prerelease tags
-        id: releases
-        uses: actions/github-script@v7
-        with:
-          script: |
-            async function resolveStable(owner, repo, outputName) {
-              const { data } = await github.rest.repos.getLatestRelease({ owner, repo });
-              if (data.draft || data.prerelease) {
-                core.setFailed(`${owner}/${repo} returned a non-stable release: ${data.tag_name}`);
-                return;
-              }
-              core.setOutput(outputName, data.tag_name);
-              core.info(`${owner}/${repo} -> ${data.tag_name}`);
-              core.summary.addRaw(`- ${owner}/${repo}: ${data.tag_name}\n`);
-            }
-
-            await resolveStable('libsdl-org', 'SDL', 'sdl_tag');
-            await resolveStable('microsoft', 'DirectXShaderCompiler', 'dxc_tag');
-
-            const shadercrossRepo = await github.rest.repos.get({
-              owner: 'libsdl-org',
-              repo: 'SDL_shadercross'
-            });
-            const defaultBranch = shadercrossRepo.data.default_branch;
-            const shadercrossCommit = await github.rest.repos.getCommit({
-              owner: 'libsdl-org',
-              repo: 'SDL_shadercross',
-              ref: defaultBranch
-            });
-            core.setOutput('shadercross_sha', shadercrossCommit.data.sha);
-            core.info(`libsdl-org/SDL_shadercross -> ${defaultBranch}@${shadercrossCommit.data.sha}`);
-            core.summary.addRaw(`- libsdl-org/SDL_shadercross: ${defaultBranch}@${shadercrossCommit.data.sha}\n`);
-
-            await core.summary.write();
-
   build:
-    needs: resolve
     name: SDL_shadercross ${{ matrix.rid }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -114,38 +85,31 @@ jobs:
       CMAKE_BUILD_TYPE: MinSizeRel
 
     steps:
-      - name: Checkout official SDL ${{ needs.resolve.outputs.sdl_tag }}
+      - name: Checkout SDL
         uses: actions/checkout@v4
         with:
-          repository: libsdl-org/SDL
-          ref: ${{ needs.resolve.outputs.sdl_tag }}
+          repository: edwardgushchin/SDL
+          ref: ${{ inputs.sdl-ref }}
           fetch-depth: 1
-          submodules: false
+          submodules: recursive
           path: SDL
 
-      # SDL_shadercross does not publish releases. Resolve its official default-branch
-      # HEAD once, then pin every matrix job to that exact commit.
-      - name: Checkout official SDL_shadercross ${{ needs.resolve.outputs.shadercross_sha }}
+      - name: Checkout SDL_shadercross
         uses: actions/checkout@v4
         with:
-          repository: libsdl-org/SDL_shadercross
-          ref: ${{ needs.resolve.outputs.shadercross_sha }}
+          repository: edwardgushchin/SDL_shadercross
+          ref: ${{ inputs.sdl-shadercross-ref }}
           fetch-depth: 1
-          submodules: false
+          submodules: recursive
           path: SDL_shadercross
 
-      - name: Initialize compatible SPIRV-Cross and record revisions
-        id: shadercross-source
-        shell: bash
-        run: |
-          set -euo pipefail
-          git -C SDL_shadercross submodule update --init --depth 1 external/SPIRV-Cross
-          revision="$(git -C SDL_shadercross rev-parse HEAD)"
-          spirv_revision="$(git -C SDL_shadercross/external/SPIRV-Cross rev-parse HEAD)"
-          echo "revision=$revision" >> "$GITHUB_OUTPUT"
-          echo "spirv-revision=$spirv_revision" >> "$GITHUB_OUTPUT"
-          echo "- libsdl-org/SDL_shadercross: pinned @$revision" >> "$GITHUB_STEP_SUMMARY"
-          echo "- KhronosGroup/SPIRV-Cross: pinned submodule @$spirv_revision" >> "$GITHUB_STEP_SUMMARY"
+      - name: Checkout SPIRV-Cross
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/SPIRV-Cross
+          ref: ${{ inputs.spirv-cross-ref }}
+          fetch-depth: 1
+          path: SPIRV-Cross
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux' && matrix.arch != 'x86'
@@ -289,7 +253,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $args = @(
-            '-S', 'SDL_shadercross/external/SPIRV-Cross',
+            '-S', 'SPIRV-Cross',
             '-B', "$env:BUILD_DIR/SPIRV-Cross",
             '-G', 'Visual Studio 17 2022',
             '-A', '${{ matrix.cmake_arch }}',
@@ -344,7 +308,7 @@ jobs:
             ldflags+=' -m32'
           fi
 
-          cmake -S SDL_shadercross/external/SPIRV-Cross -B "$BUILD_DIR/SPIRV-Cross" -G Ninja \
+          cmake -S SPIRV-Cross -B "$BUILD_DIR/SPIRV-Cross" -G Ninja \
             -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
             -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
             -DCMAKE_INSTALL_LIBDIR=lib \
@@ -403,10 +367,7 @@ jobs:
             'Authorization' = "Bearer $env:GITHUB_TOKEN"
           }
 
-          $tag = '${{ needs.resolve.outputs.dxc_tag }}'
-          $encodedTag = [uri]::EscapeDataString($tag)
-          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/tags/$encodedTag" -Headers $headers
-          if ($release.draft -or $release.prerelease) { throw "DXC $tag is not a stable release." }
+          $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/latest' -Headers $headers
           $asset = $release.assets |
             Where-Object { $_.name -like 'dxc_*.zip' -and $_.name -notlike 'pdb_*' } |
             Select-Object -First 1

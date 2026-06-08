@@ -2,41 +2,23 @@ name: Build SDL_image
 
 on:
   workflow_dispatch:
+    inputs:
+      sdl-ref:
+        description: SDL branch, tag, or commit
+        required: true
+        default: main
+        type: string
+      sdl-image-ref:
+        description: SDL_image branch, tag, or commit
+        required: true
+        default: main
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  resolve:
-    name: Resolve official stable releases
-    runs-on: ubuntu-24.04
-    outputs:
-      sdl_tag: ${{ steps.releases.outputs.sdl_tag }}
-      addon_tag: ${{ steps.releases.outputs.addon_tag }}
-
-    steps:
-      - name: Resolve latest non-prerelease tags
-        id: releases
-        uses: actions/github-script@v7
-        with:
-          script: |
-            async function resolveStable(owner, repo, outputName) {
-              const { data } = await github.rest.repos.getLatestRelease({ owner, repo });
-              if (data.draft || data.prerelease) {
-                core.setFailed(`${owner}/${repo} returned a non-stable release: ${data.tag_name}`);
-                return;
-              }
-              core.setOutput(outputName, data.tag_name);
-              core.info(`${owner}/${repo} -> ${data.tag_name}`);
-              core.summary.addRaw(`- ${owner}/${repo}: ${data.tag_name}\n`);
-            }
-
-            await resolveStable('libsdl-org', 'SDL', 'sdl_tag');
-            await resolveStable('libsdl-org', 'SDL_image', 'addon_tag');
-            await core.summary.write();
-
   build:
-    needs: resolve
     name: SDL_image ${{ matrix.rid }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -87,30 +69,23 @@ jobs:
       CMAKE_BUILD_TYPE: MinSizeRel
 
     steps:
-      - name: Checkout official SDL ${{ needs.resolve.outputs.sdl_tag }}
+      - name: Checkout SDL
         uses: actions/checkout@v4
         with:
-          repository: libsdl-org/SDL
-          ref: ${{ needs.resolve.outputs.sdl_tag }}
+          repository: edwardgushchin/SDL
+          ref: ${{ inputs.sdl-ref }}
           fetch-depth: 1
-          submodules: false
+          submodules: recursive
           path: SDL
 
-      - name: Checkout official SDL_image ${{ needs.resolve.outputs.addon_tag }}
+      - name: Checkout SDL_image
         uses: actions/checkout@v4
         with:
-          repository: libsdl-org/SDL_image
-          ref: ${{ needs.resolve.outputs.addon_tag }}
+          repository: edwardgushchin/SDL_image
+          ref: ${{ inputs.sdl-image-ref }}
           fetch-depth: 1
-          submodules: false
+          submodules: recursive
           path: SDL_image
-
-      - name: Initialize required SDL_image dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          git -C SDL_image submodule update --init --depth 1 \
-            external/libpng external/zlib
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux' && matrix.arch != 'x86'
