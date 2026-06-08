@@ -112,22 +112,34 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          if [[ "${{ matrix.arch }}" == "x86" ]]; then
-            packages=(build-essential gcc-multilib g++-multilib cmake ninja-build pkg-config git)
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            # Build a real 32-bit desktop library on the x64 runner. X11 is
+            # enabled; Wayland is disabled because its full 32-bit protocol/
+            # decoration dependency chain is not reliably multiarch-packaged.
+            sudo dpkg --add-architecture i386
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              build-essential gcc-multilib g++-multilib libc6-dev-i386 \
+              cmake ninja-build pkg-config git file \
+              libasound2-dev:i386 libusb-1.0-0-dev:i386 \
+              libdbus-1-dev:i386 libudev-dev:i386 \
+              libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 \
+              libxcursor-dev:i386 libxfixes-dev:i386 libxi-dev:i386 \
+              libxss-dev:i386 libxtst-dev:i386 \
+              libgl-dev:i386 libvulkan-dev:i386
           else
-            packages=(
-              build-essential cmake ninja-build pkg-config git
-              libasound2-dev libpulse-dev libjack-dev libsndio-dev
-              libusb-1.0-0-dev libdbus-1-dev libudev-dev
-              libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev
-              libxi-dev libxss-dev libxtst-dev
-              libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev
-              libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              build-essential cmake ninja-build pkg-config git file \
+              libasound2-dev libpulse-dev libjack-dev libsndio-dev \
+              libusb-1.0-0-dev libdbus-1-dev libudev-dev \
+              libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+              libxi-dev libxss-dev libxtst-dev \
+              libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev \
+              libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev \
               libpipewire-0.3-dev libvulkan-dev
-            )
           fi
-          sudo apt-get install -y --no-install-recommends "${packages[@]}"
 
       - name: Build and install SDL_shadercross stack (Windows)
         if: matrix.os == 'windows'
@@ -267,19 +279,25 @@ jobs:
           
           cflags="-Os -flto -ffunction-sections -fdata-sections -DNDEBUG"
           cxxflags="$cflags"
-          if [[ "${{ matrix.arch }}" == "x86" ]]; then
-            cflags="$cflags -m32"
-            cxxflags="$cxxflags -m32"
-          fi
-          
           if [[ "${{ matrix.os }}" == "macos" ]]; then
             ldflags="-flto -Wl,-dead_strip -Wl,-x"
             common+=("-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0)
           else
             ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -s"
-            if [[ "${{ matrix.arch }}" == "x86" ]]; then
-              ldflags="$ldflags -m32"
-            fi
+          fi
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            # Force every configure/build in this stack to emit i386 code and
+            # make pkg-config resolve the 32-bit X11/OpenGL/Vulkan libraries.
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            export PKG_CONFIG_PATH=
+            common+=(
+              -DCMAKE_SYSTEM_PROCESSOR=x86
+              -DCMAKE_C_FLAGS=-m32
+              -DCMAKE_CXX_FLAGS=-m32
+              -DCMAKE_SHARED_LINKER_FLAGS=-m32
+              -DCMAKE_EXE_LINKER_FLAGS=-m32
+            )
           fi
           
           common+=(
@@ -298,20 +316,24 @@ jobs:
             -DSDL_INSTALL_DOCS=OFF
             -DSDL_INSTALL_TESTS=OFF
           )
-          
-          # A 32-bit Linux build is produced with SDL's dependency-free
-          # dummy/offscreen backends to avoid linking accidental 64-bit system libraries.
-          if [[ "${{ matrix.os }}" == "linux" && "${{ matrix.arch }}" == "x86" ]]; then
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
             sdl_options+=(
-              -DSDL_X11=OFF -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF
-              -DSDL_ALSA=OFF -DSDL_PULSEAUDIO=OFF -DSDL_PIPEWIRE=OFF
-              -DSDL_JACK=OFF -DSDL_SNDIO=OFF -DSDL_OSS=OFF
-              -DSDL_DBUS=OFF -DSDL_IBUS=OFF -DSDL_LIBUDEV=OFF
-              -DSDL_HIDAPI_LIBUSB=OFF
-              -DSDL_OPENGL=OFF -DSDL_OPENGLES=OFF -DSDL_VULKAN=OFF
-              -DSDL_OFFSCREEN=ON -DSDL_DUMMYVIDEO=ON -DSDL_DUMMYAUDIO=ON
+              -DSDL_X11=ON
+              -DSDL_WAYLAND=OFF
+              -DSDL_KMSDRM=OFF
+              -DSDL_LIBDECOR=OFF
+              -DSDL_OPENGL=ON
+              -DSDL_OPENGLES=OFF
+              -DSDL_VULKAN=ON
+              -DSDL_ALSA=ON
+              -DSDL_PULSEAUDIO=OFF
+              -DSDL_JACK=OFF
+              -DSDL_SNDIO=OFF
+              -DSDL_PIPEWIRE=OFF
             )
           fi
+          
           cmake -S SDL -B "$BUILD_DIR/SDL" "${common[@]}" "${sdl_options[@]}"
           cmake --build "$BUILD_DIR/SDL" --parallel
           cmake --install "$BUILD_DIR/SDL" --strip
@@ -334,7 +356,7 @@ jobs:
             -DSDLSHADERCROSS_INSTALL=ON
             -DSDLSHADERCROSS_INSTALL_MAN=OFF
             -DSDLSHADERCROSS_INSTALL_CPACK=OFF
-            -DSDLSHADERCROSS_INSTALL_RUNTIME=ON
+            -DSDLSHADERCROSS_INSTALL_RUNTIME=OFF
             -DSDLSHADERCROSS_SHARED=ON
             -DSDLSHADERCROSS_STATIC=OFF
             -DSDLSHADERCROSS_CLI=OFF
@@ -346,6 +368,17 @@ jobs:
           cmake -S SDL_shadercross -B "$BUILD_DIR/SDL_shadercross" "${common[@]}" "${component_options[@]}"
           cmake --build "$BUILD_DIR/SDL_shadercross" --parallel
           cmake --install "$BUILD_DIR/SDL_shadercross" --strip
+
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            mapfile -d '' shared_objects < <(find "$INSTALL_PREFIX" -type f -name '*.so*' -print0)
+            (( ${#shared_objects[@]} > 0 ))
+            for shared_object in "${shared_objects[@]}"; do
+              description="$(file -Lb "$shared_object")"
+              echo "$shared_object: $description"
+              [[ "$description" == *"ELF 32-bit"* ]]
+            done
+          fi
 
 
       - name: Upload SDL_shadercross ${{ matrix.rid }}

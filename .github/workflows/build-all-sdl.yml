@@ -146,6 +146,15 @@ jobs:
           dxil.dll runtime files required for HLSL compilation. Windows x86
           is built without DXC because official DXC releases do not provide
           an x86 runtime.
+
+          Linux x64 and ARM64 are full desktop builds with X11, Wayland,
+          OpenGL, OpenGL ES, and Vulkan support. Linux x86 is a real 32-bit
+          desktop build with X11, OpenGL, and Vulkan support; Wayland is
+          intentionally disabled for that RID.
+
+          SDL_shadercross enables DXC only on supported Windows targets. The
+          Linux and macOS builds omit DXC and do not bundle the optional
+          vkd3d runtime translation libraries.
           EOF
 
           (
