@@ -2,23 +2,41 @@ name: Build SDL_ttf
 
 on:
   workflow_dispatch:
-    inputs:
-      sdl-ref:
-        description: SDL branch, tag, or commit
-        required: true
-        default: main
-        type: string
-      sdl-ttf-ref:
-        description: SDL_ttf branch, tag, or commit
-        required: true
-        default: main
-        type: string
 
 permissions:
   contents: read
 
 jobs:
+  resolve:
+    name: Resolve official stable releases
+    runs-on: ubuntu-24.04
+    outputs:
+      sdl_tag: ${{ steps.releases.outputs.sdl_tag }}
+      addon_tag: ${{ steps.releases.outputs.addon_tag }}
+
+    steps:
+      - name: Resolve latest non-prerelease tags
+        id: releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            async function resolveStable(owner, repo, outputName) {
+              const { data } = await github.rest.repos.getLatestRelease({ owner, repo });
+              if (data.draft || data.prerelease) {
+                core.setFailed(`${owner}/${repo} returned a non-stable release: ${data.tag_name}`);
+                return;
+              }
+              core.setOutput(outputName, data.tag_name);
+              core.info(`${owner}/${repo} -> ${data.tag_name}`);
+              core.summary.addRaw(`- ${owner}/${repo}: ${data.tag_name}\n`);
+            }
+
+            await resolveStable('libsdl-org', 'SDL', 'sdl_tag');
+            await resolveStable('libsdl-org', 'SDL_ttf', 'addon_tag');
+            await core.summary.write();
+
   build:
+    needs: resolve
     name: SDL_ttf ${{ matrix.rid }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -69,23 +87,30 @@ jobs:
       CMAKE_BUILD_TYPE: MinSizeRel
 
     steps:
-      - name: Checkout SDL
+      - name: Checkout official SDL ${{ needs.resolve.outputs.sdl_tag }}
         uses: actions/checkout@v4
         with:
-          repository: edwardgushchin/SDL
-          ref: ${{ inputs.sdl-ref }}
+          repository: libsdl-org/SDL
+          ref: ${{ needs.resolve.outputs.sdl_tag }}
           fetch-depth: 1
-          submodules: recursive
+          submodules: false
           path: SDL
 
-      - name: Checkout SDL_ttf
+      - name: Checkout official SDL_ttf ${{ needs.resolve.outputs.addon_tag }}
         uses: actions/checkout@v4
         with:
-          repository: edwardgushchin/SDL_ttf
-          ref: ${{ inputs.sdl-ttf-ref }}
+          repository: libsdl-org/SDL_ttf
+          ref: ${{ needs.resolve.outputs.addon_tag }}
           fetch-depth: 1
-          submodules: recursive
+          submodules: false
           path: SDL_ttf
+
+      - name: Initialize required SDL_ttf dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C SDL_ttf submodule update --init --depth 1 \
+            external/freetype external/harfbuzz
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux' && matrix.arch != 'x86'
