@@ -2,691 +2,351 @@ name: Build SDL_shadercross
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   resolve:
-    name: Resolve official stable releases
+    name: Resolve SDL release and SDL_shadercross commit
     runs-on: ubuntu-24.04
     outputs:
-      sdl_tag: ${{ steps.releases.outputs.sdl_tag }}
-      dxc_tag: ${{ steps.releases.outputs.dxc_tag }}
-      shadercross_sha: ${{ steps.releases.outputs.shadercross_sha }}
-
+      sdl_ref: ${{ steps.refs.outputs.sdl_ref }}
+      shadercross_ref: ${{ steps.refs.outputs.shadercross_ref }}
     steps:
-      - name: Resolve latest non-prerelease tags
-        id: releases
-        uses: actions/github-script@v7
-        with:
-          script: |
-            async function resolveStable(owner, repo, outputName) {
-              const { data } = await github.rest.repos.getLatestRelease({ owner, repo });
-              if (data.draft || data.prerelease) {
-                core.setFailed(`${owner}/${repo} returned a non-stable release: ${data.tag_name}`);
-                return;
-              }
-              core.setOutput(outputName, data.tag_name);
-              core.info(`${owner}/${repo} -> ${data.tag_name}`);
-              core.summary.addRaw(`- ${owner}/${repo}: ${data.tag_name}\n`);
-            }
-
-            await resolveStable('libsdl-org', 'SDL', 'sdl_tag');
-            await resolveStable('microsoft', 'DirectXShaderCompiler', 'dxc_tag');
-
-            const shadercrossRepo = await github.rest.repos.get({
-              owner: 'libsdl-org',
-              repo: 'SDL_shadercross'
-            });
-            const defaultBranch = shadercrossRepo.data.default_branch;
-            const shadercrossCommit = await github.rest.repos.getCommit({
-              owner: 'libsdl-org',
-              repo: 'SDL_shadercross',
-              ref: defaultBranch
-            });
-            core.setOutput('shadercross_sha', shadercrossCommit.data.sha);
-            core.info(`libsdl-org/SDL_shadercross -> ${defaultBranch}@${shadercrossCommit.data.sha}`);
-            core.summary.addRaw(`- libsdl-org/SDL_shadercross: ${defaultBranch}@${shadercrossCommit.data.sha}\n`);
-
-            await core.summary.write();
+      - name: Resolve official refs
+        id: refs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sdl_ref="$(gh api repos/libsdl-org/SDL/releases/latest --jq '.tag_name')"
+          shadercross_ref="$(gh api repos/libsdl-org/SDL_shadercross/commits/main --jq '.sha')"
+          test -n "$sdl_ref"
+          test -n "$shadercross_ref"
+          echo "sdl_ref=$sdl_ref" >> "$GITHUB_OUTPUT"
+          echo "shadercross_ref=$shadercross_ref" >> "$GITHUB_OUTPUT"
+          echo "Using SDL $sdl_ref and SDL_shadercross $shadercross_ref"
 
   build:
-    needs: resolve
     name: SDL_shadercross ${{ matrix.rid }}
+    needs: resolve
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
+
         include:
           - runner: windows-2025
-            platform: windows
+            os: windows
             arch: x64
             rid: win-x64
+            msvc_arch: x64
+            msvc_host_arch: x64
             dxc: true
-            dxc_arch: x64
-          # Official DXC binary releases do not provide a Windows x86 runtime.
           - runner: windows-2025
-            platform: windows
+            os: windows
             arch: x86
             rid: win-x86
+            msvc_arch: x86
+            msvc_host_arch: x64
             dxc: false
           - runner: windows-11-arm
-            platform: windows
+            os: windows
             arch: arm64
             rid: win-arm64
+            msvc_arch: arm64
+            msvc_host_arch: arm64
             dxc: true
-            dxc_arch: arm64
+          - runner: ubuntu-24.04
+            os: linux
+            arch: x64
+            rid: linux-x64
+          - runner: ubuntu-24.04
+            os: linux
+            arch: x86
+            rid: linux-x86
+          - runner: ubuntu-24.04-arm
+            os: linux
+            arch: arm64
+            rid: linux-arm64
           - runner: macos-15-intel
-            platform: macos
+            os: macos
             arch: x64
             rid: osx-x64
             osx_arch: x86_64
-            dxc: false
           - runner: macos-latest
-            platform: macos
+            os: macos
             arch: arm64
             rid: osx-arm64
             osx_arch: arm64
-            dxc: false
-          - runner: ubuntu-24.04
-            platform: linux
-            arch: x64
-            rid: linux-x64
-            dxc: false
-          - runner: ubuntu-24.04
-            platform: linux
-            arch: x86
-            rid: linux-x86
-            dxc: false
-          - runner: ubuntu-24.04-arm
-            platform: linux
-            arch: arm64
-            rid: linux-arm64
-            dxc: false
 
     env:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
-      CMAKE_BUILD_TYPE: MinSizeRel
 
     steps:
-      - name: Fetch official SDL ${{ needs.resolve.outputs.sdl_tag }}
-        shell: bash
-        env:
-          SDL_TAG: ${{ needs.resolve.outputs.sdl_tag }}
-        run: |
-          set -euxo pipefail
-          rm -rf SDL
-          git clone --filter=blob:none --depth 1 --branch "$SDL_TAG" \
-            https://github.com/libsdl-org/SDL.git SDL
-          test "$(git -C SDL remote get-url origin)" = \
-            "https://github.com/libsdl-org/SDL.git"
-          test "$(git -C SDL describe --tags --exact-match HEAD)" = "$SDL_TAG"
-          echo "- SDL source: libsdl-org/SDL@$SDL_TAG" >> "$GITHUB_STEP_SUMMARY"
 
-      # SDL_shadercross does not publish releases. Resolve its official default-branch
-      # HEAD once, then fetch and pin every matrix job to that exact commit.
-      - name: Fetch official SDL_shadercross ${{ needs.resolve.outputs.shadercross_sha }}
-        shell: bash
-        env:
-          SHADERCROSS_SHA: ${{ needs.resolve.outputs.shadercross_sha }}
-        run: |
-          set -euxo pipefail
-          rm -rf SDL_shadercross
-          git init SDL_shadercross
-          git -C SDL_shadercross remote add origin \
-            https://github.com/libsdl-org/SDL_shadercross.git
-          git -C SDL_shadercross -c protocol.version=2 fetch --depth 1 origin \
-            "$SHADERCROSS_SHA"
-          git -C SDL_shadercross checkout --detach FETCH_HEAD
-          test "$(git -C SDL_shadercross remote get-url origin)" = \
-            "https://github.com/libsdl-org/SDL_shadercross.git"
-          test "$(git -C SDL_shadercross rev-parse HEAD)" = "$SHADERCROSS_SHA"
-          echo "- SDL_shadercross source: libsdl-org/SDL_shadercross@$SHADERCROSS_SHA" \
-            >> "$GITHUB_STEP_SUMMARY"
+      - name: Checkout SDL
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          ref: ${{ needs.resolve.outputs.sdl_ref }}
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL
 
-      - name: Initialize compatible SPIRV-Cross and record revisions
-        id: shadercross-source
+      - name: Checkout SDL_shadercross
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL_shadercross
+          ref: ${{ needs.resolve.outputs.shadercross_ref }}
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL_shadercross
+
+      - name: Install Linux build dependencies
+        if: matrix.os == 'linux'
         shell: bash
         run: |
           set -euo pipefail
-          git -C SDL_shadercross submodule update --init --depth 1 external/SPIRV-Cross
-          revision="$(git -C SDL_shadercross rev-parse HEAD)"
-          spirv_revision="$(git -C SDL_shadercross/external/SPIRV-Cross rev-parse HEAD)"
-          echo "revision=$revision" >> "$GITHUB_OUTPUT"
-          echo "spirv-revision=$spirv_revision" >> "$GITHUB_OUTPUT"
-          echo "- libsdl-org/SDL_shadercross: pinned @$revision" >> "$GITHUB_STEP_SUMMARY"
-          echo "- KhronosGroup/SPIRV-Cross: pinned submodule @$spirv_revision" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Install Linux build dependencies
-        if: matrix.platform == 'linux' && matrix.arch != 'x86'
-        shell: bash
-        run: |
-          set -euxo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            clang lld ninja-build pkg-config \
-            libasound2-dev libpulse-dev libpipewire-0.3-dev \
-            libusb-1.0-0-dev libdbus-1-dev libudev-dev \
-            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
-            libxi-dev libxss-dev libxtst-dev libxrender-dev \
-            libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev \
-            libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev \
-            libvulkan-dev
-
-      - name: Install Linux x86 cross-build dependencies
-        if: matrix.platform == 'linux' && matrix.arch == 'x86'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            clang lld ninja-build pkg-config gcc-multilib g++-multilib \
-            libasound2-dev:i386 libpulse-dev:i386 \
-            libusb-1.0-0-dev:i386 libdbus-1-dev:i386 libudev-dev:i386 \
-            libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 libxcursor-dev:i386 \
-            libxfixes-dev:i386 libxi-dev:i386 libxss-dev:i386 libxtst-dev:i386 \
-            libxrender-dev:i386 libwayland-dev:i386 wayland-protocols \
-            libxkbcommon-dev:i386 libdrm-dev:i386 \
-            libgbm-dev:i386 libgl1-mesa-dev:i386 libegl1-mesa-dev:i386 \
-            libgles2-mesa-dev:i386
-
-      - name: Initialize latest MSVC toolchain for Ninja
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $originalPath = $env:PATH
-
-          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-          if (-not (Test-Path $vswhere)) {
-            throw "vswhere.exe was not found at $vswhere"
-          }
-
-          $instances = @(& $vswhere -all -products * -format json | ConvertFrom-Json)
-          $instance = $instances |
-            Sort-Object { [version]$_.installationVersion } -Descending |
-            Where-Object {
-              Test-Path (Join-Path $_.installationPath 'Common7\Tools\VsDevCmd.bat')
-            } |
-            Select-Object -First 1
-
-          if (-not $instance) {
-            throw 'No Visual Studio installation containing VsDevCmd.bat was found.'
-          }
-
-          $hostArch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
-          $targetArch = '${{ matrix.arch }}'
-          $vsDevCmd = Join-Path $instance.installationPath 'Common7\Tools\VsDevCmd.bat'
-          $command = "call `"$vsDevCmd`" -no_logo -host_arch=$hostArch -arch=$targetArch && set"
-          $environment = & $env:ComSpec /d /s /c $command
-          if ($LASTEXITCODE -ne 0) {
-            throw "VsDevCmd failed with exit code $LASTEXITCODE."
-          }
-
-          foreach ($line in $environment) {
-            if ($line -notmatch '^([^=]+)=(.*)$') { continue }
-            $name = $Matches[1]
-            $value = $Matches[2]
-
-            if ($name -ieq 'PATH') {
-              $value = "$value;$originalPath"
-            }
-
-            if ($name -notmatch '^(?i:PATH|INCLUDE|LIB|LIBPATH|VC.*|VS.*|VisualStudio.*|Windows.*|UniversalCRT.*|UCRT.*|Framework.*|NETFX.*|ExtensionSdk.*|DevEnvDir)$') {
-              continue
-            }
-
-            $delimiter = "__MSVC_ENV_$([guid]::NewGuid().ToString('N'))"
-            "$name<<$delimiter`n$value`n$delimiter" |
-              Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-            if ($name -ieq 'PATH') {
-              $env:PATH = $value
-            } else {
-              Set-Item -Path "Env:$name" -Value $value
-            }
-          }
-
-          # Ninja uses the compiler environment above and does not need CMake
-          # to discover a Visual Studio installation or versioned generator.
-          'CMAKE_GENERATOR=Ninja' |
-            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          $env:CMAKE_GENERATOR = 'Ninja'
-
-          if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
-            throw "cl.exe was not found after initializing $vsDevCmd"
-          }
-          if (-not (Get-Command ninja.exe -ErrorAction SilentlyContinue)) {
-            throw 'ninja.exe was not found on the runner PATH.'
-          }
-
-          Write-Host "Visual Studio $($instance.installationVersion) at $($instance.installationPath)"
-          Write-Host "MSVC host=$hostArch target=$targetArch"
-          Write-Host "cl.exe: $((Get-Command cl.exe).Source)"
-          Write-Host "ninja.exe: $((Get-Command ninja.exe).Source)"
-          & ninja.exe --version | Write-Host
-
-      - name: Configure SDL (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $args = @(
-            '-S', 'SDL',
-            '-B', "$env:BUILD_DIR/SDL",
-            '-G', 'Ninja',
-            '-DCMAKE_C_COMPILER=cl.exe',
-            '-DCMAKE_CXX_COMPILER=cl.exe',
-            "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
-            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
-            '-DCMAKE_INSTALL_LIBDIR=lib',
-            '-DCMAKE_INSTALL_BINDIR=bin',
-            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON',
-            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
-            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
-            '-DSDL_SHARED=ON',
-            '-DSDL_STATIC=OFF',
-            '-DSDL_INSTALL=ON',
-            '-DSDL_INSTALL_DOCS=OFF',
-            '-DSDL_TEST_LIBRARY=OFF',
-            '-DSDL_TESTS=OFF',
-            '-DSDL_EXAMPLES=OFF'
-          )
-          & cmake @args
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Configure SDL (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cflags='-Oz -ffunction-sections -fdata-sections -fno-ident -flto'
-          ldflags='-flto'
-          extra=()
-
-          if [[ '${{ matrix.platform }}' == 'linux' ]]; then
-            export CC=clang CXX=clang++
-            ldflags+=' -fuse-ld=lld -Wl,-O2 -Wl,--gc-sections -Wl,--icf=all -Wl,--as-needed -Wl,--strip-all'
+          if [[ "${{ matrix.arch }}" == "x86" ]]; then
+            packages=(build-essential gcc-multilib g++-multilib cmake ninja-build pkg-config git)
           else
-            ldflags+=' -Wl,-dead_strip -Wl,-x'
-            extra+=(
-              '-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}'
-              '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0'
+            packages=(
+              build-essential cmake ninja-build pkg-config git
+              libasound2-dev libpulse-dev libjack-dev libsndio-dev
+              libusb-1.0-0-dev libdbus-1-dev libudev-dev
+              libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev
+              libxi-dev libxss-dev libxtst-dev
+              libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev
+              libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev
+              libpipewire-0.3-dev libvulkan-dev
             )
           fi
+          sudo apt-get install -y --no-install-recommends "${packages[@]}"
 
-          if [[ '${{ matrix.arch }}' == 'x86' ]]; then
-            cflags+=' -m32'
-            ldflags+=' -m32'
-            export PKG_CONFIG_PATH=
-            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
-            extra+=(
-              '-DSDL_PIPEWIRE=OFF'
-              '-DSDL_WAYLAND_LIBDECOR=OFF'
-              '-DSDL_VULKAN=OFF'
-              '-DSDL_RENDER_VULKAN=OFF'
-            )
-          fi
-
-          cmake -S SDL -B "$BUILD_DIR/SDL" -G Ninja \
-            -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
-            -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
-            -DCMAKE_INSTALL_LIBDIR=lib \
-            -DCMAKE_INSTALL_BINDIR=bin \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON \
-            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags" \
-            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags" \
-            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags" \
-            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags" \
-            -DSDL_SHARED=ON \
-            -DSDL_STATIC=OFF \
-            -DSDL_INSTALL=ON \
-            -DSDL_INSTALL_DOCS=OFF \
-            -DSDL_TEST_LIBRARY=OFF \
-            -DSDL_TESTS=OFF \
-            -DSDL_EXAMPLES=OFF \
-            "${extra[@]}"
-
-      - name: Build SDL (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: cmake --build "$env:BUILD_DIR/SDL" --config $env:CMAKE_BUILD_TYPE --parallel
-
-      - name: Build SDL (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: cmake --build "$BUILD_DIR/SDL" --config "$CMAKE_BUILD_TYPE" --parallel
-
-      - name: Install SDL (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: cmake --install "$env:BUILD_DIR/SDL" --config $env:CMAKE_BUILD_TYPE
-
-      - name: Install SDL (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: cmake --install "$BUILD_DIR/SDL" --config "$CMAKE_BUILD_TYPE" --strip
-
-      - name: Configure SPIRV-Cross (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $args = @(
-            '-S', 'SDL_shadercross/external/SPIRV-Cross',
-            '-B', "$env:BUILD_DIR/SPIRV-Cross",
-            '-G', 'Ninja',
-            '-DCMAKE_C_COMPILER=cl.exe',
-            '-DCMAKE_CXX_COMPILER=cl.exe',
-            "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
-            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
-            '-DCMAKE_INSTALL_LIBDIR=lib',
-            '-DCMAKE_INSTALL_BINDIR=bin',
-            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON',
-            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
-            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
-            '-DSPIRV_CROSS_SHARED=OFF',
-            '-DSPIRV_CROSS_STATIC=ON',
-            '-DSPIRV_CROSS_CLI=OFF',
-            '-DSPIRV_CROSS_ENABLE_TESTS=OFF',
-            '-DSPIRV_CROSS_ENABLE_C_API=ON',
-            '-DSPIRV_CROSS_ENABLE_GLSL=ON',
-            '-DSPIRV_CROSS_ENABLE_HLSL=ON',
-            '-DSPIRV_CROSS_ENABLE_MSL=ON',
-            '-DSPIRV_CROSS_ENABLE_CPP=OFF',
-            '-DSPIRV_CROSS_ENABLE_REFLECT=OFF',
-            '-DSPIRV_CROSS_ENABLE_UTIL=OFF',
-            '-DSPIRV_CROSS_FORCE_PIC=ON',
-            '-DSPIRV_CROSS_SKIP_INSTALL=OFF'
-          )
-          & cmake @args
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Configure SPIRV-Cross (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cflags='-Oz -ffunction-sections -fdata-sections -fno-ident -flto'
-          ldflags='-flto'
-          extra=()
-
-          if [[ '${{ matrix.platform }}' == 'linux' ]]; then
-            export CC=clang CXX=clang++
-            ldflags+=' -fuse-ld=lld -Wl,-O2 -Wl,--gc-sections -Wl,--icf=all -Wl,--as-needed -Wl,--strip-all'
-          else
-            ldflags+=' -Wl,-dead_strip -Wl,-x'
-            extra+=(
-              '-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}'
-              '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0'
-            )
-          fi
-
-          if [[ '${{ matrix.arch }}' == 'x86' ]]; then
-            cflags+=' -m32'
-            ldflags+=' -m32'
-          fi
-
-          cmake -S SDL_shadercross/external/SPIRV-Cross -B "$BUILD_DIR/SPIRV-Cross" -G Ninja \
-            -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
-            -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
-            -DCMAKE_INSTALL_LIBDIR=lib \
-            -DCMAKE_INSTALL_BINDIR=bin \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON \
-            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags" \
-            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags" \
-            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags" \
-            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags" \
-            -DSPIRV_CROSS_SHARED=OFF \
-            -DSPIRV_CROSS_STATIC=ON \
-            -DSPIRV_CROSS_CLI=OFF \
-            -DSPIRV_CROSS_ENABLE_TESTS=OFF \
-            -DSPIRV_CROSS_ENABLE_C_API=ON \
-            -DSPIRV_CROSS_ENABLE_GLSL=ON \
-            -DSPIRV_CROSS_ENABLE_HLSL=ON \
-            -DSPIRV_CROSS_ENABLE_MSL=ON \
-            -DSPIRV_CROSS_ENABLE_CPP=OFF \
-            -DSPIRV_CROSS_ENABLE_REFLECT=OFF \
-            -DSPIRV_CROSS_ENABLE_UTIL=OFF \
-            -DSPIRV_CROSS_FORCE_PIC=ON \
-            -DSPIRV_CROSS_SKIP_INSTALL=OFF \
-            "${extra[@]}"
-
-      - name: Build SPIRV-Cross (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: cmake --build "$env:BUILD_DIR/SPIRV-Cross" --config $env:CMAKE_BUILD_TYPE --parallel
-
-      - name: Build SPIRV-Cross (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: cmake --build "$BUILD_DIR/SPIRV-Cross" --config "$CMAKE_BUILD_TYPE" --parallel
-
-      - name: Install SPIRV-Cross (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: cmake --install "$env:BUILD_DIR/SPIRV-Cross" --config $env:CMAKE_BUILD_TYPE
-
-      - name: Install SPIRV-Cross (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: cmake --install "$BUILD_DIR/SPIRV-Cross" --config "$CMAKE_BUILD_TYPE"
-
-      - name: Download DXC runtime
-        if: matrix.dxc
+      - name: Build and install SDL_shadercross stack (Windows)
+        if: matrix.os == 'windows'
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $headers = @{
-            'User-Agent' = 'SDL3-CS-CI'
-            'Accept' = 'application/vnd.github+json'
-            'X-GitHub-Api-Version' = '2022-11-28'
-            'Authorization' = "Bearer $env:GITHUB_TOKEN"
-          }
-
-          $tag = '${{ needs.resolve.outputs.dxc_tag }}'
-          $encodedTag = [uri]::EscapeDataString($tag)
-          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/tags/$encodedTag" -Headers $headers
-          if ($release.draft -or $release.prerelease) { throw "DXC $tag is not a stable release." }
-          $asset = $release.assets |
-            Where-Object { $_.name -like 'dxc_*.zip' -and $_.name -notlike 'pdb_*' } |
-            Select-Object -First 1
-          if (-not $asset) { throw 'DXC release ZIP was not found.' }
-
-          $dest = Join-Path $env:GITHUB_WORKSPACE 'SDL_shadercross/external/DirectXShaderCompiler-binaries'
-          $zip = Join-Path $env:RUNNER_TEMP $asset.name
-          Remove-Item $dest -Recurse -Force -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path $dest | Out-Null
-          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zip
-          Expand-Archive -Path $zip -DestinationPath $dest -Force
-
-          $top = Get-ChildItem $dest -Directory -Filter 'dxc_*' | Select-Object -First 1
-          if ($top -and (Test-Path (Join-Path $top.FullName 'bin'))) {
-            Get-ChildItem $top.FullName -Force | ForEach-Object {
-              Move-Item $_.FullName $dest -Force
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { throw "vswhere.exe was not found." }
+          $vs = (& $vswhere -latest -products * -property installationPath).Trim()
+          if (-not $vs) { throw "No Visual Studio installation was found." }
+          $devcmd = Join-Path $vs 'Common7\Tools\VsDevCmd.bat'
+          if (-not (Test-Path $devcmd)) { throw "VsDevCmd.bat was not found at $devcmd" }
+          
+          $environment = & cmd.exe /d /s /c "`"$devcmd`" -no_logo -arch=${{ matrix.msvc_arch }} -host_arch=${{ matrix.msvc_host_arch }} && set"
+          if ($LASTEXITCODE -ne 0) { throw "VsDevCmd failed with exit code $LASTEXITCODE." }
+          foreach ($line in $environment) {
+            if ($line -match '^([^=]+)=(.*)$') {
+              [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
             }
-            Remove-Item $top.FullName -Recurse -Force
           }
-
-          $arch = '${{ matrix.dxc_arch }}'
-          if (!(Test-Path (Join-Path $dest "bin/$arch/dxcompiler.dll"))) {
-            throw "DXC does not contain bin/$arch/dxcompiler.dll"
-          }
-          if (!(Test-Path (Join-Path $dest "lib/$arch/dxcompiler.lib"))) {
-            throw "DXC does not contain lib/$arch/dxcompiler.lib"
-          }
-
-      - name: Configure SDL_shadercross (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $dxc = if ('${{ matrix.dxc }}' -eq 'true') { 'ON' } else { 'OFF' }
-          $args = @(
-            '-S', 'SDL_shadercross',
-            '-B', "$env:BUILD_DIR/SDL_shadercross",
+          
+          Get-Command cl.exe -ErrorAction Stop | Out-Host
+          Get-Command cmake.exe -ErrorAction Stop | Out-Host
+          Get-Command ninja.exe -ErrorAction Stop | Out-Host
+          $common = @(
             '-G', 'Ninja',
-            '-DCMAKE_C_COMPILER=cl.exe',
-            '-DCMAKE_CXX_COMPILER=cl.exe',
-            "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
+            '-DCMAKE_BUILD_TYPE=MinSizeRel',
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON',
+            '-DCMAKE_C_FLAGS_MINSIZEREL=/Os /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/Os /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF',
+            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF'
+          )
+          $sdlOptions = @(
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
+            '-DSDL_INSTALL=ON',
+            '-DSDL_SHARED=ON',
+            '-DSDL_STATIC=OFF',
+            '-DSDL_TESTS=OFF',
+            '-DSDL_EXAMPLES=OFF',
+            '-DSDL_INSTALL_DOCS=OFF',
+            '-DSDL_INSTALL_TESTS=OFF'
+          )
+          & cmake -S SDL -B "$env:BUILD_DIR/SDL" @common @sdlOptions
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/SDL" --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/SDL"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $spvcOptions = @(
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
+            '-DSPIRV_CROSS_SHARED=OFF',
+            '-DSPIRV_CROSS_STATIC=ON',
+            '-DSPIRV_CROSS_CLI=OFF',
+            '-DSPIRV_CROSS_ENABLE_TESTS=OFF',
+            '-DSPIRV_CROSS_ENABLE_C_API=ON'
+          )
+          & cmake -S SDL_shadercross/external/SPIRV-Cross -B "$env:BUILD_DIR/SPIRV-Cross" @common @spvcOptions
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/SPIRV-Cross" --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/SPIRV-Cross"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $dxcEnabled = '${{ matrix.dxc }}' -eq 'true'
+          if ($dxcEnabled) {
+            $headers = @{
+              'User-Agent' = 'SDL-native-build'
+              'Accept' = 'application/vnd.github+json'
+              'Authorization' = "Bearer $env:GITHUB_TOKEN"
+              'X-GitHub-Api-Version' = '2022-11-28'
+            }
+            $release = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/latest'
+            $asset = $release.assets |
+              Where-Object { $_.name -like 'dxc_*.zip' -and $_.name -notlike 'pdb_*' } |
+              Select-Object -First 1
+            if (-not $asset) { throw 'No official DXC ZIP asset was found.' }
+
+            $dxcRoot = Join-Path $env:GITHUB_WORKSPACE 'SDL_shadercross/external/DirectXShaderCompiler-binaries'
+            $zipPath = Join-Path $env:RUNNER_TEMP $asset.name
+            Remove-Item $dxcRoot -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Force -Path $dxcRoot | Out-Null
+            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipPath
+            Expand-Archive -Path $zipPath -DestinationPath $dxcRoot -Force
+
+            $nested = Get-ChildItem $dxcRoot -Directory |
+              Where-Object { Test-Path (Join-Path $_.FullName 'bin') } |
+              Select-Object -First 1
+            if ($nested -and -not (Test-Path (Join-Path $dxcRoot 'bin'))) {
+              Get-ChildItem $nested.FullName -Force | Move-Item -Destination $dxcRoot -Force
+              Remove-Item $nested.FullName -Recurse -Force
+            }
+
+            foreach ($required in @('inc', 'bin', 'lib')) {
+              if (-not (Test-Path (Join-Path $dxcRoot $required))) {
+                throw "DXC archive is missing $required/."
+              }
+            }
+          }
+
+          $dxcOption = if ($dxcEnabled) { '-DSDLSHADERCROSS_DXC=ON' } else { '-DSDLSHADERCROSS_DXC=OFF' }
+          $componentOptions = @(
             "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
             "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX",
-            '-DCMAKE_INSTALL_LIBDIR=lib',
-            '-DCMAKE_INSTALL_BINDIR=bin',
-            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON',
-            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Ob1 /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
-            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF /INCREMENTAL:NO',
             '-DSDLSHADERCROSS_INSTALL=ON',
             '-DSDLSHADERCROSS_INSTALL_MAN=OFF',
-            '-DSDLSHADERCROSS_INSTALL_RUNTIME=OFF',
+            '-DSDLSHADERCROSS_INSTALL_CPACK=OFF',
+            '-DSDLSHADERCROSS_INSTALL_RUNTIME=ON',
             '-DSDLSHADERCROSS_SHARED=ON',
             '-DSDLSHADERCROSS_STATIC=OFF',
             '-DSDLSHADERCROSS_CLI=OFF',
             '-DSDLSHADERCROSS_TESTS=OFF',
             '-DSDLSHADERCROSS_VENDORED=OFF',
             '-DSDLSHADERCROSS_SPIRVCROSS_SHARED=OFF',
-            "-DSDLSHADERCROSS_DXC=$dxc"
+            $dxcOption
           )
-          & cmake @args
+          & cmake -S SDL_shadercross -B "$env:BUILD_DIR/SDL_shadercross" @common @componentOptions
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/SDL_shadercross" --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/SDL_shadercross"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Configure SDL_shadercross (Unix)
-        if: matrix.platform != 'windows'
+      - name: Build and install SDL_shadercross stack (Unix)
+        if: matrix.os != 'windows'
         shell: bash
         run: |
-          set -euxo pipefail
-          cflags='-Oz -ffunction-sections -fdata-sections -fno-ident -flto'
-          ldflags='-flto'
-          extra=()
-
-          if [[ '${{ matrix.platform }}' == 'linux' ]]; then
-            export CC=clang CXX=clang++
-            ldflags+=' -fuse-ld=lld -Wl,-O2 -Wl,--gc-sections -Wl,--icf=all -Wl,--as-needed -Wl,--strip-all'
+          set -euo pipefail
+          common=(
+            -G Ninja
+            -DCMAKE_BUILD_TYPE=MinSizeRel
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+          )
+          
+          cflags="-Os -flto -ffunction-sections -fdata-sections -DNDEBUG"
+          cxxflags="$cflags"
+          if [[ "${{ matrix.arch }}" == "x86" ]]; then
+            cflags="$cflags -m32"
+            cxxflags="$cxxflags -m32"
+          fi
+          
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            ldflags="-flto -Wl,-dead_strip -Wl,-x"
+            common+=("-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0)
           else
-            ldflags+=' -Wl,-dead_strip -Wl,-x'
-            extra+=(
-              '-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}'
-              '-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0'
+            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -s"
+            if [[ "${{ matrix.arch }}" == "x86" ]]; then
+              ldflags="$ldflags -m32"
+            fi
+          fi
+          
+          common+=(
+            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags"
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cxxflags"
+            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags"
+            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags"
+          )
+          sdl_options=(
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX"
+            -DSDL_INSTALL=ON
+            -DSDL_SHARED=ON
+            -DSDL_STATIC=OFF
+            -DSDL_TESTS=OFF
+            -DSDL_EXAMPLES=OFF
+            -DSDL_INSTALL_DOCS=OFF
+            -DSDL_INSTALL_TESTS=OFF
+          )
+          
+          # A 32-bit Linux build is produced with SDL's dependency-free
+          # dummy/offscreen backends to avoid linking accidental 64-bit system libraries.
+          if [[ "${{ matrix.os }}" == "linux" && "${{ matrix.arch }}" == "x86" ]]; then
+            sdl_options+=(
+              -DSDL_X11=OFF -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF
+              -DSDL_ALSA=OFF -DSDL_PULSEAUDIO=OFF -DSDL_PIPEWIRE=OFF
+              -DSDL_JACK=OFF -DSDL_SNDIO=OFF -DSDL_OSS=OFF
+              -DSDL_DBUS=OFF -DSDL_IBUS=OFF -DSDL_LIBUDEV=OFF
+              -DSDL_HIDAPI_LIBUSB=OFF
+              -DSDL_OPENGL=OFF -DSDL_OPENGLES=OFF -DSDL_VULKAN=OFF
+              -DSDL_OFFSCREEN=ON -DSDL_DUMMYVIDEO=ON -DSDL_DUMMYAUDIO=ON
             )
           fi
+          cmake -S SDL -B "$BUILD_DIR/SDL" "${common[@]}" "${sdl_options[@]}"
+          cmake --build "$BUILD_DIR/SDL" --parallel
+          cmake --install "$BUILD_DIR/SDL" --strip
 
-          if [[ '${{ matrix.arch }}' == 'x86' ]]; then
-            cflags+=' -m32'
-            ldflags+=' -m32'
-          fi
+          spvc_options=(
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX"
+            -DSPIRV_CROSS_SHARED=OFF
+            -DSPIRV_CROSS_STATIC=ON
+            -DSPIRV_CROSS_CLI=OFF
+            -DSPIRV_CROSS_ENABLE_TESTS=OFF
+            -DSPIRV_CROSS_ENABLE_C_API=ON
+          )
+          cmake -S SDL_shadercross/external/SPIRV-Cross -B "$BUILD_DIR/SPIRV-Cross" "${common[@]}" "${spvc_options[@]}"
+          cmake --build "$BUILD_DIR/SPIRV-Cross" --parallel
+          cmake --install "$BUILD_DIR/SPIRV-Cross" --strip
 
-          cmake -S SDL_shadercross -B "$BUILD_DIR/SDL_shadercross" -G Ninja \
-            -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
-            -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
-            -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
-            -DCMAKE_INSTALL_LIBDIR=lib \
-            -DCMAKE_INSTALL_BINDIR=bin \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL=ON \
-            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags" \
-            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags" \
-            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags" \
-            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags" \
-            -DSDLSHADERCROSS_INSTALL=ON \
-            -DSDLSHADERCROSS_INSTALL_MAN=OFF \
-            -DSDLSHADERCROSS_INSTALL_RUNTIME=OFF \
-            -DSDLSHADERCROSS_SHARED=ON \
-            -DSDLSHADERCROSS_STATIC=OFF \
-            -DSDLSHADERCROSS_CLI=OFF \
-            -DSDLSHADERCROSS_TESTS=OFF \
-            -DSDLSHADERCROSS_VENDORED=OFF \
-            -DSDLSHADERCROSS_SPIRVCROSS_SHARED=OFF \
-            -DSDLSHADERCROSS_DXC=OFF \
-            "${extra[@]}"
+          component_options=(
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX"
+            "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX"
+            -DSDLSHADERCROSS_INSTALL=ON
+            -DSDLSHADERCROSS_INSTALL_MAN=OFF
+            -DSDLSHADERCROSS_INSTALL_CPACK=OFF
+            -DSDLSHADERCROSS_INSTALL_RUNTIME=ON
+            -DSDLSHADERCROSS_SHARED=ON
+            -DSDLSHADERCROSS_STATIC=OFF
+            -DSDLSHADERCROSS_CLI=OFF
+            -DSDLSHADERCROSS_TESTS=OFF
+            -DSDLSHADERCROSS_VENDORED=OFF
+            -DSDLSHADERCROSS_SPIRVCROSS_SHARED=OFF
+            -DSDLSHADERCROSS_DXC=OFF
+          )
+          cmake -S SDL_shadercross -B "$BUILD_DIR/SDL_shadercross" "${common[@]}" "${component_options[@]}"
+          cmake --build "$BUILD_DIR/SDL_shadercross" --parallel
+          cmake --install "$BUILD_DIR/SDL_shadercross" --strip
 
-      - name: Build SDL_shadercross (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: cmake --build "$env:BUILD_DIR/SDL_shadercross" --config $env:CMAKE_BUILD_TYPE --parallel
-
-      - name: Build SDL_shadercross (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: cmake --build "$BUILD_DIR/SDL_shadercross" --config "$CMAKE_BUILD_TYPE" --parallel
-
-      - name: Install SDL_shadercross (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: cmake --install "$env:BUILD_DIR/SDL_shadercross" --config $env:CMAKE_BUILD_TYPE
-
-      - name: Install SDL_shadercross (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: cmake --install "$BUILD_DIR/SDL_shadercross" --config "$CMAKE_BUILD_TYPE" --strip
-
-      - name: Copy required DXC DLLs
-        if: matrix.dxc
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $root = Join-Path $env:GITHUB_WORKSPACE 'SDL_shadercross/external/DirectXShaderCompiler-binaries'
-          $source = Join-Path $root 'bin/${{ matrix.dxc_arch }}'
-          $dest = Join-Path $env:INSTALL_PREFIX 'bin'
-          New-Item -ItemType Directory -Force -Path $dest | Out-Null
-          Copy-Item (Join-Path $source 'dxcompiler.dll') $dest -Force
-          Copy-Item (Join-Path $source 'dxil.dll') $dest -Force
-
-      - name: Remove intermediate SPIRV-Cross development files (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          Get-ChildItem "$env:INSTALL_PREFIX/lib" -File -Filter 'spirv-cross*.lib' -ErrorAction SilentlyContinue |
-            Remove-Item -Force
-          Get-ChildItem $env:INSTALL_PREFIX -Recurse -Directory -Filter 'spirv_cross_*' -ErrorAction SilentlyContinue |
-            Remove-Item -Recurse -Force
-
-      - name: Remove intermediate SPIRV-Cross development files (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          find "$INSTALL_PREFIX/lib" -maxdepth 1 -type f -name 'libspirv-cross*.a' -delete || true
-          find "$INSTALL_PREFIX/lib" -maxdepth 2 -type f -name 'spirv-cross*.pc' -delete || true
-          find "$INSTALL_PREFIX" -type d -name 'spirv_cross_*' -prune -exec rm -rf {} + || true
-
-      - name: Remove non-runtime Windows build files
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          Get-ChildItem $env:INSTALL_PREFIX -Recurse -File -Include *.pdb,*.exp,*.ilk |
-            Remove-Item -Force -ErrorAction SilentlyContinue
-
-      - name: Verify installed binaries (Windows)
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          $files = Get-ChildItem $env:INSTALL_PREFIX -Recurse -File
-          $files | ForEach-Object { $_.FullName }
-          if (-not ($files | Where-Object Name -eq 'SDL3_shadercross.dll')) {
-            throw 'SDL3_shadercross.dll was not installed.'
-          }
-          if ('${{ matrix.dxc }}' -eq 'true') {
-            if (-not (Test-Path "$env:INSTALL_PREFIX/bin/dxcompiler.dll")) { throw 'dxcompiler.dll is missing.' }
-            if (-not (Test-Path "$env:INSTALL_PREFIX/bin/dxil.dll")) { throw 'dxil.dll is missing.' }
-          }
-
-      - name: Verify installed binaries (Unix)
-        if: matrix.platform != 'windows'
-        shell: bash
-        run: |
-          set -euxo pipefail
-          find "$INSTALL_PREFIX" -maxdepth 5 -type f -print
-          test -n "$(find "$INSTALL_PREFIX" -type f \( -name 'libSDL3_shadercross.so*' -o -name 'libSDL3_shadercross*.dylib' \) -print -quit)"
 
       - name: Upload SDL_shadercross ${{ matrix.rid }}
         uses: actions/upload-artifact@v4

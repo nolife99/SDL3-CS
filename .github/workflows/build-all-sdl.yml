@@ -31,33 +31,30 @@ jobs:
   package:
     name: Collect all native libraries
     runs-on: ubuntu-24.04
-    needs:
-      - sdl
-      - sdl_image
-      - sdl_mixer
-      - sdl_ttf
-      - sdl_shadercross
+    needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross]
 
     steps:
-      - name: Download all per-library artifacts
+      - name: Download all component artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          pattern: SDL*
+          pattern: SDL-*
+          merge-multiple: false
+
+      - name: Download all SDL extension artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: SDL_*-*
           merge-multiple: false
 
       - name: Assemble library-separated runtime package
         shell: bash
         run: |
           set -euo pipefail
-          shopt -s nullglob
 
           package_root="$GITHUB_WORKSPACE/SDL-native-libraries"
-          rids=(
-            win-x64 win-x86 win-arm64
-            linux-x64 linux-x86 linux-arm64
-            osx-x64 osx-arm64
-          )
+          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
           libraries=(SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross)
 
           declare -A binary_names=(
@@ -68,101 +65,87 @@ jobs:
             [SDL_shadercross]=SDL3_shadercross
           )
 
-          copy_matches() {
-            local destination="$1"
-            shift
-            local existing=()
+          copy_component() {
+            local library="$1"
+            local rid="$2"
+            local source_root="$GITHUB_WORKSPACE/artifacts/${library}-${rid}"
+            local destination="$package_root/$library/runtimes/$rid/native"
+            local binary="${binary_names[$library]}"
 
-            for source in "$@"; do
-              [[ -f "$source" ]] && existing+=("$source")
-            done
-
-            if (( ${#existing[@]} == 0 )); then
+            if [[ ! -d "$source_root" ]]; then
+              echo "Missing artifact: ${library}-${rid}" >&2
+              find "$GITHUB_WORKSPACE/artifacts" -maxdepth 2 -type d -print >&2 || true
               return 1
             fi
 
             mkdir -p "$destination"
-            for source in "${existing[@]}"; do
-              cp -L "$source" "$destination/"
+            case "$rid" in
+              win-*)
+                mapfile -d '' files < <(find "$source_root" -type f -iname "$binary.dll" -print0)
+                ;;
+              linux-*)
+                mapfile -d '' files < <(find "$source_root" \( -type f -o -type l \) -name "lib$binary.so*" -print0)
+                ;;
+              osx-*)
+                mapfile -d '' files < <(find "$source_root" \( -type f -o -type l \) -name "lib$binary*.dylib" -print0)
+                ;;
+            esac
+
+            if (( ${#files[@]} == 0 )); then
+              echo "No $binary runtime binary found in ${library}-${rid}." >&2
+              find "$source_root" -maxdepth 4 -type f -print >&2 || true
+              return 1
+            fi
+
+            declare -A copied=()
+            for source in "${files[@]}"; do
+              name="$(basename "$source")"
+              if [[ -z "${copied[$name]+x}" ]]; then
+                cp -L "$source" "$destination/$name"
+                copied[$name]=1
+              fi
             done
+
+            if [[ "$library" == "SDL_shadercross" && ( "$rid" == "win-x64" || "$rid" == "win-arm64" ) ]]; then
+              for dependency in dxcompiler.dll dxil.dll; do
+                match="$(find "$source_root" -type f -iname "$dependency" -print -quit)"
+                if [[ -z "$match" ]]; then
+                  echo "Missing $dependency in ${library}-${rid}." >&2
+                  return 1
+                fi
+                cp -L "$match" "$destination/$dependency"
+              done
+            fi
           }
 
           for library in "${libraries[@]}"; do
-            binary="${binary_names[$library]}"
-
             for rid in "${rids[@]}"; do
-              source_root="$GITHUB_WORKSPACE/artifacts/${library}-${rid}"
-              destination="$package_root/$library/runtimes/$rid/native"
-
-              if [[ ! -d "$source_root" ]]; then
-                echo "Missing artifact directory: $source_root" >&2
-                exit 1
-              fi
-
-              case "$rid" in
-                win-*)
-                  matches=("$source_root/bin/$binary.dll")
-                  ;;
-                linux-*)
-                  matches=("$source_root/lib/lib$binary.so"*)
-                  ;;
-                osx-*)
-                  matches=("$source_root/lib/lib$binary"*.dylib)
-                  ;;
-                *)
-                  echo "Unsupported RID: $rid" >&2
-                  exit 1
-                  ;;
-              esac
-
-              if ! copy_matches "$destination" "${matches[@]}"; then
-                echo "No runtime binary found for $library/$rid ($binary)." >&2
-                find "$source_root" -maxdepth 4 -type f -print >&2 || true
-                exit 1
-              fi
-
-              # SDL_shadercross dynamically loads the official DXC runtime on
-              # Windows x64 and ARM64. Keep those DLLs in its own directory.
-              if [[ "$library" == SDL_shadercross && "$rid" == win-x64 || \
-                    "$library" == SDL_shadercross && "$rid" == win-arm64 ]]; then
-                dxc_files=(
-                  "$source_root/bin/dxcompiler.dll"
-                  "$source_root/bin/dxil.dll"
-                )
-                for dxc_file in "${dxc_files[@]}"; do
-                  if [[ ! -f "$dxc_file" ]]; then
-                    echo "Missing required DXC runtime: $dxc_file" >&2
-                    exit 1
-                  fi
-                  cp -L "$dxc_file" "$destination/"
-                done
-              fi
+              copy_component "$library" "$rid"
             done
           done
 
           cat > "$package_root/README.txt" <<'EOF'
-          SDL native runtime package
+          SDL native libraries for .NET P/Invoke
 
-          Each SDL component has its own directory:
+          Each component is isolated in its own directory:
 
-            SDL/
-            SDL_image/
-            SDL_mixer/
-            SDL_ttf/
-            SDL_shadercross/
+            SDL/runtimes/<rid>/native/
+            SDL_image/runtimes/<rid>/native/
+            SDL_mixer/runtimes/<rid>/native/
+            SDL_ttf/runtimes/<rid>/native/
+            SDL_shadercross/runtimes/<rid>/native/
 
-          Runtime binaries are stored under:
+          SDL_image, SDL_mixer, SDL_ttf, and SDL_shadercross require the SDL
+          binary for the same RID. Because the component files are separated,
+          either copy the selected RID's files together beside the managed
+          executable or register a NativeLibrary/DllImportResolver that searches
+          the component directories.
 
-            <library>/runtimes/<rid>/native/
-
-          SDL_image, SDL_mixer, SDL_ttf, and SDL_shadercross depend on SDL.
-          Applications must deploy the matching SDL runtime for the same RID.
-          SDL_shadercross also requires dxcompiler.dll and dxil.dll on Windows
-          targets where those files are present.
-
-          For direct .NET P/Invoke deployment, copy the required component files
-          for one RID into the application's native search directory, or install
-          a DllImportResolver that searches these component subdirectories.
+          SDL_shadercross statically links SPIRV-Cross. Its Windows x64 and
+          ARM64 directories also include the official dxcompiler.dll and
+          dxil.dll runtime files required for HLSL compilation. Windows x86
+          is built without DXC because official DXC releases do not provide
+          an x86 runtime.
           EOF
 
           (
@@ -172,17 +155,12 @@ jobs:
               | xargs -0 sha256sum > SHA256SUMS
           )
 
-          echo "Packaged files:"
-          find "$package_root" -type f -print | sort
-
           expected=$(( ${#libraries[@]} * ${#rids[@]} ))
           actual="$(find "$package_root" -mindepth 4 -maxdepth 4 -type d -name native | wc -l)"
-          if [[ "$actual" -ne "$expected" ]]; then
-            echo "Expected $expected native directories, found $actual." >&2
-            exit 1
-          fi
+          [[ "$actual" -eq "$expected" ]]
 
           zip -9 -r SDL-native-libraries.zip SDL-native-libraries
+          unzip -t SDL-native-libraries.zip
 
       - name: Upload combined package
         uses: actions/upload-artifact@v4
