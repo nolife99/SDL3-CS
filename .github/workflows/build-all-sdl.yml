@@ -1,0 +1,193 @@
+name: Build and package SDL native libraries
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  sdl:
+    name: Build SDL
+    uses: ./.github/workflows/build-sdl.yml
+
+  sdl_image:
+    name: Build SDL_image
+    uses: ./.github/workflows/build-sdl_image.yml
+
+  sdl_mixer:
+    name: Build SDL_mixer
+    uses: ./.github/workflows/build-sdl_mixer.yml
+
+  sdl_ttf:
+    name: Build SDL_ttf
+    uses: ./.github/workflows/build-sdl_ttf.yml
+
+  sdl_shadercross:
+    name: Build SDL_shadercross
+    uses: ./.github/workflows/build-sdl_shadercross.yml
+
+  package:
+    name: Collect all native libraries
+    runs-on: ubuntu-24.04
+    needs:
+      - sdl
+      - sdl_image
+      - sdl_mixer
+      - sdl_ttf
+      - sdl_shadercross
+
+    steps:
+      - name: Download all per-library artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: SDL*
+          merge-multiple: false
+
+      - name: Assemble library-separated runtime package
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          package_root="$GITHUB_WORKSPACE/SDL-native-libraries"
+          rids=(
+            win-x64 win-x86 win-arm64
+            linux-x64 linux-x86 linux-arm64
+            osx-x64 osx-arm64
+          )
+          libraries=(SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross)
+
+          declare -A binary_names=(
+            [SDL]=SDL3
+            [SDL_image]=SDL3_image
+            [SDL_mixer]=SDL3_mixer
+            [SDL_ttf]=SDL3_ttf
+            [SDL_shadercross]=SDL3_shadercross
+          )
+
+          copy_matches() {
+            local destination="$1"
+            shift
+            local existing=()
+
+            for source in "$@"; do
+              [[ -f "$source" ]] && existing+=("$source")
+            done
+
+            if (( ${#existing[@]} == 0 )); then
+              return 1
+            fi
+
+            mkdir -p "$destination"
+            for source in "${existing[@]}"; do
+              cp -L "$source" "$destination/"
+            done
+          }
+
+          for library in "${libraries[@]}"; do
+            binary="${binary_names[$library]}"
+
+            for rid in "${rids[@]}"; do
+              source_root="$GITHUB_WORKSPACE/artifacts/${library}-${rid}"
+              destination="$package_root/$library/runtimes/$rid/native"
+
+              if [[ ! -d "$source_root" ]]; then
+                echo "Missing artifact directory: $source_root" >&2
+                exit 1
+              fi
+
+              case "$rid" in
+                win-*)
+                  matches=("$source_root/bin/$binary.dll")
+                  ;;
+                linux-*)
+                  matches=("$source_root/lib/lib$binary.so"*)
+                  ;;
+                osx-*)
+                  matches=("$source_root/lib/lib$binary"*.dylib)
+                  ;;
+                *)
+                  echo "Unsupported RID: $rid" >&2
+                  exit 1
+                  ;;
+              esac
+
+              if ! copy_matches "$destination" "${matches[@]}"; then
+                echo "No runtime binary found for $library/$rid ($binary)." >&2
+                find "$source_root" -maxdepth 4 -type f -print >&2 || true
+                exit 1
+              fi
+
+              # SDL_shadercross dynamically loads the official DXC runtime on
+              # Windows x64 and ARM64. Keep those DLLs in its own directory.
+              if [[ "$library" == SDL_shadercross && "$rid" == win-x64 || \
+                    "$library" == SDL_shadercross && "$rid" == win-arm64 ]]; then
+                dxc_files=(
+                  "$source_root/bin/dxcompiler.dll"
+                  "$source_root/bin/dxil.dll"
+                )
+                for dxc_file in "${dxc_files[@]}"; do
+                  if [[ ! -f "$dxc_file" ]]; then
+                    echo "Missing required DXC runtime: $dxc_file" >&2
+                    exit 1
+                  fi
+                  cp -L "$dxc_file" "$destination/"
+                done
+              fi
+            done
+          done
+
+          cat > "$package_root/README.txt" <<'EOF'
+          SDL native runtime package
+
+          Each SDL component has its own directory:
+
+            SDL/
+            SDL_image/
+            SDL_mixer/
+            SDL_ttf/
+            SDL_shadercross/
+
+          Runtime binaries are stored under:
+
+            <library>/runtimes/<rid>/native/
+
+          SDL_image, SDL_mixer, SDL_ttf, and SDL_shadercross depend on SDL.
+          Applications must deploy the matching SDL runtime for the same RID.
+          SDL_shadercross also requires dxcompiler.dll and dxil.dll on Windows
+          targets where those files are present.
+
+          For direct .NET P/Invoke deployment, copy the required component files
+          for one RID into the application's native search directory, or install
+          a DllImportResolver that searches these component subdirectories.
+          EOF
+
+          (
+            cd "$package_root"
+            find . -type f ! -name SHA256SUMS -print0 \
+              | sort -z \
+              | xargs -0 sha256sum > SHA256SUMS
+          )
+
+          echo "Packaged files:"
+          find "$package_root" -type f -print | sort
+
+          expected=$(( ${#libraries[@]} * ${#rids[@]} ))
+          actual="$(find "$package_root" -mindepth 4 -maxdepth 4 -type d -name native | wc -l)"
+          if [[ "$actual" -ne "$expected" ]]; then
+            echo "Expected $expected native directories, found $actual." >&2
+            exit 1
+          fi
+
+          zip -9 -r SDL-native-libraries.zip SDL-native-libraries
+
+      - name: Upload combined package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SDL-native-libraries
+          path: SDL-native-libraries.zip
+          if-no-files-found: error
+          compression-level: 0
