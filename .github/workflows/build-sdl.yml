@@ -45,17 +45,14 @@ jobs:
             platform: windows
             arch: x64
             rid: win-x64
-            cmake_arch: x64
           - runner: windows-2025
             platform: windows
             arch: x86
             rid: win-x86
-            cmake_arch: Win32
           - runner: windows-11-arm
             platform: windows
             arch: arm64
             rid: win-arm64
-            cmake_arch: ARM64
           - runner: macos-15-intel
             platform: macos
             arch: x64
@@ -85,14 +82,19 @@ jobs:
       CMAKE_BUILD_TYPE: MinSizeRel
 
     steps:
-      - name: Checkout official SDL ${{ needs.resolve.outputs.sdl_tag }}
-        uses: actions/checkout@v4
-        with:
-          repository: libsdl-org/SDL
-          ref: ${{ needs.resolve.outputs.sdl_tag }}
-          fetch-depth: 1
-          submodules: false
-          path: SDL
+      - name: Fetch official SDL ${{ needs.resolve.outputs.sdl_tag }}
+        shell: bash
+        env:
+          SDL_TAG: ${{ needs.resolve.outputs.sdl_tag }}
+        run: |
+          set -euxo pipefail
+          rm -rf SDL
+          git clone --filter=blob:none --depth 1 --branch "$SDL_TAG" \
+            https://github.com/libsdl-org/SDL.git SDL
+          test "$(git -C SDL remote get-url origin)" = \
+            "https://github.com/libsdl-org/SDL.git"
+          test "$(git -C SDL describe --tags --exact-match HEAD)" = "$SDL_TAG"
+          echo "- SDL source: libsdl-org/SDL@$SDL_TAG" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install Linux build dependencies
         if: matrix.platform == 'linux' && matrix.arch != 'x86'
@@ -128,6 +130,82 @@ jobs:
             libgbm-dev:i386 libgl1-mesa-dev:i386 libegl1-mesa-dev:i386 \
             libgles2-mesa-dev:i386
 
+      - name: Initialize latest MSVC toolchain for Ninja
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $originalPath = $env:PATH
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path $vswhere)) {
+            throw "vswhere.exe was not found at $vswhere"
+          }
+
+          $instances = @(& $vswhere -all -products * -format json | ConvertFrom-Json)
+          $instance = $instances |
+            Sort-Object { [version]$_.installationVersion } -Descending |
+            Where-Object {
+              Test-Path (Join-Path $_.installationPath 'Common7\Tools\VsDevCmd.bat')
+            } |
+            Select-Object -First 1
+
+          if (-not $instance) {
+            throw 'No Visual Studio installation containing VsDevCmd.bat was found.'
+          }
+
+          $hostArch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
+          $targetArch = '${{ matrix.arch }}'
+          $vsDevCmd = Join-Path $instance.installationPath 'Common7\Tools\VsDevCmd.bat'
+          $command = "call `"$vsDevCmd`" -no_logo -host_arch=$hostArch -arch=$targetArch && set"
+          $environment = & $env:ComSpec /d /s /c $command
+          if ($LASTEXITCODE -ne 0) {
+            throw "VsDevCmd failed with exit code $LASTEXITCODE."
+          }
+
+          foreach ($line in $environment) {
+            if ($line -notmatch '^([^=]+)=(.*)$') { continue }
+            $name = $Matches[1]
+            $value = $Matches[2]
+
+            if ($name -ieq 'PATH') {
+              $value = "$value;$originalPath"
+            }
+
+            if ($name -notmatch '^(?i:PATH|INCLUDE|LIB|LIBPATH|VC.*|VS.*|VisualStudio.*|Windows.*|UniversalCRT.*|UCRT.*|Framework.*|NETFX.*|ExtensionSdk.*|DevEnvDir)$') {
+              continue
+            }
+
+            $delimiter = "__MSVC_ENV_$([guid]::NewGuid().ToString('N'))"
+            "$name<<$delimiter`n$value`n$delimiter" |
+              Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+            if ($name -ieq 'PATH') {
+              $env:PATH = $value
+            } else {
+              Set-Item -Path "Env:$name" -Value $value
+            }
+          }
+
+          # Ninja uses the compiler environment above and does not need CMake
+          # to discover a Visual Studio installation or versioned generator.
+          'CMAKE_GENERATOR=Ninja' |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $env:CMAKE_GENERATOR = 'Ninja'
+
+          if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
+            throw "cl.exe was not found after initializing $vsDevCmd"
+          }
+          if (-not (Get-Command ninja.exe -ErrorAction SilentlyContinue)) {
+            throw 'ninja.exe was not found on the runner PATH.'
+          }
+
+          Write-Host "Visual Studio $($instance.installationVersion) at $($instance.installationPath)"
+          Write-Host "MSVC host=$hostArch target=$targetArch"
+          Write-Host "cl.exe: $((Get-Command cl.exe).Source)"
+          Write-Host "ninja.exe: $((Get-Command ninja.exe).Source)"
+          & ninja.exe --version | Write-Host
+
       - name: Configure SDL (Windows)
         if: matrix.platform == 'windows'
         shell: pwsh
@@ -136,8 +214,9 @@ jobs:
           $args = @(
             '-S', 'SDL',
             '-B', "$env:BUILD_DIR/SDL",
-            '-G', 'Visual Studio 17 2022',
-            '-A', '${{ matrix.cmake_arch }}',
+            '-G', 'Ninja',
+            '-DCMAKE_C_COMPILER=cl.exe',
+            '-DCMAKE_CXX_COMPILER=cl.exe',
             "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
             "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
             '-DCMAKE_INSTALL_LIBDIR=lib',
