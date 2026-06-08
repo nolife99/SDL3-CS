@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,16 +25,16 @@
 
 namespace SDL3;
 
-using System.Runtime.InteropServices;
-
 public partial class SDL
 {
     /// <code>typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);</code>
-    /// <summary> A callback that is invoked when a tray entry is selected. </summary>
-    /// <param name="userdata"> an optional pointer to pass extra data to the callback when it will be invoked. </param>
+    /// <summary>
+    /// A callback that is invoked when a tray entry is selected. State is captured by closure; the
+    /// delegate is rooted by the wrapper until the entry's callback is replaced or cleared. Exceptions
+    /// never propagate into native SDL: they are routed to <see cref="UnhandledCallbackException"/>.
+    /// </summary>
     /// <param name="entry"> the tray entry that was selected. </param>
     /// <since> This datatype is available since SDL 3.2.0 </since>
     /// <seealso cref="SetTrayEntryCallback"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void TrayCallback(nint userdata, nint entry);
+    public delegate void TrayCallback(nint entry);
 }

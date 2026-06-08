@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -36,6 +36,5 @@ public static partial class SDL
     /// <returns> an <see cref="AssertState"/> value indicating how to handle the failure. </returns>
     /// <threadsafety> This callback may be called from any thread that triggers an assert at any time. </threadsafety>
     /// <since> This datatype is available since SDL 3.2.0 </since>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate AssertState AssertionHandler(in AssertData data, nint userdata);
+    public delegate AssertState AssertionHandler(in AssertData data);
 }

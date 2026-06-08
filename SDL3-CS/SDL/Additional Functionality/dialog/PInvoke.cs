@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -21,102 +21,148 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+// This file is an altered version (storybrew fork). The dialog thunking was rewritten:
+//   * The native callback is a single [UnmanagedCallersOnly] static thunk passed as a C function
+//     pointer — no delegate marshaling, no runtime-generated thunks, AOT-friendly.
+//   * Per-request state is one managed object behind one normal GCHandle (previously: a pinned pooled
+//     array containing two more GCHandles).
+//   * Filters and the default location are copied into ONE native block that lives until the dialog's
+//     callback runs. The previous implementation unpinned the filter memory as soon as the native call
+//     returned, while the asynchronous dialog could still read it (use-after-free).
+//   * Results are delivered as managed string[] — safe to store or move across threads (previously:
+//     pool-rented memory that was returned to the pool the moment the callback returned).
+//   * A managed exception thrown by the callback never unwinds into native SDL; it is routed through
+//     SDL.ReportCallbackException.
+
 #endregion
 
 namespace SDL3;
 
-using System.Buffers;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
 public static unsafe partial class SDL
 {
-    static readonly DialogFileCallback s_dialogFileThunk = DialogFileThunk;
-
-    static void DialogFileThunk(nint userdata, nint filelist, int filter)
+    /// <summary>Mirrors the native SDL_DialogFileFilter: two UTF-8 string pointers.</summary>
+    struct NativeDialogFilter
     {
-        var ctx = (DialogCallbackContext*)userdata;
-        var managedCallback = (Action<nint, ArraySegment<ArraySegment<char>>, int>)ctx->ManagedCallback.Target!;
+        public byte* Name;
+        public byte* Pattern;
+    }
 
-        ArraySegment<ArraySegment<char>> result = default;
+    /// <summary>
+    ///     Per-request state for one dialog invocation, referenced from native code through a single
+    ///     normal <see cref="GCHandle"/> passed as SDL's userdata. The native block holds the filter
+    ///     array and strings (and the default location) and is freed by the thunk, because SDL is
+    ///     allowed to read it until the callback has run.
+    /// </summary>
+    sealed class DialogRequest(DialogFileCallback callback)
+    {
+        public readonly DialogFileCallback Callback = callback;
+        public nint NativeBlock;
 
-        if (filelist != 0)
+        public void FreeNativeBlock()
         {
-            // char** fl = (char**)filelist
-            var fl = (byte**)filelist;
+            var block = NativeBlock;
+            NativeBlock = 0;
+            if (block != 0) NativeMemory.Free((void*)block);
+        }
+    }
 
-            // Count entries
+    /// <summary>
+    ///     The one native-callable entry point for every dialog function. Exactly-once by SDL contract
+    ///     (cancel and error paths also invoke it), so it owns the cleanup of the request state.
+    /// </summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void DialogFileThunk(nint userdata, byte** filelist, int filter)
+    {
+        var handle = GCHandle.FromIntPtr(userdata);
+        DialogRequest? request = null;
+        try
+        {
+            request = (DialogRequest)handle.Target!;
+
+            // Nothing is decoded or copied here: the callback receives a ref-struct view straight over
+            // SDL's buffers, and materializes only what must outlive it.
             var count = 0;
-            while (fl[count] != null) count++;
+            if (filelist != null)
+                while (filelist[count] != null)
+                    count++;
 
-            // Rent array for the results
-            var arr = ArrayPool<ArraySegment<char>>.Shared.Rent(count);
+            request.Callback(new(filelist, count), filter);
+        }
+        catch (Exception exception)
+        {
+            // Never let a managed exception unwind into native SDL (often on a foreign dialog thread).
+            ReportCallbackException(exception);
+        }
+        finally
+        {
+            request?.FreeNativeBlock();
+            handle.Free();
+        }
+    }
 
-            for (var i = 0; i < count; i++)
+    /// <summary>
+    ///     Copies the filters and default location into one native allocation owned by
+    ///     <paramref name="request"/>. SDL requires both to stay valid until the callback is invoked,
+    ///     so the thunk frees the block, not the caller.
+    /// </summary>
+    static void MarshalDialogRequest(DialogRequest request,
+        scoped ReadOnlySpan<DialogFileFilter> filters,
+        scoped ReadOnlySpan<char> defaultLocation,
+        out NativeDialogFilter* filtersNative,
+        out byte* locationNative)
+    {
+        filtersNative = null;
+        locationNative = null;
+
+        var headerBytes = filters.Length * sizeof(NativeDialogFilter);
+        var total = headerBytes;
+        foreach (var filter in filters)
+            total += Encoding.UTF8.GetByteCount(filter.Name) + 1 + Encoding.UTF8.GetByteCount(filter.Pattern) + 1;
+
+        var hasLocation = !defaultLocation.IsWhiteSpace();
+        if (hasLocation) total += Encoding.UTF8.GetByteCount(defaultLocation) + 1;
+
+        if (total == 0) return;
+
+        var block = (byte*)NativeMemory.Alloc((nuint)total);
+        request.NativeBlock = (nint)block;
+
+        var cursor = block + headerBytes;
+        if (filters.Length > 0)
+        {
+            filtersNative = (NativeDialogFilter*)block;
+            for (var i = 0; i < filters.Length; ++i)
             {
-                var p = fl[i];
-                if (p == null) break;
-
-                var pBytes = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(p);
-
-                // rent a char[] big enough for decoded chars
-                var charCount = Encoding.UTF8.GetCharCount(pBytes);
-                var charBuffer = ArrayPool<char>.Shared.Rent(charCount);
-
-                Encoding.UTF8.GetChars(pBytes, charBuffer);
-
-                arr[i] = new(charBuffer, 0, charCount);
+                filtersNative[i].Name = WriteUtf8(filters[i].Name, ref cursor);
+                filtersNative[i].Pattern = WriteUtf8(filters[i].Pattern, ref cursor);
             }
-
-            result = new(arr, 0, count);
         }
 
-        // invoke managed callback with original userdata + pooled memory
-        managedCallback(ctx->OriginalUserdata, result, filter);
-
-        foreach (var arr in result)
-            if (arr.Array is not null)
-                ArrayPool<char>.Shared.Return(arr.Array);
-
-        if (result.Array is not null) ArrayPool<ArraySegment<char>>.Shared.Return(result.Array);
-
-        // cleanup wrapper context
-        ctx->ManagedCallback.Free();
-
-        var pinned = ctx->ManagedMemory;
-        ArrayPool<byte>.Shared.Return((byte[])pinned.Target);
-
-        pinned.Free();
+        if (hasLocation) locationNative = WriteUtf8(defaultLocation, ref cursor);
     }
 
-    static DialogCallbackContext* CreateContext(Action<nint, ArraySegment<ArraySegment<char>>, int> callback,
-        nint userdata)
+    static byte* WriteUtf8(scoped ReadOnlySpan<char> text, ref byte* cursor)
     {
-        // We wrap the delegate + user data in a single object to pass to SDL. Using a managed delegate greatly
-        // reduces the amount of boilerplate code the user has to write
+        var count = Encoding.UTF8.GetBytes(text, new Span<byte>(cursor, Encoding.UTF8.GetByteCount(text)));
+        cursor[count] = 0;
 
-        var handle = GCHandle.Alloc(callback);
-
-        var arr = ArrayPool<byte>.Shared.Rent(Marshal.SizeOf<DialogCallbackContext>());
-        var arrPinned = GCHandle.Alloc(arr, GCHandleType.Pinned);
-
-        var ctxPtr = (DialogCallbackContext*)arrPinned.AddrOfPinnedObject();
-        ctxPtr->OriginalUserdata = userdata;
-        ctxPtr->ManagedCallback = handle;
-        ctxPtr->ManagedMemory = arrPinned;
-
-        return ctxPtr;
+        var start = cursor;
+        cursor += count + 1;
+        return start;
     }
 
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowOpenFileDialog"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static partial void SDL_ShowOpenFileDialog(DialogFileCallback callback,
-        void* userdata,
+    [LibraryImport(SDLLibrary), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial void SDL_ShowOpenFileDialog(delegate* unmanaged[Cdecl]<nint, byte**, int, void> callback,
+        nint userdata,
         nint window,
-        void* filters,
+        NativeDialogFilter* filters,
         int nfilters,
-        void* defaultLocation,
+        byte* defaultLocation,
         [MarshalAs(UnmanagedType.I1)] bool allowMany);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many);</code>
@@ -125,8 +171,8 @@ public static unsafe partial class SDL
     /// <para> This function should only be invoked from the main thread. </para>
     /// <para> This is an asynchronous function; it will return immediately, and the result will be passed to the callback. </para>
     /// <para>
-    /// The callback will be invoked with a null-terminated list of files the user chose. The list will be empty if the user
-    /// canceled the dialog, and it will be <c> null </c> if an error occurred.
+    /// The callback will be invoked with the list of files the user chose: empty if the user canceled the dialog,
+    /// <c> null </c> if an error occurred.
     /// </para>
     /// <para> Note that the callback may be called from a different thread than the one the function was invoked on. </para>
     /// <para> Depending on the platform, the user may be allowed to input paths that don't yet exist. </para>
@@ -135,86 +181,61 @@ public static unsafe partial class SDL
     /// not use SDL to handle events should add a call to <see cref="PumpEvents()"/> in their main loop.
     /// </para>
     /// </summary>
-    /// <param name="callback">
-    /// a function pointer to be invoked when the user selects a file and accepts, or cancels the dialog, or
-    /// an error occurs. See <see cref="DialogFileCallback"/>.
-    /// </param>
-    /// <param name="userdata"> an optional pointer to pass extra data to the callback when it will be invoked. </param>
-    /// <param name="window">
-    /// the window that the dialog should be modal for, may be <c> null </c>. Not all platforms support this
-    /// option.
-    /// </param>
+    /// <param name="callback"> invoked when the user accepts or cancels the dialog, or an error occurs. </param>
+    /// <param name="window"> the window the dialog should be modal for, may be <c> 0 </c>. Not all platforms support this. </param>
     /// <param name="filters">
-    /// a list of filters, may be NULL. See the [`SDL_DialogFileFilter` documentation for
-    /// examples](SDL_DialogFileFilter#code-examples). Not all platforms support this option, and platforms that do support it may
-    /// allow the user to ignore the filters. If non-NULL, it must remain valid at least until the callback is invoked.
+    /// a list of filters, may be empty. Copied for the lifetime of the dialog — the caller keeps no
+    /// obligations. Not all platforms support filters, and platforms that do may let the user ignore them.
     /// </param>
-    /// <param name="defaultLocation">
-    /// the default folder or file to start the dialog at, may be <c> null </c>. Not all platforms
-    /// support this option.
-    /// </param>
-    /// <param name="allowMany">
-    /// if non-zero, the user will be allowed to select multiple entries. Not all platforms support this
-    /// option.
-    /// </param>
+    /// <param name="defaultLocation"> the default folder or file to start the dialog at, may be empty. </param>
+    /// <param name="allowMany"> whether the user is allowed to select multiple entries. Not all platforms support this. </param>
     /// <threadsafety>
     /// This function should be called only from the main thread. The callback may be invoked from the same thread or
     /// from a different one, depending on the OS's constraints.
     /// </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="DialogFileCallback"/>
     /// <seealso cref="DialogFileFilter"/>
     /// <seealso cref="ShowSaveFileDialog"/>
     /// <seealso cref="ShowOpenFolderDialog"/>
     /// <seealso cref="ShowFileDialogWithProperties"/>
-    public static void ShowOpenFileDialog(Action<nint, ArraySegment<ArraySegment<char>>, int> callback,
-        nint userdata,
-        nint window,
-        scoped ReadOnlySpan<DialogFileFilter> filters,
-        scoped ReadOnlySpan<char> defaultLocation,
-        bool allowMany)
+    public static void ShowOpenFileDialog(DialogFileCallback callback,
+        nint window = 0,
+        scoped ReadOnlySpan<DialogFileFilter> filters = default,
+        scoped ReadOnlySpan<char> defaultLocation = default,
+        bool allowMany = false)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        scoped Span<byte> path = default;
-        byte[]? pathArray = null;
-
-        Span<(nint, nint)> filtersUnmanaged = stackalloc (nint, nint)[filters.Length];
-        for (var i = 0; i < filters.Length; ++i) filtersUnmanaged[i] = Unsafe.AsRef(in filters[i]).Pin();
-
-        if (!defaultLocation.IsWhiteSpace())
+        DialogRequest request = new(callback);
+        var handle = GCHandle.Alloc(request);
+        try
         {
-            var byteCount = Encoding.UTF8.GetByteCount(defaultLocation) + 1;
-            path = byteCount <= 512 ?
-                stackalloc byte[byteCount] :
-                (pathArray = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
-
-            Encoding.UTF8.GetBytes(defaultLocation, path);
-            path[^1] = 0;
-        }
-
-        fixed (void* filterPointer = filtersUnmanaged)
-        fixed (void* pathPointer = path)
-            SDL_ShowOpenFileDialog(s_dialogFileThunk,
-                CreateContext(callback, userdata),
+            MarshalDialogRequest(request, filters, defaultLocation, out var filtersNative, out var locationNative);
+            SDL_ShowOpenFileDialog(&DialogFileThunk,
+                GCHandle.ToIntPtr(handle),
                 window,
-                filterPointer,
+                filtersNative,
                 filters.Length,
-                pathPointer,
+                locationNative,
                 allowMany);
-
-        foreach (var filter in filters) filter.Unpin();
-
-        if (pathArray is not null) ArrayPool<byte>.Shared.Return(pathArray);
+        }
+        catch
+        {
+            // The native call never ran, so the thunk will not clean up.
+            request.FreeNativeBlock();
+            handle.Free();
+            throw;
+        }
     }
 
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowSaveFileDialog"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static partial void SDL_ShowSaveFileDialog(DialogFileCallback callback,
-        void* userdata,
+    [LibraryImport(SDLLibrary), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial void SDL_ShowSaveFileDialog(delegate* unmanaged[Cdecl]<nint, byte**, int, void> callback,
+        nint userdata,
         nint window,
-        void* filters,
+        NativeDialogFilter* filters,
         int nfilters,
-        void* defaultLocation);
+        byte* defaultLocation);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location);</code>
     /// <summary>
@@ -222,8 +243,8 @@ public static unsafe partial class SDL
     /// <para> This function should only be invoked from the main thread. </para>
     /// <para> This is an asynchronous function; it will return immediately, and the result will be passed to the callback. </para>
     /// <para>
-    /// The callback will be invoked with a null-terminated list of files the user chose. The list will be empty if the user
-    /// canceled the dialog, and it will be <c> null </c> if an error occurred.
+    /// The callback will be invoked with the list of files the user chose: empty if the user canceled the dialog,
+    /// <c> null </c> if an error occurred.
     /// </para>
     /// <para> Note that the callback may be called from a different thread than the one the function was invoked on. </para>
     /// <para> The chosen file may or may not already exist. </para>
@@ -232,24 +253,13 @@ public static unsafe partial class SDL
     /// not use SDL to handle events should add a call to <see cref="PumpEvents()"/> in their main loop.
     /// </para>
     /// </summary>
-    /// <param name="callback">
-    /// a function pointer to be invoked when the user selects a file and accepts, or cancels the dialog, or
-    /// an error occurs. See <see cref="DialogFileCallback"/>.
-    /// </param>
-    /// <param name="userdata"> an optional pointer to pass extra data to the callback when it will be invoked. </param>
-    /// <param name="window">
-    /// the window that the dialog should be modal for, may be <c> null </c>. Not all platforms support this
-    /// option.
-    /// </param>
+    /// <param name="callback"> invoked when the user accepts or cancels the dialog, or an error occurs. </param>
+    /// <param name="window"> the window the dialog should be modal for, may be <c> 0 </c>. Not all platforms support this. </param>
     /// <param name="filters">
-    /// a list of filters, may be <c> null </c>. Not all platforms support this option, and platforms that do
-    /// support it may allow the user to ignore the filters. If non-NULL, it must remain valid at least until the callback is
-    /// invoked.
+    /// a list of filters, may be empty. Copied for the lifetime of the dialog — the caller keeps no
+    /// obligations. Not all platforms support filters, and platforms that do may let the user ignore them.
     /// </param>
-    /// <param name="defaultLocation">
-    /// the default folder or file to start the dialog at, may be <c> null </c>. Not all platforms
-    /// support this option.
-    /// </param>
+    /// <param name="defaultLocation"> the default folder or file to start the dialog at, may be empty. </param>
     /// <threadsafety>
     /// This function should be called only from the main thread. The callback may be invoked from the same thread or
     /// from a different one, depending on the OS's constraints.
@@ -260,60 +270,48 @@ public static unsafe partial class SDL
     /// <seealso cref="ShowOpenFileDialog"/>
     /// <seealso cref="ShowOpenFolderDialog"/>
     /// <seealso cref="ShowFileDialogWithProperties"/>
-    public static void ShowSaveFileDialog(Action<nint, ArraySegment<ArraySegment<char>>, int> callback,
-        nint userdata,
-        nint window,
-        scoped ReadOnlySpan<DialogFileFilter> filters,
-        scoped ReadOnlySpan<char> defaultLocation)
+    public static void ShowSaveFileDialog(DialogFileCallback callback,
+        nint window = 0,
+        scoped ReadOnlySpan<DialogFileFilter> filters = default,
+        scoped ReadOnlySpan<char> defaultLocation = default)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        scoped Span<byte> path = default;
-        byte[]? pathArray = null;
-
-        Span<(nint, nint)> filtersUnmanaged = stackalloc (nint, nint)[filters.Length];
-        for (var i = 0; i < filters.Length; ++i) filtersUnmanaged[i] = Unsafe.AsRef(in filters[i]).Pin();
-
-        if (!defaultLocation.IsWhiteSpace())
+        DialogRequest request = new(callback);
+        var handle = GCHandle.Alloc(request);
+        try
         {
-            var byteCount = Encoding.UTF8.GetByteCount(defaultLocation) + 1;
-            path = byteCount <= 512 ?
-                stackalloc byte[byteCount] :
-                (pathArray = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
-
-            Encoding.UTF8.GetBytes(defaultLocation, path);
-            path[^1] = 0;
-        }
-
-        fixed (void* filterPointer = filtersUnmanaged)
-        fixed (void* pathPointer = path)
-            SDL_ShowSaveFileDialog(s_dialogFileThunk,
-                CreateContext(callback, userdata),
+            MarshalDialogRequest(request, filters, defaultLocation, out var filtersNative, out var locationNative);
+            SDL_ShowSaveFileDialog(&DialogFileThunk,
+                GCHandle.ToIntPtr(handle),
                 window,
-                filterPointer,
+                filtersNative,
                 filters.Length,
-                pathPointer);
-
-        foreach (var filter in filters) filter.Unpin();
-
-        if (pathArray is not null) ArrayPool<byte>.Shared.Return(pathArray);
+                locationNative);
+        }
+        catch
+        {
+            request.FreeNativeBlock();
+            handle.Free();
+            throw;
+        }
     }
 
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowOpenFolderDialog"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static partial void SDL_ShowOpenFolderDialog(DialogFileCallback callback,
-        void* userdata,
+    [LibraryImport(SDLLibrary), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial void SDL_ShowOpenFolderDialog(delegate* unmanaged[Cdecl]<nint, byte**, int, void> callback,
+        nint userdata,
         nint window,
-        void* defaultLocation,
+        byte* defaultLocation,
         [MarshalAs(UnmanagedType.I1)] bool allowMany);
 
+    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many);</code>
     /// <summary>
     /// <para> Displays a dialog that lets the user select a folder on their filesystem. </para>
     /// <para> This function should only be invoked from the main thread. </para>
     /// <para> This is an asynchronous function; it will return immediately, and the result will be passed to the callback. </para>
     /// <para>
-    /// The callback will be invoked with a null-terminated list of files the user chose. The list will be empty if the user
-    /// canceled the dialog, and it will be <c> null </c> if an error occurred.
+    /// The callback will be invoked with the list of folders the user chose: empty if the user canceled the dialog,
+    /// <c> null </c> if an error occurred.
     /// </para>
     /// <para> Note that the callback may be called from a different thread than the one the function was invoked on. </para>
     /// <para> Depending on the platform, the user may be allowed to input paths that don't yet exist. </para>
@@ -322,23 +320,10 @@ public static unsafe partial class SDL
     /// not use SDL to handle events should add a call to <see cref="PumpEvents()"/> in their main loop.
     /// </para>
     /// </summary>
-    /// <param name="callback">
-    /// a function pointer to be invoked when the user selects a file and accepts, or cancels the dialog, or
-    /// an error occurs. See <see cref="DialogFileCallback"/>.
-    /// </param>
-    /// <param name="userdata"> an optional pointer to pass extra data to the callback when it will be invoked. </param>
-    /// <param name="window">
-    /// the window that the dialog should be modal for, may be <c> null </c>. Not all platforms support this
-    /// option.
-    /// </param>
-    /// <param name="defaultLocation">
-    /// the default folder or file to start the dialog at, may be <c> null </c>. Not all platforms
-    /// support this option.
-    /// </param>
-    /// <param name="allowMany">
-    /// if non-zero, the user will be allowed to select multiple entries. Not all platforms support this
-    /// option.
-    /// </param>
+    /// <param name="callback"> invoked when the user accepts or cancels the dialog, or an error occurs. </param>
+    /// <param name="window"> the window the dialog should be modal for, may be <c> 0 </c>. Not all platforms support this. </param>
+    /// <param name="defaultLocation"> the default folder to start the dialog at, may be empty. </param>
+    /// <param name="allowMany"> whether the user is allowed to select multiple entries. Not all platforms support this. </param>
     /// <threadsafety>
     /// This function should be called only from the main thread. The callback may be invoked from the same thread or
     /// from a different one, depending on the OS's constraints.
@@ -348,37 +333,33 @@ public static unsafe partial class SDL
     /// <seealso cref="ShowOpenFileDialog"/>
     /// <seealso cref="ShowSaveFileDialog"/>
     /// <seealso cref="ShowFileDialogWithProperties"/>
-    public static void ShowOpenFolderDialog(Action<nint, ArraySegment<ArraySegment<char>>, int> callback,
-        nint userdata,
-        nint window,
-        scoped ReadOnlySpan<char> defaultLocation,
-        bool allowMany)
+    public static void ShowOpenFolderDialog(DialogFileCallback callback,
+        nint window = 0,
+        scoped ReadOnlySpan<char> defaultLocation = default,
+        bool allowMany = false)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        scoped Span<byte> path = default;
-        byte[]? pathArray = null;
-
-        if (!defaultLocation.IsWhiteSpace())
+        DialogRequest request = new(callback);
+        var handle = GCHandle.Alloc(request);
+        try
         {
-            var byteCount = Encoding.UTF8.GetByteCount(defaultLocation) + 1;
-            path = byteCount <= 512 ?
-                stackalloc byte[byteCount] :
-                (pathArray = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
-
-            Encoding.UTF8.GetBytes(defaultLocation, path);
-            path[^1] = 0;
+            MarshalDialogRequest(request, default, defaultLocation, out _, out var locationNative);
+            SDL_ShowOpenFolderDialog(&DialogFileThunk, GCHandle.ToIntPtr(handle), window, locationNative, allowMany);
         }
-
-        fixed (void* pathPointer = path)
-            SDL_ShowOpenFolderDialog(s_dialogFileThunk,
-                CreateContext(callback, userdata),
-                window,
-                pathPointer,
-                allowMany);
-
-        if (pathArray is not null) ArrayPool<byte>.Shared.Return(pathArray);
+        catch
+        {
+            request.FreeNativeBlock();
+            handle.Free();
+            throw;
+        }
     }
+
+    [LibraryImport(SDLLibrary), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial void SDL_ShowFileDialogWithProperties(FileDialogType type,
+        delegate* unmanaged[Cdecl]<nint, byte**, int, void> callback,
+        nint userdata,
+        PropertiesID props);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);</code>
     /// <summary>
@@ -386,9 +367,9 @@ public static unsafe partial class SDL
     /// <para> These are the supported properties: </para>
     /// <list type="bullet">
     /// <item>
-    /// <see cref="Props.FileDialogFiltersPointer"/>: a pointer to a list of <see cref="DialogFileFilter"/> structs, which
+    /// <see cref="Props.FileDialogFiltersPointer"/>: a pointer to a list of native SDL_DialogFileFilter structs, which
     /// will be used as filters for file-based selections. Ignored if the dialog is an "Open Folder" dialog. If non-NULL, the array
-    /// of filters must remain valid at least until the callback is invoked.
+    /// of filters must remain valid at least until the callback is invoked (the caller manages that memory).
     /// </item>
     /// <item> <see cref="Props.FileDialogNFiltersNumber"/>: the number of filters in the array of filters, if it exists. </item>
     /// <item> <see cref="Props.FileDialogWindowPointer"/>: the window that the dialog should be modal for. </item>
@@ -401,11 +382,7 @@ public static unsafe partial class SDL
     /// <para> Note that each platform may or may not support any of the properties. </para>
     /// </summary>
     /// <param name="type"> the type of file dialog. </param>
-    /// <param name="callback">
-    /// a function pointer to be invoked when the user selects a file and accepts, or cancels the dialog, or
-    /// an error occurs.
-    /// </param>
-    /// <param name="userdata"> an optional pointer to pass extra data to the callback when it will be invoked. </param>
+    /// <param name="callback"> invoked when the user accepts or cancels the dialog, or an error occurs. </param>
     /// <param name="props"> the properties to use. </param>
     /// <threadsafety>
     /// This function should be called only from the main thread. The callback may be invoked from the same thread or
@@ -414,21 +391,23 @@ public static unsafe partial class SDL
     /// <since> This function is available since SDL 3.1.8. </since>
     /// <seealso cref="FileDialogType"/>
     /// <seealso cref="DialogFileCallback"/>
-    /// <seealso cref="DialogFileFilter"/>
     /// <seealso cref="ShowOpenFileDialog"/>
     /// <seealso cref="ShowSaveFileDialog"/>
     /// <seealso cref="ShowOpenFolderDialog"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ShowFileDialogWithProperties"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void ShowFileDialogWithProperties(FileDialogType type,
-        DialogFileCallback callback,
-        nint userdata,
-        uint props);
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct DialogCallbackContext
+    public static void ShowFileDialogWithProperties(FileDialogType type, DialogFileCallback callback, PropertiesID props)
     {
-        public IntPtr OriginalUserdata;
-        public GCHandle ManagedCallback, ManagedMemory;
+        ArgumentNullException.ThrowIfNull(callback);
+
+        DialogRequest request = new(callback);
+        var handle = GCHandle.Alloc(request);
+        try
+        {
+            SDL_ShowFileDialogWithProperties(type, &DialogFileThunk, GCHandle.ToIntPtr(handle), props);
+        }
+        catch
+        {
+            handle.Free();
+            throw;
+        }
     }
 }

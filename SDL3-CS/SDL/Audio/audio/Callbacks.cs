@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -23,9 +23,14 @@
 
 #endregion
 
+// This file is an altered version (storybrew fork): audio callbacks are fully managed delegates
+// (no userdata parameter - capture state by closure or use the <T> context overloads); native
+// thunking and rooting live in PInvoke.cs. Exceptions never propagate into native SDL; they are
+// routed to SDL.UnhandledCallbackException.
+
 namespace SDL3;
 
-using System.Runtime.InteropServices;
+using System;
 
 public static partial class SDL
 {
@@ -37,43 +42,27 @@ public static partial class SDL
     ///         audio data before playback.
     ///     </para>
     ///     <para>
+    ///         The buffer span aliases the native mix buffer (always SDL_AUDIO_F32 samples): inspect or modify it in place. It
+    ///         is only valid during the callback. Channel count and sample rate in <c> spec </c> can change between calls.
+    ///     </para>
+    ///     <para>
     ///         This callback should run as quickly as possible and not block for any significant time, as this callback delays
-    ///         submission of data to the audio device, which can cause audio playback problems.
-    ///     </para>
-    ///     <para>
-    ///         The postmix callback _must_ be able to handle any audio data format specified in <c> spec </c>, which can change
-    ///         between callbacks if the audio device changed. However, this only covers frequency and channel count; data is always
-    ///         provided here in SDL_AUDIO_F32 format.
-    ///     </para>
-    ///     <para>
-    ///         The postmix callback runs _after_ logical device gain and audiostream gain have been applied, which is to say you
-    ///         can make the output data louder at this point than the gain settings would suggest.
+    ///         submission of data to the audio device, which can cause audio playback problems. It runs from a background
+    ///         thread owned by SDL; the application is responsible for locking resources the callback touches.
     ///     </para>
     /// </summary>
-    /// <param name="userdata"> a pointer provided by the app through <see cref="AudioPostmixCallback"/>, for its own use. </param>
     /// <param name="spec"> the current format of audio that is to be submitted to the audio device. </param>
-    /// <param name="buffer"> the buffer of audio samples to be submitted. The callback can inspect and/or modify this data. </param>
-    /// <param name="buflen"> the size of <c> buffer </c> in bytes. </param>
-    /// <threadsafety>
-    ///     This will run from a background thread owned by SDL. The application is responsible for locking resources the
-    ///     callback touches that need to be protected.
-    /// </threadsafety>
+    /// <param name="buffer"> the audio samples to be submitted, mutable in place, valid only during the callback. </param>
     /// <since> This datatype is available since SDL 3.2.0 </since>
-    /// <seealso cref="SetAudioPostmixCallback"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void AudioPostmixCallback(nint userdata,
-        in AudioSpec spec,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] float[] buffer,
-        int buflen);
+    /// <seealso cref="SetAudioPostmixCallback(uint, AudioPostmixCallback?)"/>
+    public delegate void AudioPostmixCallback(in AudioSpec spec, Span<float> buffer);
+
+    /// <summary> Context-carrying variant of <see cref="AudioPostmixCallback"/> (no boxing, no closure). </summary>
+    public delegate void AudioPostmixCallback<T>(in AudioSpec spec, Span<float> buffer, ref T state);
 
     /// <code>typedef void (SDLCALL *SDL_AudioStreamCallback)(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);</code>
     /// <summary>
     ///     <para> A callback that fires when data passes through an SDL_AudioStream. </para>
-    ///     <para>
-    ///         Apps can (optionally) register a callback with an audio stream that is called when data is added with
-    ///         <see cref="PutAudioStreamData(nint, byte[], int)"/>, or requested with
-    ///         <see cref="GetAudioStreamData(nint, byte[], int)"/>.
-    ///     </para>
     ///     <para>
     ///         Two values are offered here: one is the amount of additional data needed to satisfy the immediate request (which
     ///         might be zero if the stream already has enough data queued) and the other is the total amount being requested. In a
@@ -82,49 +71,35 @@ public static partial class SDL
     ///     </para>
     ///     <para> Byte counts might be slightly overestimated due to buffering or resampling, and may change from call to call. </para>
     ///     <para>
-    ///         This callback is not required to do anything. Generally this is useful for adding/reading data on demand, and the
-    ///         app will often put/get data as appropriate, but the system goes on with the data currently available to it if this
-    ///         callback does nothing.
+    ///         This callback may run from any thread. The stream's lock is held while it runs, so the callback itself does not
+    ///         need to manage it.
     ///     </para>
     /// </summary>
-    /// <param name="userdata"> an opaque pointer provided by the app for their personal use. </param>
     /// <param name="stream"> the SDL audio stream associated with this callback. </param>
     /// <param name="additionalAmount"> the amount of data, in bytes, that is needed right now. </param>
     /// <param name="totalAmount"> the total amount of data requested, in bytes, that is requested or available. </param>
-    /// <threadsafety>
-    ///     This callbacks may run from any thread, so if you need to protect shared data, you should use
-    ///     <see cref="LockAudioStream"/> to serialize access; this lock will be held before your callback is called, so your
-    ///     callback does not need to manage the lock explicitly.
-    /// </threadsafety>
     /// <since> This datatype is available since SDL 3.2.0 </since>
-    /// <seealso cref="SetAudioStreamGetCallback"/>
-    /// <seealso cref="SetAudioStreamPutCallback"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void AudioStreamCallback(nint userdata, nint stream, int additionalAmount, int totalAmount);
+    /// <seealso cref="SetAudioStreamGetCallback(AudioStreamHandle, AudioStreamCallback?)"/>
+    /// <seealso cref="SetAudioStreamPutCallback(AudioStreamHandle, AudioStreamCallback?)"/>
+    public delegate void AudioStreamCallback(AudioStreamHandle stream, int additionalAmount, int totalAmount);
+
+    /// <summary> Context-carrying variant of <see cref="AudioStreamCallback"/> (no boxing, no closure). </summary>
+    public delegate void AudioStreamCallback<T>(AudioStreamHandle stream, int additionalAmount, int totalAmount, ref T state);
 
     /// <code>typedef void (SDLCALL *SDL_AudioStreamDataCompleteCallback)(void *userdata, const void *buf, int buflen);</code>
     /// <summary>
-    ///     <para> A callback that fires for completed <see cref="PutAudioStreamDataNoCopy"/> data. </para>
+    ///     <para> A callback that fires once for completed <see cref="PutAudioStreamDataNoCopy(AudioStreamHandle, nint, int, AudioStreamDataCompleteCallback?)"/> data. </para>
     ///     <para>
-    ///         When using <see cref="PutAudioStreamDataNoCopy"/> to provide data to an SDL_AudioStream, it's not safe to dispose
-    ///         of the data until the stream has completely consumed it. Often times it's difficult to know exactly when this has
-    ///         happened.
+    ///         It receives the exact pointer and length originally handed to the stream, at which point the stream will not
+    ///         access the memory again: free, unpin, or reuse it here. It fires for any reason the data is no longer needed,
+    ///         including clearing or destroying the stream, and may run from any thread.
     ///     </para>
-    ///     <para> This callback fires once when the stream no longer needs the buffer, allowing the app to easily free or reuse it. </para>
     /// </summary>
-    /// <param name="userdata"> an opaque pointer provided by the app for their personal use. </param>
-    /// <param name="buflen"> the size of buffer, in bytes, provided to <see cref="PutAudioStreamDataNoCopy"/>. </param>
-    /// <param name="buf"> the pointer provided to <see cref="PutAudioStreamDataNoCopy"/>. </param>
-    /// <threadsafety>
-    ///     This callbacks may run from any thread, so if you need to protect shared data, you should use
-    ///     SDL_LockAudioStream to serialize access; this lock will be held before your callback is called, so your callback does
-    ///     not need to manage the lock explicitly.
-    /// </threadsafety>
+    /// <param name="buffer"> the pointer originally provided to the put call. </param>
+    /// <param name="length"> the size of <paramref name="buffer"/> in bytes. </param>
     /// <since> This datatype is available since SDL 3.4.0. </since>
-    /// <seealso cref="SetAudioStreamGetCallback"/>
-    /// <seealso cref="SetAudioStreamPutCallback"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void AudioStreamDataCompleteCallback(nint userdata,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buf,
-        int buflen);
+    public delegate void AudioStreamDataCompleteCallback(nint buffer, int length);
+
+    /// <summary> Context-carrying variant of <see cref="AudioStreamDataCompleteCallback"/> (no boxing, no closure). </summary>
+    public delegate void AudioStreamDataCompleteCallback<T>(nint buffer, int length, ref T state);
 }

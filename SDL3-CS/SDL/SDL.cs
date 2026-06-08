@@ -26,6 +26,7 @@
 namespace SDL3;
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
@@ -43,9 +44,19 @@ public static partial class SDL
         if (appDirectory is null) return 0;
 
         foreach (var candidate in Directory.EnumerateFiles(appDirectory, "*", SearchOption.AllDirectories))
-            if (candidate.Contains(libraryName, StringComparison.OrdinalIgnoreCase) &&
-                candidate.Contains(RuntimeInformation.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))
+        {
+            // Match the exact library stem ("SDL3" must not bind SDL3_mixer.dll): accept
+            // name(.ext), libname(.ext) and versioned unix names (libname.so.0).
+            var fileName = Path.GetFileName(candidate.AsSpan());
+            var stem = fileName.StartsWith("lib", StringComparison.OrdinalIgnoreCase) ? fileName[3..] : fileName;
+
+            if (!stem.StartsWith(libraryName, StringComparison.OrdinalIgnoreCase) ||
+                (stem.Length != libraryName.Length && stem[libraryName.Length] != '.'))
+                continue;
+
+            if (candidate.Contains(RuntimeInformation.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))
                 return NativeLibrary.Load(candidate);
+        }
 
         return 0;
     }
@@ -67,7 +78,7 @@ public static partial class SDL
     /// <seealso cref="PointerToStringArray(nint)"/>
     /// <seealso cref="PointerToStringArray(nint, int)"/>
     /// <seealso cref="PointerToStructureArray{T}"/>
-    public static T? PointerToStructure<T>(nint pointer) where T : struct
+    public static T? PointerToStructure<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(nint pointer) where T : struct
         => pointer == nint.Zero ? null : Marshal.PtrToStructure<T>(pointer);
 
     /// <summary>
@@ -382,7 +393,7 @@ public static partial class SDL
     /// <seealso cref="PointerToPointerArray"/>
     /// <seealso cref="PointerToStringArray(nint)"/>
     /// <seealso cref="PointerToStringArray(nint, int)"/>
-    public static unsafe T[]? PointerToStructureArray<T>(nint pointer, int count) where T : struct
+    public static unsafe T[]? PointerToStructureArray<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(nint pointer, int count) where T : struct
     {
         if (pointer == nint.Zero || count < 0) return null;
 
@@ -394,8 +405,8 @@ public static partial class SDL
         else
             for (var i = 0; i < count; i++)
             {
-                var elementPtr = Marshal.ReadIntPtr(pointer);
-                array[i] = Marshal.PtrToStructure<T>(elementPtr);
+                var elementPtr = Marshal.ReadIntPtr(pointer, i * IntPtr.Size);
+                array[i] = Marshal.PtrToStructure<T>(elementPtr)!;
             }
 
         return array;

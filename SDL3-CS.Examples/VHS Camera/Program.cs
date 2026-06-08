@@ -35,13 +35,13 @@ internal static class Program
     {
         if (!SDL.Init(SDL.InitFlags.Video | SDL.InitFlags.Camera))
         {
-            SDL.LogError(SDL.LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
+            SDL.LogError(LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
             return;
         }
 
         if (!SDL.CreateWindowAndRenderer("SDL3 VHS Camera", 800, 600, 0, out _window, out _renderer))
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
         
@@ -88,17 +88,17 @@ internal static class Program
                 if (e is {Type: (uint)SDL.EventType.KeyDown, Key.Key: SDL.Keycode.V})
                 {
                     vhs = !vhs;
-                    SDL.LogInfo(SDL.LogCategory.Render, $"VHS effect: {vhs}");
+                    SDL.LogInfo(LogCategory.Render, $"VHS effect: {vhs}");
                 }
 
                 if (e.Type == (uint)SDL.EventType.CameraDeviceApproved)
                 {
-                    SDL.LogInfo(SDL.LogCategory.Application, "Camera use approved by user!");
+                    SDL.LogInfo(LogCategory.Application, "Camera use approved by user!");
                 }
 
                 if (e.Type == (uint)SDL.EventType.CameraDeviceDenied)
                 {
-                    SDL.LogInfo(SDL.LogCategory.Application, "Camera use denied by user!");
+                    SDL.LogInfo(LogCategory.Application, "Camera use denied by user!");
                 }
             }
 
@@ -106,7 +106,7 @@ internal static class Program
 
             if (framePtr != IntPtr.Zero)
             {
-                var frame = SDL.PointerToStructure<SDL.Surface>(framePtr) ?? default;
+                var frame = SDL.PointerToStructure<Surface>(framePtr) ?? default;
                 
                 if (texture == IntPtr.Zero)
                 {

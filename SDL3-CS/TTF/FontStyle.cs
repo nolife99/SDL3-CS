@@ -28,11 +28,11 @@ namespace SDL3;
 public static partial class TTF
 {
     /// <summary>
-    ///     <para> Font style flags for TTF_Font </para>
-    ///     <para>
-    ///         These are the flags which can be used to set the style of a font in SDL_ttf. A combination of these flags can be
-    ///         used with functions that set or query font style, such as <see cref="SetFontStyle"/> or <see cref="GetFontStyle"/>.
-    ///     </para>
+    /// <para> Font style flags for TTF_Font </para>
+    /// <para>
+    /// These are the flags which can be used to set the style of a font in SDL_ttf. A combination of these flags can be used
+    /// with functions that set or query font style, such as <see cref="SetFontStyle"/> or <see cref="GetFontStyle"/>.
+    /// </para>
     /// </summary>
     /// <since> This datatype is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="SetFontStyle"/>

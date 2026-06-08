@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,6 +25,7 @@
 
 namespace SDL3;
 
+using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -141,9 +142,29 @@ public static unsafe partial class SDL
     /// <seealso cref="LogVerbose"/>
     /// <seealso cref="LogWarn"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Log(scoped ReadOnlySpan<char> fmt) => EncodeAndCall(fmt, &SDL_Log);
+    public static void Log(scoped ReadOnlySpan<char> fmt)
+    {
+        scoped Span<byte> utf8 = default;
+        byte[]? rented = null;
 
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_Log"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        if (!fmt.IsWhiteSpace())
+        {
+            var byteCount = Encoding.UTF8.GetByteCount(fmt) + 1;
+            utf8 = byteCount <= 512 ?
+                stackalloc byte[byteCount] :
+                (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+            Encoding.UTF8.GetBytes(fmt, utf8);
+            utf8[^1] = 0;
+        }
+
+        fixed (byte* pText = utf8) SDL_Log(pText);
+
+        if (rented is not null) ArrayPool<byte>.Shared.Return(rented);
+    }
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_Log"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
+     MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static partial void SDL_Log(byte* fmt);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_LogTrace(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);</code>
@@ -322,11 +343,30 @@ public static unsafe partial class SDL
     /// <seealso cref="LogTrace"/>
     /// <seealso cref="LogVerbose"/>
     /// <seealso cref="LogWarn"/>
+    public static void LogMessage(LogCategory category, LogPriority priority, scoped ReadOnlySpan<char> fmt)
+    {
+        scoped Span<byte> utf8 = default;
+        byte[]? rented = null;
+
+        if (!fmt.IsWhiteSpace())
+        {
+            var byteCount = Encoding.UTF8.GetByteCount(fmt) + 1;
+            utf8 = byteCount <= 512 ?
+                stackalloc byte[byteCount] :
+                (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+            Encoding.UTF8.GetBytes(fmt, utf8);
+            utf8[^1] = 0;
+        }
+
+        fixed (byte* pText = utf8) SDL_LogMessage(category, priority, pText);
+
+        if (rented is not null) ArrayPool<byte>.Shared.Return(rented);
+    }
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LogMessage"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
      MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void LogMessage(LogCategory category,
-        LogPriority priority,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string fmt);
+    private static partial void SDL_LogMessage(LogCategory category, LogPriority priority, byte* fmt);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);</code>
     /// <summary> Log a message with the specified category and priority. </summary>
@@ -352,42 +392,69 @@ public static unsafe partial class SDL
         [MarshalAs(UnmanagedType.LPUTF8Str)] string fmt,
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPUTF8Str)] string[] ap);
 
-    /// <code>extern SDL_DECLSPEC SDL_LogOutputFunction SDLCALL SDL_GetDefaultLogOutputFunction(void);</code>
-    /// <summary> Get the default log output function. </summary>
-    /// <returns> the default log output callback. </returns>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.1.6. </since>
-    /// <seealso cref="SetLogOutputFunction"/>
-    /// <seealso cref="GetLogOutputFunction"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_LogOutputFunction"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial LogOutputFunction GetDefaultLogOutputFunction();
+    // The current managed log callback, rooted for as long as native SDL can invoke it. (Previously the
+    // delegate was marshaled per call and rooted by NOTHING — the editor's logging lambda was eligible
+    // for collection while SDL still held its thunk. The old GetDefaultLogOutputFunction binding also
+    // used the wrong entry point, SDL_LogOutputFunction.)
+    static LogOutputFunction? logOutputFunction;
 
-    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata);</code>
-    /// <summary>
-    /// <para> Get the current log output function. </para>
-    /// </summary>
-    /// <param name="callback"> an <see cref="LogOutputFunction"/> filled in with the current log callback. </param>
-    /// <param name="userdata"> a pointer filled in with the pointer that is passed to <c> callback </c>. </param>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="GetDefaultLogOutputFunction"/>
-    /// <seealso cref="SetLogOutputFunction"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetLogOutputFunction"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void GetLogOutputFunction(out LogOutputFunction callback, out nint userdata);
+    /// <summary>SDL holds a log mutex around this, so no synchronization is needed beyond the root.</summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void LogOutputThunk(nint userdata, LogCategory category, LogPriority priority, byte* message)
+    {
+        try
+        {
+            var callback = logOutputFunction;
+            if (callback is null) return;
 
-    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata);</code>
-    /// <summary> Replace the default log output function with one of your own. </summary>
-    /// <param name="callback"> an <see cref="LogOutputFunction"/> to call instead of the default. </param>
-    /// <param name="userdata"> a pointer that is passed to <c> callback </c>. </param>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="GetDefaultLogOutputFunction"/>
-    /// <seealso cref="GetLogOutputFunction"/>
+            var utf8 = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(message);
+            var charCount = Encoding.UTF8.GetCharCount(utf8);
+
+            char[]? rented = null;
+            scoped Span<char> chars = charCount <= 512 ?
+                stackalloc char[charCount] :
+                (rented = ArrayPool<char>.Shared.Rent(charCount)).AsSpan(0, charCount);
+
+            Encoding.UTF8.GetChars(utf8, chars);
+            try
+            {
+                callback(category, priority, chars);
+            }
+            finally
+            {
+                if (rented is not null) ArrayPool<char>.Shared.Return(rented);
+            }
+        }
+        catch (Exception exception)
+        {
+            // allowSdlLog: false — reporting through the SDL log would re-enter this thunk.
+            ReportCallbackException(exception, false);
+        }
+    }
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDefaultLogOutputFunction"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial nint SDL_GetDefaultLogOutputFunction();
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetLogOutputFunction"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void SetLogOutputFunction(LogOutputFunction callback, nint userdata);
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial void SDL_SetLogOutputFunction(nint callback, nint userdata);
+
+    /// <summary>
+    ///     Replace the default log output function with one of your own, or pass <c> null </c> to restore
+    ///     SDL's default. The delegate is rooted by the wrapper until replaced.
+    /// </summary>
+    public static void SetLogOutputFunction(LogOutputFunction? callback)
+    {
+        logOutputFunction = callback;
+        SDL_SetLogOutputFunction(callback is null
+                ? SDL_GetDefaultLogOutputFunction()
+                : (nint)(delegate* unmanaged[Cdecl]<nint, LogCategory, LogPriority, byte*, void>)&LogOutputThunk,
+            0);
+    }
+
+    /// <summary>The current managed log output function, or <c> null </c> when SDL's default is active.</summary>
+    public static LogOutputFunction? GetLogOutputFunction() => logOutputFunction;
 
     static void EncodeAndCall<TState>(scoped ReadOnlySpan<char> text, delegate*<TState, byte*, void> call, TState state)
     {

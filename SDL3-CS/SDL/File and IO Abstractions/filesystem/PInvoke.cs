@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,8 +25,11 @@
 
 namespace SDL3;
 
+using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 public static partial class SDL
 {
@@ -35,38 +38,38 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC const char * SDLCALL SDL_GetBasePath(void);</code>
     /// <summary>
-    ///     <para> Get the directory where the application was run from. </para>
-    ///     <para>
-    ///         SDL caches the result of this call internally, but the first call to this function is not necessarily fast, so
-    ///         plan accordingly.
-    ///     </para>
-    ///     <para>
-    ///         <b> macOS and iOS Specific Functionality </b>: If the application is in a ".app" bundle, this function returns
-    ///         the Resource directory (e.g. MyApp.app/Contents/Resources/). This behaviour can be overridden by adding a property
-    ///         to the Info.plist file. Adding a string key with the name SDL_FILESYSTEM_BASE_DIR_TYPE with a supported value will
-    ///         change the behaviour.
-    ///     </para>
-    ///     <para>
-    ///         Supported values for the SDL_FILESYSTEM_BASE_DIR_TYPE property (Given an application in
-    ///         /Applications/SDLApp/MyApp.app):
-    ///     </para>
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <c> resource </c>: bundle resource directory (the default). For example:
-    ///             <c> /Applications/SDLApp/MyApp.app/Contents/Resources </c>
-    ///         </item>
-    ///         <item> <c> bundle </c>: the Bundle directory. For example: <c> /Applications/SDLApp/MyApp.app/ </c> </item>
-    ///         <item> <c> parent </c>: the containing directory of the bundle. For example: <c> /Applications/SDLApp/ </c> </item>
-    ///     </list>
-    ///     <para>
-    ///         <b> Nintendo 3DS Specific Functionality </b>: This function returns "romfs" directory of the application as it is
-    ///         uncommon to store resources outside the executable. As such it is not a writable directory.
-    ///     </para>
-    ///     <para> The returned path is guaranteed to end with a path separator ('\\' on Windows, '/' on most other platforms). </para>
+    /// <para> Get the directory where the application was run from. </para>
+    /// <para>
+    /// SDL caches the result of this call internally, but the first call to this function is not necessarily fast, so plan
+    /// accordingly.
+    /// </para>
+    /// <para>
+    /// <b> macOS and iOS Specific Functionality </b>: If the application is in a ".app" bundle, this function returns the
+    /// Resource directory (e.g. MyApp.app/Contents/Resources/). This behaviour can be overridden by adding a property to the
+    /// Info.plist file. Adding a string key with the name SDL_FILESYSTEM_BASE_DIR_TYPE with a supported value will change the
+    /// behaviour.
+    /// </para>
+    /// <para>
+    /// Supported values for the SDL_FILESYSTEM_BASE_DIR_TYPE property (Given an application in
+    /// /Applications/SDLApp/MyApp.app):
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <c> resource </c>: bundle resource directory (the default). For example:
+    /// <c> /Applications/SDLApp/MyApp.app/Contents/Resources </c>
+    /// </item>
+    /// <item> <c> bundle </c>: the Bundle directory. For example: <c> /Applications/SDLApp/MyApp.app/ </c> </item>
+    /// <item> <c> parent </c>: the containing directory of the bundle. For example: <c> /Applications/SDLApp/ </c> </item>
+    /// </list>
+    /// <para>
+    /// <b> Nintendo 3DS Specific Functionality </b>: This function returns "romfs" directory of the application as it is
+    /// uncommon to store resources outside the executable. As such it is not a writable directory.
+    /// </para>
+    /// <para> The returned path is guaranteed to end with a path separator ('\\' on Windows, '/' on most other platforms). </para>
     /// </summary>
     /// <returns>
-    ///     an absolute path in UTF-8 encoding to the application data directory. <c> null </c> will be returned on error or
-    ///     when the platform doesn't implement this functionality, call <see cref="GetError"/> for more information.
+    /// an absolute path in UTF-8 encoding to the application data directory. <c> null </c> will be returned on error or
+    /// when the platform doesn't implement this functionality, call <see cref="GetError"/> for more information.
     /// </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="GetPrefPath"/>
@@ -82,61 +85,54 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *app);</code>
     /// <summary>
-    ///     <para> Get the user-and-app-specific path where files can be written. </para>
-    ///     <para>
-    ///         Get the "pref dir". This is meant to be where users can write personal files (preferences and save games, etc)
-    ///         that are specific to your application. This directory is unique per user, per application.
-    ///     </para>
-    ///     <para>
-    ///         This function will decide the appropriate location in the native filesystem, create the directory if necessary,
-    ///         and return a string of the absolute path to the directory in UTF-8 encoding.
-    ///     </para>
-    ///     <para> On Windows, the string might look like: </para>
-    ///     <para>
-    ///         <c> C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\ </c>
-    ///     </para>
-    ///     <para> On Linux, the string might look like: </para>
-    ///     <para>
-    ///         <c> /home/bob/.local/share/My Program Name/ </c>
-    ///     </para>
-    ///     <para> On macOS, the string might look like: </para>
-    ///     <para>
-    ///         <c> /Users/bob/Library/Application Support/My Program Name/ </c>
-    ///     </para>
-    ///     <para>
-    ///         You should assume the path returned by this function is the only safe place to write files (and that
-    ///         <see cref="GetBasePath"/>, while it might be writable, or even the parent of the returned path, isn't where you
-    ///         should be writing things).
-    ///     </para>
-    ///     <para> Both the org and app strings may become part of a directory name, so please follow these rules: </para>
-    ///     <list type="bullet">
-    ///         <item>
-    ///             Try to use the same org string (_including case-sensitivity_) for all your applications that use this
-    ///             function.
-    ///         </item>
-    ///         <item>
-    ///             Always use a unique app string for each one, and make sure it never changes for an app once you've decided on
-    ///             it.
-    ///         </item>
-    ///         <item> Unicode characters are legal, as long as they are UTF-8 encoded, but... </item>
-    ///         <item>
-    ///             ...only use letters, numbers, and spaces. Avoid punctuation like "Game Name 2: Bad Guy's Revenge!" ... "Game
-    ///             Name 2" is sufficient.
-    ///         </item>
-    ///     </list>
-    ///     <para>
-    ///         Due to historical mistakes, <c> org </c> is allowed to be <c> null </c> or <c> "" </c>. In such cases, SDL will
-    ///         omit the org subdirectory, including on platforms where it shouldn't, and including on platforms where this would
-    ///         make your app fail certification for an app store. New apps should definitely specify a real string for <c> org </c>
-    ///         .
-    ///     </para>
-    ///     <para> The returned path is guaranteed to end with a path separator ('\\' on Windows, '/' on most other platforms). </para>
+    /// <para> Get the user-and-app-specific path where files can be written. </para>
+    /// <para>
+    /// Get the "pref dir". This is meant to be where users can write personal files (preferences and save games, etc) that
+    /// are specific to your application. This directory is unique per user, per application.
+    /// </para>
+    /// <para>
+    /// This function will decide the appropriate location in the native filesystem, create the directory if necessary, and
+    /// return a string of the absolute path to the directory in UTF-8 encoding.
+    /// </para>
+    /// <para> On Windows, the string might look like: </para>
+    /// <para>
+    /// <c> C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\ </c>
+    /// </para>
+    /// <para> On Linux, the string might look like: </para>
+    /// <para>
+    /// <c> /home/bob/.local/share/My Program Name/ </c>
+    /// </para>
+    /// <para> On macOS, the string might look like: </para>
+    /// <para>
+    /// <c> /Users/bob/Library/Application Support/My Program Name/ </c>
+    /// </para>
+    /// <para>
+    /// You should assume the path returned by this function is the only safe place to write files (and that
+    /// <see cref="GetBasePath"/>, while it might be writable, or even the parent of the returned path, isn't where you should be
+    /// writing things).
+    /// </para>
+    /// <para> Both the org and app strings may become part of a directory name, so please follow these rules: </para>
+    /// <list type="bullet">
+    /// <item> Try to use the same org string (_including case-sensitivity_) for all your applications that use this function. </item>
+    /// <item> Always use a unique app string for each one, and make sure it never changes for an app once you've decided on it. </item>
+    /// <item> Unicode characters are legal, as long as they are UTF-8 encoded, but... </item>
+    /// <item>
+    /// ...only use letters, numbers, and spaces. Avoid punctuation like "Game Name 2: Bad Guy's Revenge!" ... "Game Name 2"
+    /// is sufficient.
+    /// </item>
+    /// </list>
+    /// <para>
+    /// Due to historical mistakes, <c> org </c> is allowed to be <c> null </c> or <c> "" </c>. In such cases, SDL will omit
+    /// the org subdirectory, including on platforms where it shouldn't, and including on platforms where this would make your app
+    /// fail certification for an app store. New apps should definitely specify a real string for <c> org </c> .
+    /// </para>
+    /// <para> The returned path is guaranteed to end with a path separator ('\\' on Windows, '/' on most other platforms). </para>
     /// </summary>
     /// <param name="org"> the name of your organization. </param>
     /// <param name="app"> the name of your application. </param>
     /// <returns>
-    ///     a UTF-8 string of the user directory in platform-dependent notation. <c> null </c> if there's a problem (creating
-    ///     directory failed, etc.). This should be freed with <see cref="Free"/> when it is no longer needed.
+    /// a UTF-8 string of the user directory in platform-dependent notation. <c> null </c> if there's a problem (creating
+    /// directory failed, etc.). This should be freed with <see cref="Free"/> when it is no longer needed.
     /// </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="GetBasePath"/>
@@ -159,18 +155,18 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);</code>
     /// <summary>
-    ///     <para> Finds the most suitable user folder for a specific purpose. </para>
-    ///     <para>
-    ///         Many OSes provide certain standard folders for certain purposes, such as storing pictures, music or videos for a
-    ///         certain user. This function gives the path for many of those special locations.
-    ///     </para>
-    ///     <para>
-    ///         This function is specifically for _user_ folders, which are meant for the user to access and manage. For
-    ///         application-specific folders, meant to hold data for the application to manage, see <see cref="GetBasePath"/> and
-    ///         <see cref="GetPrefPath"/>.
-    ///     </para>
-    ///     <para> The returned path is guaranteed to end with a path separator ('\\' on Windows, '/' on most other platforms). </para>
-    ///     <para> If <c> null </c> is returned, the error may be obtained with <see cref="GetError"/>. </para>
+    /// <para> Finds the most suitable user folder for a specific purpose. </para>
+    /// <para>
+    /// Many OSes provide certain standard folders for certain purposes, such as storing pictures, music or videos for a
+    /// certain user. This function gives the path for many of those special locations.
+    /// </para>
+    /// <para>
+    /// This function is specifically for _user_ folders, which are meant for the user to access and manage. For
+    /// application-specific folders, meant to hold data for the application to manage, see <see cref="GetBasePath"/> and
+    /// <see cref="GetPrefPath"/>.
+    /// </para>
+    /// <para> The returned path is guaranteed to end with a path separator ('\\' on Windows, '/' on most other platforms). </para>
+    /// <para> If <c> null </c> is returned, the error may be obtained with <see cref="GetError"/>. </para>
     /// </summary>
     /// <param name="folder"> the type of folder to find. </param>
     /// <returns> either a null-terminated C string containing the full path to the folder, or <c> null </c> if an error happened. </returns>
@@ -183,34 +179,40 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_CreateDirectory(const char *path);</code>
     /// <summary>
-    ///     <para> Create a directory, and any missing parent directories. </para>
-    ///     <para> This reports success if <c> path </c> already exists as a directory. </para>
-    ///     <para>
-    ///         If parent directories are missing, it will also create them. Note that if this fails, it will not remove any
-    ///         parent directories it already made.
-    ///     </para>
+    /// <para> Create a directory, and any missing parent directories. </para>
+    /// <para> This reports success if <c> path </c> already exists as a directory. </para>
+    /// <para>
+    /// If parent directories are missing, it will also create them. Note that if this fails, it will not remove any parent
+    /// directories it already made.
+    /// </para>
     /// </summary>
     /// <param name="path"> the path of the directory to create. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call SDL_GetError() for more information. </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool CreateDirectory(scoped ReadOnlySpan<char> path)
+    {
+        using var u = new Utf8(path, stackalloc byte[512]);
+        fixed (byte* p = u.Bytes) return SDL_CreateDirectory((nint)p);
+    }
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateDirectory"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool CreateDirectory([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
+    private static partial bool SDL_CreateDirectory(nint path);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);</code>
     /// <summary>
-    ///     <para> Enumerate a directory through a callback function. </para>
-    ///     <para>
-    ///         This function provides every directory entry through an app-provided callback, called once for each directory
-    ///         entry, until all results have been provided or the callback returns either <see cref="EnumerationResult.Success"/>
-    ///         or <see cref="EnumerationResult.Failure"/>.
-    ///     </para>
-    ///     <para>
-    ///         This will return false if there was a system problem in general, or if a callback returns
-    ///         <see cref="EnumerationResult.Failure"/>. A successful return means a callback returned
-    ///         <see cref="EnumerationResult.Success"/> to halt enumeration, or all directory entries were enumerated.
-    ///     </para>
+    /// <para> Enumerate a directory through a callback function. </para>
+    /// <para>
+    /// This function provides every directory entry through an app-provided callback, called once for each directory entry,
+    /// until all results have been provided or the callback returns either <see cref="EnumerationResult.Success"/> or
+    /// <see cref="EnumerationResult.Failure"/>.
+    /// </para>
+    /// <para>
+    /// This will return false if there was a system problem in general, or if a callback returns
+    /// <see cref="EnumerationResult.Failure"/>. A successful return means a callback returned
+    /// <see cref="EnumerationResult.Success"/> to halt enumeration, or all directory entries were enumerated.
+    /// </para>
     /// </summary>
     /// <param name="path"> the path of the directory to enumerate. </param>
     /// <param name="callback"> a function that is called for each entry in the directory. </param>
@@ -220,101 +222,245 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_EnumerateDirectory"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool EnumerateDirectory([MarshalAs(UnmanagedType.LPUTF8Str)] string path,
-        EnumerateDirectoryCallback callback,
+    private static unsafe partial bool SDL_EnumerateDirectory(byte* path,
+        delegate* unmanaged[Cdecl]<nint, byte*, byte*, EnumerationResult> callback,
         nint userdata);
+
+    /// <summary>Encodes the path on the stack (renting beyond 512 bytes) and runs the enumeration.</summary>
+    static unsafe bool EnumerateDirectoryCore(scoped ReadOnlySpan<char> path, DirectoryEnumerator enumerator)
+    {
+        var byteCount = Encoding.UTF8.GetByteCount(path) + 1;
+        byte[]? rented = null;
+        scoped var utf8 = byteCount <= 512 ?
+            stackalloc byte[byteCount] :
+            (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
+
+        Encoding.UTF8.GetBytes(path, utf8);
+        utf8[^1] = 0;
+
+        var handle = GCHandle.Alloc(enumerator);
+        try
+        {
+            fixed (byte* pathPtr = utf8)
+                return SDL_EnumerateDirectory(pathPtr, &DirectoryEnumeratorThunk, GCHandle.ToIntPtr(handle));
+        }
+        finally
+        {
+            handle.Free();
+            enumerator.Recycle();
+            if (rented is not null) ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
+
+    // Call-scoped enumeration contexts: the typed state lives in a generic subclass field, so passing
+    // it through native code never boxes and never needs a closure. Shared with the storage module.
+    internal abstract class DirectoryEnumerator
+    {
+        public abstract EnumerationResult Invoke(ReadOnlySpan<byte> directory, ReadOnlySpan<byte> file);
+
+        /// <summary> Clear the captured callback/state and return to the single-slot pool. </summary>
+        public abstract void Recycle();
+    }
+
+    sealed class PlainDirectoryEnumerator : DirectoryEnumerator
+    {
+        static PlainDirectoryEnumerator? pooled;
+        EnumerateDirectoryCallback? callback;
+
+        public static PlainDirectoryEnumerator Rent(EnumerateDirectoryCallback callback)
+        {
+            var invoker = Interlocked.Exchange(ref pooled, null) ?? new PlainDirectoryEnumerator();
+            invoker.callback = callback;
+            return invoker;
+        }
+
+        public override EnumerationResult Invoke(ReadOnlySpan<byte> directory, ReadOnlySpan<byte> file)
+            => callback!(directory, file);
+
+        public override void Recycle()
+        {
+            callback = null;
+            Volatile.Write(ref pooled, this);
+        }
+    }
+
+    sealed class StatefulDirectoryEnumerator<T> : DirectoryEnumerator
+    {
+        static StatefulDirectoryEnumerator<T>? pooled;
+        EnumerateDirectoryCallback<T>? callback;
+        T state;
+
+        public static StatefulDirectoryEnumerator<T> Rent(EnumerateDirectoryCallback<T> callback, T state)
+        {
+            var invoker = Interlocked.Exchange(ref pooled, null) ?? new StatefulDirectoryEnumerator<T>();
+            invoker.callback = callback;
+            invoker.state = state;
+            return invoker;
+        }
+
+        public override EnumerationResult Invoke(ReadOnlySpan<byte> directory, ReadOnlySpan<byte> file)
+            => callback!(state, directory, file);
+
+        public override void Recycle()
+        {
+            callback = null;
+            state = default!;
+            Volatile.Write(ref pooled, this);
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    internal static unsafe EnumerationResult DirectoryEnumeratorThunk(nint userdata, byte* dirname, byte* fname)
+    {
+        try
+        {
+            return ((DirectoryEnumerator)GCHandle.FromIntPtr(userdata).Target!).Invoke(
+                MemoryMarshal.CreateReadOnlySpanFromNullTerminated(dirname),
+                MemoryMarshal.CreateReadOnlySpanFromNullTerminated(fname));
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return EnumerationResult.Failure;
+        }
+    }
+
+    /// <summary>See the native documentation above; entries arrive as transient UTF-8 spans.</summary>
+    public static bool EnumerateDirectory(scoped ReadOnlySpan<char> path, EnumerateDirectoryCallback callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return EnumerateDirectoryCore(path, PlainDirectoryEnumerator.Rent(callback));
+    }
+
+    /// <summary>
+    ///     Stateful variant: <paramref name="state"/> reaches the callback without boxing or closure
+    ///     captures — use a static lambda and collect into the state.
+    /// </summary>
+    public static bool EnumerateDirectory<T>(scoped ReadOnlySpan<char> path,
+        EnumerateDirectoryCallback<T> callback,
+        T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return EnumerateDirectoryCore(path, StatefulDirectoryEnumerator<T>.Rent(callback, state));
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_RemovePath(const char *path);</code>
     /// <summary>
-    ///     <para> Remove a file or an empty directory. </para>
-    ///     <para> Directories that are not empty will fail; this function will not recursely delete directory trees. </para>
+    /// <para> Remove a file or an empty directory. </para>
+    /// <para> Directories that are not empty will fail; this function will not recursely delete directory trees. </para>
     /// </summary>
     /// <param name="path"> the path to remove from the filesystem. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool RemovePath(scoped ReadOnlySpan<char> path)
+    {
+        using var u = new Utf8(path, stackalloc byte[512]);
+        fixed (byte* p = u.Bytes) return SDL_RemovePath((nint)p);
+    }
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_RemovePath"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool RemovePath([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
+    private static partial bool SDL_RemovePath(nint path);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_RenamePath(const char *oldpath, const char *newpath);</code>
     /// <summary>
-    ///     <para> Rename a file or directory. </para>
-    ///     <para> If the file at <c> newpath </c> already exists, it will replaced. </para>
-    ///     <para>
-    ///         Note that this will not copy files across filesystems/drives/volumes, as that is a much more complicated (and
-    ///         possibly time-consuming) operation.
-    ///     </para>
-    ///     <para>
-    ///         Which is to say, if this function fails, <see cref="CopyFile"/> to a temporary file in the same directory as
-    ///         <c> newpath </c>, then <see cref="RenamePath"/> from the temporary file to <c> newpath </c> and
-    ///         <see cref="RemovePath"/> on <c> oldpath </c> might work for files. Renaming a non-empty directory across filesystems
-    ///         is dramatically more complex, however.
-    ///     </para>
+    /// <para> Rename a file or directory. </para> <para> If the file at <c> newpath </c> already exists, it will replaced. </para>
+    /// <para>
+    /// Note that this will not copy files across filesystems/drives/volumes, as that is a much more complicated (and
+    /// possibly time-consuming) operation.
+    /// </para>
+    /// <para>
+    /// Which is to say, if this function fails, <see cref="CopyFile"/> to a temporary file in the same directory as
+    /// <c> newpath </c>, then <see cref="RenamePath"/> from the temporary file to <c> newpath </c> and <see cref="RemovePath"/> on
+    /// <c> oldpath </c> might work for files. Renaming a non-empty directory across filesystems is dramatically more complex,
+    /// however.
+    /// </para>
     /// </summary>
     /// <param name="oldpath"> the old path. </param>
     /// <param name="newpath"> the new path. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool RenamePath(scoped ReadOnlySpan<char> oldpath, scoped ReadOnlySpan<char> newpath)
+    {
+        using var a = new Utf8(oldpath, stackalloc byte[512]);
+        using var b = new Utf8(newpath, stackalloc byte[512]);
+        fixed (byte* pa = a.Bytes)
+        fixed (byte* pb = b.Bytes)
+            return SDL_RenamePath((nint)pa, (nint)pb);
+    }
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_RenamePath"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool RenamePath([MarshalAs(UnmanagedType.LPUTF8Str)] string oldpath,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string newpath);
+    private static partial bool SDL_RenamePath(nint oldpath, nint newpath);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_CopyFile(const char *oldpath, const char *newpath);</code>
     /// <summary>
-    ///     <para> Copy a file. </para>
-    ///     <para>
-    ///         If the file at <c> newpath </c> already exists, it will be overwritten with the contents of the file at
-    ///         <c> oldpath </c>.
-    ///     </para>
-    ///     <para>
-    ///         This function will block until the copy is complete, which might be a significant time for large files on slow
-    ///         disks. On some platforms, the copy can be handed off to the OS itself, but on others SDL might just open both paths,
-    ///         and read from one and write to the other.
-    ///     </para>
-    ///     <para>
-    ///         Note that this is not an atomic operation! If something tries to read from <c> newpath </c> while the copy is in
-    ///         progress, it will see an incomplete copy of the data, and if the calling thread terminates (or the power goes out)
-    ///         during the copy, <c> newpath </c>'s previous contents will be gone, replaced with an incomplete copy of the data. To
-    ///         avoid this risk, it is recommended that the app copy to a temporary file in the same directory as <c> newpath </c>,
-    ///         and if the copy is successful, use <see cref="RenamePath"/> to replace <c> newpath </c> with the temporary file.
-    ///         This will ensure that reads of <c> newpath </c> will either see a complete copy of the data, or it will see the
-    ///         pre-copy state of <c> newpath </c>.
-    ///     </para>
-    ///     <para>
-    ///         This function attempts to synchronize the newly-copied data to disk before returning, if the platform allows it,
-    ///         so that the renaming trick will not have a problem in a system crash or power failure, where the file could be
-    ///         renamed but the contents never made it from the system file cache to the physical disk.
-    ///     </para>
-    ///     <para>
-    ///         If the copy fails for any reason, the state of <c> newpath </c> is undefined. It might be half a copy, it might
-    ///         be the untouched data of what was already there, or it might be a zero-byte file, etc.
-    ///     </para>
+    /// <para> Copy a file. </para>
+    /// <para>
+    /// If the file at <c> newpath </c> already exists, it will be overwritten with the contents of the file at
+    /// <c> oldpath </c>.
+    /// </para>
+    /// <para>
+    /// This function will block until the copy is complete, which might be a significant time for large files on slow disks.
+    /// On some platforms, the copy can be handed off to the OS itself, but on others SDL might just open both paths, and read from
+    /// one and write to the other.
+    /// </para>
+    /// <para>
+    /// Note that this is not an atomic operation! If something tries to read from <c> newpath </c> while the copy is in
+    /// progress, it will see an incomplete copy of the data, and if the calling thread terminates (or the power goes out) during
+    /// the copy, <c> newpath </c>'s previous contents will be gone, replaced with an incomplete copy of the data. To avoid this
+    /// risk, it is recommended that the app copy to a temporary file in the same directory as <c> newpath </c>, and if the copy is
+    /// successful, use <see cref="RenamePath"/> to replace <c> newpath </c> with the temporary file. This will ensure that reads of
+    /// <c> newpath </c> will either see a complete copy of the data, or it will see the pre-copy state of <c> newpath </c>.
+    /// </para>
+    /// <para>
+    /// This function attempts to synchronize the newly-copied data to disk before returning, if the platform allows it, so
+    /// that the renaming trick will not have a problem in a system crash or power failure, where the file could be renamed but the
+    /// contents never made it from the system file cache to the physical disk.
+    /// </para>
+    /// <para>
+    /// If the copy fails for any reason, the state of <c> newpath </c> is undefined. It might be half a copy, it might be
+    /// the untouched data of what was already there, or it might be a zero-byte file, etc.
+    /// </para>
     /// </summary>
     /// <param name="oldpath"> the old path. </param>
     /// <param name="newpath"> the new path. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool CopyFile(scoped ReadOnlySpan<char> oldpath, scoped ReadOnlySpan<char> newpath)
+    {
+        using var a = new Utf8(oldpath, stackalloc byte[512]);
+        using var b = new Utf8(newpath, stackalloc byte[512]);
+        fixed (byte* pa = a.Bytes)
+        fixed (byte* pb = b.Bytes)
+            return SDL_CopyFile((nint)pa, (nint)pb);
+    }
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CopyFile"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool CopyFile([MarshalAs(UnmanagedType.LPUTF8Str)] string oldpath,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string newpath);
+    private static partial bool SDL_CopyFile(nint oldpath, nint newpath);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);</code>
     /// <summary> Get information about a filesystem path. </summary>
     /// <param name="path"> the path to query. </param>
     /// <param name="info">
-    ///     a pointer filled in with information about the path, or <c> null </c> to check for the existence of a
-    ///     file.
+    /// a pointer filled in with information about the path, or <c> null </c> to check for the existence of a
+    /// file.
     /// </param>
     /// <returns>
-    ///     <c> true </c> on success or <c> false </c> if the file doesn't exist, or another failure; call
-    ///     <see cref="GetError"/> for more information.
+    /// <c> true </c> on success or <c> false </c> if the file doesn't exist, or another failure; call
+    /// <see cref="GetError"/> for more information.
     /// </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool GetPathInfo(scoped ReadOnlySpan<char> path, out PathInfo info)
+    {
+        using var u = new Utf8(path, stackalloc byte[512]);
+        fixed (byte* p = u.Bytes) return SDL_GetPathInfo((nint)p, out info);
+    }
+
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetPathInfo"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetPathInfo([MarshalAs(UnmanagedType.LPUTF8Str)] string path, out PathInfo info);
+    private static partial bool SDL_GetPathInfo(nint path, out PathInfo info);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GlobDirectory"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -325,9 +471,9 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);</code>
     /// <summary>
-    ///     <para>
-    ///         Files are filtered out if they don't match the string in `pattern`, which may contain wildcard characters `*`
-    ///         (match everything) and `?` (match one character). If pattern is NULL, no filtering is done and all results are
+    /// <para>
+    /// Files are filtered out if they don't match the string in `pattern`, which may contain wildcard characters `*` (match
+    /// everything) and `?` (match one character). If pattern is NULL, no filtering is done and all results are
     ///         returned. Subdirectories are permitted, and are specified with a path separator of `/`. Wildcard characters `*` and
     ///         `?` never match a path separator.
     ///     </para>

@@ -23,26 +23,29 @@
 
 #endregion
 
+// This file is an altered version (storybrew fork): the log output callback is a fully managed
+// delegate receiving the decoded message as a transient span; native thunking lives in PInvoke.cs.
+
 namespace SDL3;
 
-using System.Runtime.InteropServices;
+using System;
 
-public static partial class SDL
-{
-    /// <code>typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);</code>
-    /// <summary> The prototype for the log output callback function. </summary>
-    /// <remarks>
-    ///     This function is called by SDL when there is new text to be logged. A mutex is held so that this function is never
-    ///     called by more than one thread at once.
-    /// </remarks>
-    /// <param name="userdata"> what was passed as <c> userdata </c> to <see cref="SetLogOutputFunction"/>. </param>
-    /// <param name="category"> the category of the message. </param>
-    /// <param name="priority"> the priority of the message. </param>
-    /// <param name="message"> the message being output. </param>
-    /// <since> This datatype is available since SDL 3.2.0 </since>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void LogOutputFunction(nint userdata,
-        LogCategory category,
-        LogPriority priority,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string message);
-}
+/// <code>typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);</code>
+/// <summary> The prototype for the log output callback function. </summary>
+/// <remarks>
+/// <para>
+/// This function is called by SDL when there is new text to be logged. A mutex is held so that this function is never
+/// called by more than one thread at once.
+/// </para>
+/// <para>
+/// The message span is decoded without allocation and is only valid during the callback — call
+/// <c> message.ToString() </c> for text that must outlive it. Exceptions never propagate into native SDL;
+/// they are routed to <see cref="SDL.UnhandledCallbackException"/> (or tracing — never back into the SDL
+/// log, which would recurse).
+/// </para>
+/// </remarks>
+/// <param name="category"> the category of the message. </param>
+/// <param name="priority"> the priority of the message. </param>
+/// <param name="message"> the message being output, valid only during the callback. </param>
+/// <since> This datatype is available since SDL 3.2.0 </since>
+public delegate void LogOutputFunction(LogCategory category, LogPriority priority, scoped ReadOnlySpan<char> message);

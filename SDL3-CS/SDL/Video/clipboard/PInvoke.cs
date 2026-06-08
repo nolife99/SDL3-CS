@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -27,6 +27,8 @@ namespace SDL3;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System;
 
 public static partial class SDL
 {
@@ -49,12 +51,12 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);</code>
     /// <summary>
-    ///     <para> Get UTF-8 text from the clipboard. </para>
-    ///     <para> This function returns an empty string if there is not enough memory left for a copy of the clipboard's content. </para>
+    /// <para> Get UTF-8 text from the clipboard. </para>
+    /// <para> This function returns an empty string if there is not enough memory left for a copy of the clipboard's content. </para>
     /// </summary>
     /// <returns>
-    ///     the clipboard text on success or an empty string on failure; call <see cref="GetError"/> for more information.
-    ///     This should be freed with <see cref="Free"/> when it is no longer needed.
+    /// the clipboard text on success or an empty string on failure; call <see cref="GetError"/> for more information.
+    /// This should be freed with <see cref="Free"/> when it is no longer needed.
     /// </returns>
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -104,15 +106,15 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);</code>
     /// <summary>
-    ///     <para> Get UTF-8 text from the primary selection. </para>
-    ///     <para>
-    ///         This function returns an empty string if there is not enough memory left for a copy of the primary selection's
-    ///         content.
-    ///     </para>
+    /// <para> Get UTF-8 text from the primary selection. </para>
+    /// <para>
+    /// This function returns an empty string if there is not enough memory left for a copy of the primary selection's
+    /// content.
+    /// </para>
     /// </summary>
     /// <returns>
-    ///     the primary selection text on success or an empty string on failure; call <see cref="GetError"/> for more
-    ///     information. This should be freed with <see cref="Free"/> when it is no longer needed.
+    /// the primary selection text on success or an empty string on failure; call <see cref="GetError"/> for more
+    /// information. This should be freed with <see cref="Free"/> when it is no longer needed.
     /// </returns>
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -145,16 +147,16 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);</code>
     /// <summary>
-    ///     <para> Offer clipboard data to the OS. </para>
-    ///     <para>
-    ///         Tell the operating system that the application is offering clipboard data for each of the proivded mime-types.
-    ///         Once another application requests the data the callback function will be called allowing it to generate and respond
-    ///         with the data for the requested mime-type.
-    ///     </para>
-    ///     <para>
-    ///         The size of text data does not include any terminator, and the text does not need to be null-terminated (e.g.,
-    ///         you can directly copy a portion of a document)
-    ///     </para>
+    /// <para> Offer clipboard data to the OS. </para>
+    /// <para>
+    /// Tell the operating system that the application is offering clipboard data for each of the proivded mime-types. Once
+    /// another application requests the data the callback function will be called allowing it to generate and respond with the data
+    /// for the requested mime-type.
+    /// </para>
+    /// <para>
+    /// The size of text data does not include any terminator, and the text does not need to be null-terminated (e.g., you
+    /// can directly copy a portion of a document)
+    /// </para>
     /// </summary>
     /// <param name="callback"> a function pointer to the function that provides the clipboard data. </param>
     /// <param name="cleanup"> a function pointer to the function that cleans up the clipboard data. </param>
@@ -170,12 +172,120 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetClipboardData"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetClipboardData(ClipboardDataCallback callback,
-        ClipboardCleanupCallback cleanup,
+    private static unsafe partial bool SDL_SetClipboardData(
+        delegate* unmanaged[Cdecl]<nint, byte*, nuint*, nint> callback,
+        delegate* unmanaged[Cdecl]<nint, void> cleanup,
         nint userdata,
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPUTF8Str, SizeParamIndex = 4)]
         string[] mimeTypes,
         nuint numMimeTypes);
+
+    /// <summary>
+    ///     One clipboard offer. SDL requires the returned data pointer to stay valid after the data
+    ///     callback returns, so the provider's bytes are copied into a context-owned native scratch
+    ///     buffer that lives until the cleanup fires — the provider itself may freely return transient
+    ///     spans (stackalloc included). SDL invokes the cleanup exactly once (replacement, clear, quit,
+    ///     or a failed set), which releases the scratch and the root.
+    /// </summary>
+    sealed unsafe class ClipboardOffer(ClipboardDataCallback callback, ClipboardCleanupCallback? cleanup)
+    {
+        public GCHandle Self;
+        void* scratch;
+        nuint scratchSize;
+        int released;
+
+        public nint Provide(scoped ReadOnlySpan<byte> mimeType)
+        {
+            var data = callback(mimeType);
+            if (data.IsEmpty)
+            {
+                scratchSize = 0;
+                return 0;
+            }
+
+            scratch = NativeMemory.Realloc(scratch, (nuint)data.Length);
+            data.CopyTo(new Span<byte>(scratch, data.Length));
+            scratchSize = (nuint)data.Length;
+            return (nint)scratch;
+        }
+
+        public nuint ScratchSize => scratchSize;
+
+        public void Cleanup()
+        {
+            if (Interlocked.Exchange(ref released, 1) != 0) return;
+
+            try
+            {
+                cleanup?.Invoke();
+            }
+            finally
+            {
+                if (scratch != null)
+                {
+                    NativeMemory.Free(scratch);
+                    scratch = null;
+                }
+
+                Self.Free();
+            }
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe nint ClipboardDataThunk(nint userdata, byte* mimeType, nuint* size)
+    {
+        try
+        {
+            var offer = (ClipboardOffer)GCHandle.FromIntPtr(userdata).Target!;
+            var data = offer.Provide(MemoryMarshal.CreateReadOnlySpanFromNullTerminated(mimeType));
+            *size = offer.ScratchSize;
+            return data;
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            *size = 0;
+            return 0;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void ClipboardCleanupThunk(nint userdata)
+    {
+        try
+        {
+            ((ClipboardOffer)GCHandle.FromIntPtr(userdata).Target!).Cleanup();
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. The provider may return transient spans — the wrapper
+    ///     copies them into storage SDL is allowed to read. Both delegates are rooted until SDL invokes
+    ///     the cleanup (replacement, clear, quit, or failure of this call).
+    /// </summary>
+    public static unsafe bool SetClipboardData(ClipboardDataCallback callback,
+        ClipboardCleanupCallback? cleanup,
+        params string[] mimeTypes)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        ArgumentNullException.ThrowIfNull(mimeTypes);
+
+        var offer = new ClipboardOffer(callback, cleanup);
+        offer.Self = GCHandle.Alloc(offer);
+
+        // On failure SDL has already invoked the cleanup thunk, which released everything; the guard in
+        // Cleanup makes that single-release regardless of which side runs it.
+        return SDL_SetClipboardData(&ClipboardDataThunk,
+            &ClipboardCleanupThunk,
+            GCHandle.ToIntPtr(offer.Self),
+            mimeTypes,
+            (nuint)mimeTypes.Length);
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ClearClipboardData(void);</code>
     /// <summary> Clear the clipboard data. </summary>

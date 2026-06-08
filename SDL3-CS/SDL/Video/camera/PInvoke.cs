@@ -341,7 +341,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetCameraProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetCameraProperties(nint camera);
+    public static partial PropertiesID GetCameraProperties(nint camera);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec);</code>
     /// <summary>

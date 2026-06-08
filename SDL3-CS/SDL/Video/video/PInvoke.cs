@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -26,9 +26,11 @@
 namespace SDL3;
 
 using System.Buffers;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System;
 
 public static partial class SDL
 {
@@ -167,7 +169,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDisplayProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial uint GetDisplayProperties(uint displayID);
+    public static partial PropertiesID GetDisplayProperties(uint displayID);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDisplayName"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -943,7 +945,7 @@ public static partial class SDL
     /// <seealso cref="DestroyWindow"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateWindowWithProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial nint CreateWindowWithProperties(uint props);
+    public static partial nint CreateWindowWithProperties(PropertiesID props);
 
     /// <code>extern SDL_DECLSPEC SDL_WindowID SDLCALL SDL_GetWindowID(SDL_Window *window);</code>
     /// <summary>
@@ -1103,7 +1105,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetWindowProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial uint GetWindowProperties(nint window);
+    public static partial PropertiesID GetWindowProperties(nint window);
 
     /// <code>extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);</code>
     /// <summary> Get the window flags. </summary>
@@ -1175,7 +1177,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetWindowIcon"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetWindowIcon(nint window, nint icon);
+    public static partial bool SetWindowIcon(nint window, SurfaceHandle icon);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x, int y);</code>
     /// <summary>
@@ -1760,7 +1762,7 @@ public static partial class SDL
     /// <seealso cref="UpdateWindowSurfaceRects"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetWindowSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial nint GetWindowSurface(nint window);
+    public static partial SurfaceHandle GetWindowSurface(nint window);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowSurfaceVSync(SDL_Window *window, int vsync);</code>
     /// <summary>
@@ -2158,9 +2160,55 @@ public static partial class SDL
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetWindowHitTest"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetWindowHitTest(nint window, HitTest? callback, nint callbackData);
+    private static unsafe partial bool SDL_SetWindowHitTest(nint window,
+        delegate* unmanaged[Cdecl]<nint, Point*, nint, HitTestResult> callback,
+        nint callbackData);
+
+    // Hit-test roots, keyed by window: a window has at most one hit test, replaced or cleared as a unit.
+    static readonly Dictionary<nint, GCHandle> windowHitTests = new();
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe HitTestResult HitTestThunk(nint win, Point* area, nint data)
+    {
+        try
+        {
+            return ((HitTest)GCHandle.FromIntPtr(data).Target!)(win, in Unsafe.AsRef<Point>(area));
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return HitTestResult.Normal;
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. Pass <c> null </c> to disable hit-testing. The delegate is
+    ///     rooted by the wrapper until the window's hit test is replaced or cleared.
+    /// </summary>
+    public static unsafe bool SetWindowHitTest(nint window, HitTest? callback)
+    {
+        lock (windowHitTests)
+        {
+            GCHandle handle = default;
+            var success = callback is null
+                ? SDL_SetWindowHitTest(window, null, 0)
+                : SDL_SetWindowHitTest(window,
+                    &HitTestThunk,
+                    GCHandle.ToIntPtr(handle = GCHandle.Alloc(callback)));
+
+            if (!success)
+            {
+                if (handle.IsAllocated) handle.Free();
+                return false;
+            }
+
+            if (windowHitTests.Remove(window, out var previous)) previous.Free();
+            if (handle.IsAllocated) windowHitTests.Add(window, handle);
+            return true;
+        }
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape);</code>
     /// <summary>
@@ -2605,11 +2653,77 @@ public static partial class SDL
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_EGL_SetAttributeCallbacks"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void EGLSetAttributeCallbacks(EGLAttribArrayCallback? platformAttribCallback,
-        EGLIntArrayCallback? surfaceAttribCallback,
-        EGLIntArrayCallback? contextAttribCallback,
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial void SDL_EGL_SetAttributeCallbacks(
+        delegate* unmanaged[Cdecl]<nint, nint> platformAttribCallback,
+        delegate* unmanaged[Cdecl]<nint, nint, nint, nint> surfaceAttribCallback,
+        delegate* unmanaged[Cdecl]<nint, nint, nint, nint> contextAttribCallback,
         nint userdata);
+
+    // Rooted for as long as native SDL can invoke them (note: SDL resets them on GLResetAttributes).
+    static EGLAttribArrayCallback? eglPlatformAttribCallback;
+    static EGLIntArrayCallback? eglSurfaceAttribCallback;
+    static EGLIntArrayCallback? eglContextAttribCallback;
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static nint EGLPlatformAttribThunk(nint userdata)
+    {
+        try
+        {
+            return eglPlatformAttribCallback?.Invoke() ?? 0;
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 0; // null array => window creation fails gracefully, per SDL contract
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static nint EGLSurfaceAttribThunk(nint userdata, nint display, nint config)
+    {
+        try
+        {
+            return eglSurfaceAttribCallback?.Invoke(display, config) ?? 0;
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 0;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static nint EGLContextAttribThunk(nint userdata, nint display, nint config)
+    {
+        try
+        {
+            return eglContextAttribCallback?.Invoke(display, config) ?? 0;
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 0;
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. Each callback may be <c> null </c>; the delegates are
+    ///     rooted by the wrapper until replaced.
+    /// </summary>
+    public static unsafe void EGLSetAttributeCallbacks(EGLAttribArrayCallback? platformAttribCallback,
+        EGLIntArrayCallback? surfaceAttribCallback,
+        EGLIntArrayCallback? contextAttribCallback)
+    {
+        eglPlatformAttribCallback = platformAttribCallback;
+        eglSurfaceAttribCallback = surfaceAttribCallback;
+        eglContextAttribCallback = contextAttribCallback;
+
+        SDL_EGL_SetAttributeCallbacks(platformAttribCallback is null ? null : &EGLPlatformAttribThunk,
+            surfaceAttribCallback is null ? null : &EGLSurfaceAttribThunk,
+            contextAttribCallback is null ? null : &EGLContextAttribThunk,
+            0);
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetSwapInterval(int interval);</code>
     /// <summary>

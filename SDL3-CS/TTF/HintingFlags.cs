@@ -28,11 +28,11 @@ namespace SDL3;
 public static partial class TTF
 {
     /// <summary>
-    ///     <para> Hinting flags for TTF (TrueType Fonts) </para>
-    ///     <para>
-    ///         This enum specifies the level of hinting to be applied to the font rendering. The hinting level determines how
-    ///         much the font's outlines are adjusted for better alignment on the pixel grid.
-    ///     </para>
+    /// <para> Hinting flags for TTF (TrueType Fonts) </para>
+    /// <para>
+    /// This enum specifies the level of hinting to be applied to the font rendering. The hinting level determines how much
+    /// the font's outlines are adjusted for better alignment on the pixel grid.
+    /// </para>
     /// </summary>
     /// <since> his enum is available since SDL_ttf 3.0.0. </since>
     /// <seealso cref="SetFontHinting"/>

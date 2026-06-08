@@ -499,7 +499,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetGamepadProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetGamepadProperties(nint gamepad);
+    public static partial PropertiesID GetGamepadProperties(nint gamepad);
 
     /// <code>extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_GetGamepadID(SDL_Gamepad *gamepad);</code>
     /// <summary> Get the instance ID of an opened gamepad. </summary>
@@ -1231,17 +1231,22 @@ public static partial class SDL
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetGamepadLED(nint gamepad, byte red, byte green, byte blue);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size);</code>
-    /// <summary> Send a gamepad specific effect packet. </summary>
-    /// <param name="gamepad"> the gamepad to affect. </param>
-    /// <param name="data"> the data to send to the gamepad. </param>
-    /// <param name="size"> the size of the data to send to the gamepad. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SendGamepadEffect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SendGamepadEffect(nint gamepad, nint data, int size);
+    private static unsafe partial bool SDL_SendGamepadEffect(nint gamepad, void* data, int size);
+
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size);</code>
+    /// <summary> Send a gamepad specific effect packet. </summary>
+    /// <typeparam name="T"> the unmanaged element type of the span. </typeparam>
+    /// <param name="gamepad"> the gamepad to affect. </param>
+    /// <param name="data"> the effect data to send (pinned for the call); its byte length is <c> data.Length * sizeof(T) </c>. </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool SendGamepadEffect<T>(nint gamepad, ReadOnlySpan<T> data) where T : unmanaged
+    {
+        fixed (T* ptr = data) return SDL_SendGamepadEffect(gamepad, ptr, checked(data.Length * sizeof(T)));
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SendGamepadEffect(SDL_Gamepad *gamepad, const void *data, int size);</code>
     /// <summary> Send a gamepad specific effect packet. </summary>

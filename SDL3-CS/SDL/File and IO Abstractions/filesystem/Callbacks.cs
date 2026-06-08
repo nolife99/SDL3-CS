@@ -23,37 +23,46 @@
 
 #endregion
 
+// This file is an altered version (storybrew fork): the enumeration callbacks are fully managed and
+// allocation-free — entries arrive as transient UTF-8 spans, and the generic form passes a typed state
+// without boxing or closure captures. Native thunking lives in PInvoke.cs.
+
 namespace SDL3;
 
-using System.Runtime.InteropServices;
+using System;
 
-public static partial class SDL
-{
-    /// <code>typedef SDL_EnumerationResult (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);</code>
-    /// <summary>
-    ///     <para> Callback for directory enumeration. </para>
-    ///     <para>
-    ///         Enumeration of directory entries will continue until either all entries have been provided to the callback, or
-    ///         the callback has requested a stop through its return value.
-    ///     </para>
-    ///     <para>
-    ///         Returning <see cref="EnumerationResult.Continue"/> will let enumeration proceed, calling the callback with
-    ///         further entries. <see cref="EnumerationResult.Success"/> and <see cref="EnumerationResult.Failure"/> will terminate
-    ///         the enumeration early, and dictate the return value of the enumeration function itself.
-    ///     </para>
-    ///     <para>
-    ///         <c> dirname </c> is guaranteed to end with a path separator (<c> \\ </c> on Windows, <c> / </c> on most other
-    ///         platforms).
-    ///     </para>
-    /// </summary>
-    /// <param name="userdata"> an app-controlled pointer that is passed to the callback. </param>
-    /// <param name="dirname"> the directory that is being enumerated. </param>
-    /// <param name="fname"> the next entry in the enumeration. </param>
-    /// <returns> how the enumeration should proceed. </returns>
-    /// <since> This datatype is available since SDL 3.2.0 </since>
-    /// <seealso cref="EnumerateDirectory"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate EnumerationResult EnumerateDirectoryCallback(nint userdata,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string dirname,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string fname);
-}
+/// <code>typedef SDL_EnumerationResult (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);</code>
+/// <summary>
+/// <para> Callback for directory enumeration. </para>
+/// <para>
+/// Enumeration of directory entries will continue until either all entries have been provided to the callback, or the
+/// callback has requested a stop through its return value.
+/// </para>
+/// <para>
+/// Returning <see cref="SDL.EnumerationResult.Continue"/> will let enumeration proceed, calling the callback with further
+/// entries. <see cref="SDL.EnumerationResult.Success"/> and <see cref="SDL.EnumerationResult.Failure"/> will terminate the
+/// enumeration early, and dictate the return value of the enumeration function itself.
+/// </para>
+/// <para>
+/// <c> directory </c> is guaranteed to end with a path separator (<c> \\ </c> on Windows, <c> / </c> on most other
+/// platforms). Both spans are UTF-8 views over SDL-owned memory, valid only during the callback — decode or copy what
+/// must outlive it. Exceptions never propagate into native SDL: they are routed to
+/// <see cref="SDL.UnhandledCallbackException"/> and terminate the enumeration with
+/// <see cref="SDL.EnumerationResult.Failure"/>.
+/// </para>
+/// </summary>
+/// <param name="directory"> the directory that is being enumerated, as transient UTF-8 bytes. </param>
+/// <param name="file"> the next entry in the enumeration, as transient UTF-8 bytes. </param>
+/// <returns> how the enumeration should proceed. </returns>
+/// <since> This datatype is available since SDL 3.2.0 </since>
+/// <seealso cref="SDL.EnumerateDirectory(string, EnumerateDirectoryCallback)"/>
+public delegate SDL.EnumerationResult EnumerateDirectoryCallback(ReadOnlySpan<byte> directory, ReadOnlySpan<byte> file);
+
+/// <summary>
+///     Stateful variant of <see cref="EnumerateDirectoryCallback"/>: <paramref name="state"/> is the value passed to
+///     <see cref="SDL.EnumerateDirectory{T}(string, EnumerateDirectoryCallback{T}, T)"/>, delivered without boxing —
+///     use a static lambda and collect results into it instead of capturing.
+/// </summary>
+public delegate SDL.EnumerationResult EnumerateDirectoryCallback<in T>(T state,
+    ReadOnlySpan<byte> directory,
+    ReadOnlySpan<byte> file);

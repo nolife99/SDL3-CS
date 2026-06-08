@@ -48,6 +48,7 @@
     <None Include="../LICENSE" Pack="true" PackagePath="\"/>
     <None Include="../CODE_OF_CONDUCT.md" Pack="true" PackagePath="\"/>
     <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
+    <None Remove="SDL3-CS.zip" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
@@ -56,6 +57,17 @@
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <None Include="bin\Debug\SDL3-CS.xml" Visible="false" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.9.0-beta.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ErrorProne.NET.Structs" Version="0.6.1-beta.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

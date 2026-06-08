@@ -120,7 +120,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSensorProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetSensorProperties(nint sensor);
+    public static partial PropertiesID GetSensorProperties(nint sensor);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSensorName"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

@@ -75,14 +75,26 @@ public static partial class SDL
         /// <summary> Clamps the maximum of the computed LOD value. </summary>
         public float MaxLod;
 
-        /// <summary> true to enable anisotropic filtering. </summary>
-        public byte EnableAnisotropy;
+        byte _enableAnisotropy;
 
-        /// <summary> true to enable comparison against a reference value during lookups. </summary>
-        public byte EnableCompare;
+        byte _enableCompare;
 
         byte padding1;
 
         byte padding2;
+
+        /// <summary> true to enable anisotropic filtering. </summary>
+        public bool EnableAnisotropy
+        {
+            get => _enableAnisotropy > 0;
+            set => _enableAnisotropy = (byte)(value ? 1 : 0);
+        }
+
+        /// <summary> true to enable comparison against a reference value during lookups. </summary>
+        public bool EnableCompare
+        {
+            get => _enableCompare > 0;
+            set => _enableCompare = (byte)(value ? 1 : 0);
+        }
     }
 }

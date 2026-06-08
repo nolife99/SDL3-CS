@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -23,45 +23,45 @@
 
 #endregion
 
+// This file is an altered version (storybrew fork): the type is declared at namespace level
+// instead of nested in the SDL class.
+
 namespace SDL3;
 
-public static partial class SDL
+/// <summary>
+///     <para> The predefined log categories </para>
+///     <para>
+///         By default the application and gpu categories are enabled at the <see cref="LogPriority.Info"/> level, the assert
+///         category is enabled at the see <see cref="LogPriority.Warn"/> level, test is enabled at the see
+///         <see cref="LogPriority.Verbose"/> level and all other categories are enabled at the see
+///         <see cref="LogPriority.Error"/> level.
+///     </para>
+/// </summary>
+/// <since> This enum is available since SDL 3.2.0 </since>
+public enum LogCategory
 {
-    /// <summary>
-    ///     <para> The predefined log categories </para>
-    ///     <para>
-    ///         By default the application and gpu categories are enabled at the <see cref="LogPriority.Info"/> level, the assert
-    ///         category is enabled at the see <see cref="LogPriority.Warn"/> level, test is enabled at the see
-    ///         <see cref="LogPriority.Verbose"/> level and all other categories are enabled at the see
-    ///         <see cref="LogPriority.Error"/> level.
-    ///     </para>
-    /// </summary>
-    /// <since> This enum is available since SDL 3.2.0 </since>
-    public enum LogCategory
-    {
-        Application,
-        Error,
-        Assert,
-        System,
-        Audio,
-        Video,
-        Render,
-        Input,
-        Test,
-        GPU,
+    Application,
+    Error,
+    Assert,
+    System,
+    Audio,
+    Video,
+    Render,
+    Input,
+    Test,
+    GPU,
 
-        /* Reserved for future SDL library use */
-        Reserved2,
-        Reserved3,
-        Reserved4,
-        Reserved5,
-        Reserved6,
-        Reserved7,
-        Reserved8,
-        Reserved9,
-        Reserved10,
+    /* Reserved for future SDL library use */
+    Reserved2,
+    Reserved3,
+    Reserved4,
+    Reserved5,
+    Reserved6,
+    Reserved7,
+    Reserved8,
+    Reserved9,
+    Reserved10,
 
-        /* Beyond this point is reserved for application use, e.g. */
-        Custom
-    }
+    /* Beyond this point is reserved for application use, e.g. */
+    Custom
 }

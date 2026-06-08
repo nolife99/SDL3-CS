@@ -50,19 +50,37 @@ public static partial class SDL
         /// <summary> Selects the bits of the stencil values updated by the stencil test. </summary>
         public byte WriteMask;
 
-        /// <summary> true enables the depth test. </summary>
-        public byte EnableDepthTest;
+        byte _enableDepthTest;
 
-        /// <summary> true enables depth writes. Depth writes are always disabled when enable_depth_test is false. </summary>
-        public byte EnableDepthWrite;
+        byte _enableDepthWrite;
 
-        /// <summary> true enables the stencil test. </summary>
-        public byte EnableStencilTest;
+        byte _enableStencilTest;
 
         byte _padding1;
 
         byte _padding2;
 
         byte _padding3;
+
+        /// <summary> true enables the depth test. </summary>
+        public bool EnableDepthTest
+        {
+            get => _enableDepthTest > 0;
+            set => _enableDepthTest = (byte)(value ? 1 : 0);
+        }
+
+        /// <summary> true enables depth writes. Depth writes are always disabled when <see cref="EnableDepthTest"/> is false. </summary>
+        public bool EnableDepthWrite
+        {
+            get => _enableDepthWrite > 0;
+            set => _enableDepthWrite = (byte)(value ? 1 : 0);
+        }
+
+        /// <summary> true enables the stencil test. </summary>
+        public bool EnableStencilTest
+        {
+            get => _enableStencilTest > 0;
+            set => _enableStencilTest = (byte)(value ? 1 : 0);
+        }
     }
 }

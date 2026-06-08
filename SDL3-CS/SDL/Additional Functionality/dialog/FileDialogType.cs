@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -27,8 +27,8 @@ namespace SDL3;
 
 /// <summary> Various types of file dialogs. </summary>
 /// <remarks>
-///     This is used by <see cref="SDL.ShowFileDialogWithProperties(FileDialogType, DialogFileCallback, nint, uint)"/> to
-///     decide what kind of dialog to present to the user.
+/// This is used by <see cref="SDL.ShowFileDialogWithProperties(FileDialogType, DialogFileCallback, uint)"/> to
+/// decide what kind of dialog to present to the user.
 /// </remarks>
 public enum FileDialogType
 {

@@ -25,6 +25,8 @@
 
 namespace SDL3;
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -111,7 +113,7 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         This only returns a list of physical devices; it will not have any device IDs returned by
-    ///         <see cref="OpenAudioDevice(uint, nint)"/>.
+    ///         <see cref="OpenAudioDevice(AudioDeviceID, nint)"/>.
     ///     </para>
     ///     <para> If this function returns <c> null </c>, to signify an error, <c> count </c> will be set to zero. </para>
     /// </summary>
@@ -122,15 +124,15 @@ public static partial class SDL
     /// </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="OpenAudioDevice(uint, nint)"/>
+    /// <seealso cref="OpenAudioDevice(AudioDeviceID, nint)"/>
     /// <seealso cref="GetAudioRecordingDevices"/>
-    public static uint[]? GetAudioPlaybackDevices(out int count)
+    public static AudioDeviceID[]? GetAudioPlaybackDevices(out int count)
     {
         var ptr = SDL_GetAudioPlaybackDevices(out count);
 
         try
         {
-            return PointerToStructureArray<uint>(ptr, count);
+            return PointerToStructureArray<AudioDeviceID>(ptr, count);
         }
         finally
         {
@@ -152,7 +154,7 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         This only returns a list of physical devices; it will not have any device IDs returned by
-    ///         <see cref="OpenAudioDevice(uint, nint)"/>.
+    ///         <see cref="OpenAudioDevice(AudioDeviceID, nint)"/>.
     ///     </para>
     ///     <para> If this function returns <c> null </c>, to signify an error, <c> count </c> will be set to zero. </para>
     /// </summary>
@@ -163,15 +165,15 @@ public static partial class SDL
     /// </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="OpenAudioDevice(uint, nint)"/>
+    /// <seealso cref="OpenAudioDevice(AudioDeviceID, nint)"/>
     /// <seealso cref="GetAudioPlaybackDevices"/>
-    public static uint[]? GetAudioRecordingDevices(out int count)
+    public static AudioDeviceID[]? GetAudioRecordingDevices(out int count)
     {
         var ptr = SDL_GetAudioRecordingDevices(out count);
 
         try
         {
-            return PointerToStructureArray<uint>(ptr, count);
+            return PointerToStructureArray<AudioDeviceID>(ptr, count);
         }
         finally
         {
@@ -181,7 +183,7 @@ public static partial class SDL
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioDeviceName"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial nint SDL_GetAudioDeviceName(uint devid);
+    private static partial nint SDL_GetAudioDeviceName(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);</code>
     /// <summary> Get the human-readable name of a specific audio device. </summary>
@@ -191,7 +193,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="GetAudioPlaybackDevices"/>
     /// <seealso cref="GetAudioRecordingDevices"/>
-    public static string? GetAudioDeviceName(uint devid)
+    public static string? GetAudioDeviceName(AudioDeviceID devid)
     {
         var value = SDL_GetAudioDeviceName(devid);
         return value == nint.Zero ? null : Marshal.PtrToStringUTF8(value);
@@ -230,11 +232,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioDeviceFormat"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetAudioDeviceFormat(uint devid, out AudioSpec spec, out int sampleFrames);
+    public static partial bool GetAudioDeviceFormat(AudioDeviceID devid, out AudioSpec spec, out int sampleFrames);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioDeviceChannelMap"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial nint SDL_GetAudioDeviceChannelMap(uint devid, out int count);
+    private static partial nint SDL_GetAudioDeviceChannelMap(AudioDeviceID devid, out int count);
 
     /// <c> extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count); </c>
     /// <summary>
@@ -257,7 +259,7 @@ public static partial class SDL
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="SetAudioStreamInputChannelMap"/>
-    public static int[]? GetAudioDeviceChannelMap(uint devid, out int count)
+    public static int[]? GetAudioDeviceChannelMap(AudioDeviceID devid, out int count)
     {
         var ptr = SDL_GetAudioDeviceChannelMap(devid, out count);
 
@@ -283,7 +285,7 @@ public static partial class SDL
     ///         An opened audio device starts out with no audio streams bound. To start audio playing, bind a stream and supply
     ///         audio data to it. Unlike SDL2, there is no audio callback; you only bind audio streams and make sure they have data
     ///         flowing into them (however, you can simulate SDL2's semantics fairly closely by using
-    ///         <see cref="OpenAudioDeviceStream(uint, in nint, AudioStreamCallback, nint)"/> instead of this function).
+    ///         <see cref="OpenAudioDeviceStream(AudioDeviceID, in AudioSpec, AudioStreamCallback)"/> instead of this function).
     ///     </para>
     ///     <para>
     ///         If you don't care about opening a specific device, pass a `devid` of either
@@ -337,7 +339,7 @@ public static partial class SDL
     /// <seealso cref="GetAudioDeviceFormat"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_OpenAudioDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint OpenAudioDevice(uint devid, in AudioSpec spec);
+    public static partial AudioDeviceID OpenAudioDevice(AudioDeviceID devid, in AudioSpec spec);
 
     /// <code>extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);</code>
     /// <summary>
@@ -351,7 +353,7 @@ public static partial class SDL
     ///         An opened audio device starts out with no audio streams bound. To start audio playing, bind a stream and supply
     ///         audio data to it. Unlike SDL2, there is no audio callback; you only bind audio streams and make sure they have data
     ///         flowing into them (however, you can simulate SDL2's semantics fairly closely by using
-    ///         <see cref="OpenAudioDeviceStream(uint, in nint, AudioStreamCallback?, nint)"/> instead of this function).
+    ///         <see cref="OpenAudioDeviceStream(AudioDeviceID, in AudioSpec, AudioStreamCallback)"/> instead of this function).
     ///     </para>
     ///     <para>
     ///         If you don't care about opening a specific device, pass a `devid` of either
@@ -405,15 +407,15 @@ public static partial class SDL
     /// <seealso cref="GetAudioDeviceFormat"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_OpenAudioDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint OpenAudioDevice(uint devid, nint spec);
+    public static partial AudioDeviceID OpenAudioDevice(AudioDeviceID devid, nint spec);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid);</code>
     /// <summary>
     ///     <para> Determine if an audio device is physical (instead of logical). </para>
     ///     <para>
     ///         An SDL_AudioDeviceID that represents physical hardware is a physica device; there is one for each piece of
-    ///         hardware that SDL can see. Logical devices are created by calling <see cref="OpenAudioDevice(uint, nint)"/> or
-    ///         <see cref="OpenAudioDeviceStream(uint, in nint, AudioStreamCallback, nint)"/>, and while each is associated with a
+    ///         hardware that SDL can see. Logical devices are created by calling <see cref="OpenAudioDevice(AudioDeviceID, nint)"/> or
+    ///         <see cref="OpenAudioDeviceStream(AudioDeviceID, in AudioSpec, AudioStreamCallback)"/>, and while each is associated with a
     ///         physical device, there can be any number of logical devices on one physical device.
     ///     </para>
     ///     <para>
@@ -430,7 +432,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsAudioDevicePhysical"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool IsAudioDevicePhysical(uint devid);
+    public static partial bool IsAudioDevicePhysical(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid);</code>
     /// <summary>
@@ -444,7 +446,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsAudioDevicePlayback"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool IsAudioDevicePlayback(uint devid);
+    public static partial bool IsAudioDevicePlayback(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);</code>
     /// <summary>
@@ -463,10 +465,10 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         Physical devices can not be paused or unpaused, only logical devices created through
-    ///         <see cref="OpenAudioDevice(uint, nint)"/> can be.
+    ///         <see cref="OpenAudioDevice(AudioDeviceID, nint)"/> can be.
     ///     </para>
     /// </summary>
-    /// <param name="devid"> a device opened by <see cref="OpenAudioDevice(uint, nint)"/>. </param>
+    /// <param name="devid"> a device opened by <see cref="OpenAudioDevice(AudioDeviceID, nint)"/>. </param>
     /// <returns> true on success or false on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -475,7 +477,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PauseAudioDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool PauseAudioDevice(uint devid);
+    public static partial bool PauseAudioDevice(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);</code>
     /// <summary>
@@ -491,10 +493,10 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         Physical devices can not be paused or unpaused, only logical devices created through
-    ///         <see cref="OpenAudioDevice(uint, nint)"/> can be.
+    ///         <see cref="OpenAudioDevice(AudioDeviceID, nint)"/> can be.
     ///     </para>
     /// </summary>
-    /// <param name="devid"> a device opened by <see cref="OpenAudioDevice(uint, nint)"/>. </param>
+    /// <param name="devid"> a device opened by <see cref="OpenAudioDevice(AudioDeviceID, nint)"/>. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -503,7 +505,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ResumeAudioDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ResumeAudioDevice(uint devid);
+    public static partial bool ResumeAudioDevice(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev);</code>
     /// <summary>
@@ -514,11 +516,11 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         Physical devices can not be paused or unpaused, only logical devices created through
-    ///         <see cref="OpenAudioDevice(uint, nint)"/> can be. Physical and invalid device IDs will report themselves as unpaused
+    ///         <see cref="OpenAudioDevice(AudioDeviceID, nint)"/> can be. Physical and invalid device IDs will report themselves as unpaused
     ///         here.
     ///     </para>
     /// </summary>
-    /// <param name="devid"> a device opened by <see cref="OpenAudioDevice(uint, nint)"/>. </param>
+    /// <param name="devid"> a device opened by <see cref="OpenAudioDevice(AudioDeviceID, nint)"/>. </param>
     /// <returns> <c> true </c> if device is valid and paused, <c> false </c> otherwise. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -527,7 +529,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_AudioDevicePaused"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool AudioDevicePaused(uint devid);
+    public static partial bool AudioDevicePaused(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC float SDLCALL SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid);</code>
     /// <summary>
@@ -546,7 +548,7 @@ public static partial class SDL
     /// <seealso cref="SetAudioDeviceGain"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioDeviceGain"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial float GetAudioDeviceGain(uint devid);
+    public static partial float GetAudioDeviceGain(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain);</code>
     /// <summary>
@@ -575,7 +577,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioDeviceGain"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioDeviceGain(uint devid, float gain);
+    public static partial bool SetAudioDeviceGain(AudioDeviceID devid, float gain);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);</code>
     /// <summary>
@@ -586,13 +588,13 @@ public static partial class SDL
     ///         drop the last buffer of data they supplied if terminating immediately afterwards.
     ///     </para>
     /// </summary>
-    /// <param name="devid"> an audio device id previously returned by <see cref="OpenAudioDevice(uint, nint)"/>. </param>
+    /// <param name="devid"> an audio device id previously returned by <see cref="OpenAudioDevice(AudioDeviceID, nint)"/>. </param>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="OpenAudioDevice(uint, nint)"/>
+    /// <seealso cref="OpenAudioDevice(AudioDeviceID, nint)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CloseAudioDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void CloseAudioDevice(uint devid);
+    public static partial void CloseAudioDevice(AudioDeviceID devid);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *streams, int num_streams);</code>
     /// <summary>
@@ -627,8 +629,8 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BindAudioStreams"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BindAudioStreams(uint devid,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] nint[] streams,
+    public static partial bool BindAudioStreams(AudioDeviceID devid,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] AudioStreamHandle[] streams,
         int numStream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream);</code>
@@ -647,7 +649,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BindAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BindAudioStream(uint devid, nint stream);
+    public static partial bool BindAudioStream(AudioDeviceID devid, AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream * const *streams, int num_streams);</code>
     /// <summary>
@@ -667,7 +669,7 @@ public static partial class SDL
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial void UnbindAudioStreams(
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] nint[]? streams,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] AudioStreamHandle[]? streams,
         int numStreams);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);</code>
@@ -682,7 +684,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnbindAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial void UnbindAudioStream(nint stream);
+    public static partial void UnbindAudioStream(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -698,7 +700,7 @@ public static partial class SDL
     /// <seealso cref="BindAudioStreams"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetAudioStreamDevice(nint stream);
+    public static partial AudioDeviceID GetAudioStreamDevice(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);</code>
     /// <summary> Create a new audio stream. </summary>
@@ -707,8 +709,8 @@ public static partial class SDL
     /// <returns> a new audio stream on success or <c> null </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
-    /// <seealso cref="GetAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>
+    /// <seealso cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
     /// <seealso cref="GetAudioStreamAvailable"/>
     /// <seealso cref="FlushAudioStream"/>
     /// <seealso cref="ClearAudioStream"/>
@@ -716,7 +718,7 @@ public static partial class SDL
     /// <seealso cref="DestroyAudioStream"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateAudioStream(in AudioSpec srcSpec, in AudioSpec dstSpec);
+    public static partial AudioStreamHandle CreateAudioStream(in AudioSpec srcSpec, in AudioSpec dstSpec);
 
     /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -727,7 +729,7 @@ public static partial class SDL
     ///             <see cref="Props.AudioStreamAutoCleanupBoolean"/>: if true (the default), the stream be automatically cleaned
     ///             up when the audio subsystem quits. If set to false, the streams will persist beyond that. This property is
     ///             ignored for streams created through
-    ///             <see cref="OpenAudioDeviceStream(uint, in AudioSpec, AudioStreamCallback?, nint)"/>, and will always be cleaned
+    ///             <see cref="OpenAudioDeviceStream(AudioDeviceID, in AudioSpec, AudioStreamCallback)"/>, and will always be cleaned
     ///             up. Streams that are not cleaned up will still be unbound from devices when the audio subsystem quits. This
     ///             property was added in SDL 3.4.0.
     ///         </item>
@@ -739,7 +741,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetAudioStreamProperties(nint stream);
+    public static partial PropertiesID GetAudioStreamProperties(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, SDL_AudioSpec *dst_spec);</code>
     /// <summary> Query the current format of an audio stream. </summary>
@@ -753,14 +755,14 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamFormat"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetAudioStreamFormat(nint stream, out AudioSpec srcSpec, out AudioSpec dstSpec);
+    public static partial bool GetAudioStreamFormat(AudioStreamHandle stream, out AudioSpec srcSpec, out AudioSpec dstSpec);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);</code>
     /// <summary>
     ///     <para> Change the input and output formats of an audio stream. </para>
     ///     <para>
-    ///         Future calls to and <see cref="GetAudioStreamAvailable"/> and <see cref="GetAudioStreamData(nint, byte[], int)"/>
-    ///         will reflect the new format, and future calls to <see cref="PutAudioStreamData(nint, byte[], int)"/> must provide
+    ///         Future calls to and <see cref="GetAudioStreamAvailable"/> and <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
+    ///         will reflect the new format, and future calls to <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/> must provide
     ///         data in the new input formats.
     ///     </para>
     ///     <para>
@@ -786,7 +788,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamFormat"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioStreamFormat(nint stream, in AudioSpec srcSpec, in AudioSpec dstSpec);
+    public static partial bool SetAudioStreamFormat(AudioStreamHandle stream, in AudioSpec srcSpec, in AudioSpec dstSpec);
 
     /// <code>extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamFrequencyRatio(SDL_AudioStream *stream);</code>
     /// <summary> Get the frequency ratio of an audio stream. </summary>
@@ -797,7 +799,7 @@ public static partial class SDL
     /// <seealso cref="SetAudioStreamFrequencyRatio"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamFrequencyRatio"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial float GetAudioStreamFrequencyRatio(nint stream);
+    public static partial float GetAudioStreamFrequencyRatio(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float ratio);</code>
     /// <summary>
@@ -808,7 +810,7 @@ public static partial class SDL
     ///         pitch. A value less than 1.0f will play the audio slower, and at a lower pitch. 1.0f means play at normal speed.
     ///     </para>
     ///     <para>
-    ///         This is applied during <see cref="GetAudioStreamData(nint, byte[], int)"/>, and can be continuously changed to
+    ///         This is applied during <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>, and can be continuously changed to
     ///         create various effects.
     ///     </para>
     /// </summary>
@@ -822,7 +824,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamFrequencyRatio"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioStreamFrequencyRatio(nint stream, float ratio);
+    public static partial bool SetAudioStreamFrequencyRatio(AudioStreamHandle stream, float ratio);
 
     /// <code>extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamGain(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -837,7 +839,7 @@ public static partial class SDL
     /// <seealso cref="SetAudioStreamGain"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamGain"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial float GetAudioStreamGain(nint stream);
+    public static partial float GetAudioStreamGain(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain);</code>
     /// <summary>
@@ -845,7 +847,7 @@ public static partial class SDL
     ///     <para> The gain of a stream is its volume; a larger gain means a louder output, with a gain of zero being silence. </para>
     ///     <para> Audio streams default to a gain of 1.0f (no change in output). </para>
     ///     <para>
-    ///         This is applied during <see cref="GetAudioStreamData(nint, byte[], int)"/>, and can be continuously changed to
+    ///         This is applied during <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>, and can be continuously changed to
     ///         create various effects.
     ///     </para>
     /// </summary>
@@ -858,11 +860,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamGain"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioStreamGain(nint stream, float gain);
+    public static partial bool SetAudioStreamGain(AudioStreamHandle stream, float gain);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamInputChannelMap"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial nint SDL_GetAudioStreamInputChannelMap(nint stream, out int count);
+    private static partial nint SDL_GetAudioStreamInputChannelMap(AudioStreamHandle stream, out int count);
 
     /// <code>extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count);</code>
     /// <summary>
@@ -885,7 +887,7 @@ public static partial class SDL
     /// <threadsafety> It is safe to call this function from any thread, as it holds a stream-specific mutex while running. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="SetAudioStreamInputChannelMap"/>
-    public static int[]? GetAudioStreamInputChannelMap(nint stream, out int count)
+    public static int[]? GetAudioStreamInputChannelMap(AudioStreamHandle stream, out int count)
     {
         var ptr = SDL_GetAudioStreamInputChannelMap(stream, out count);
 
@@ -901,7 +903,7 @@ public static partial class SDL
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamOutputChannelMap"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial nint SDL_GetAudioStreamOutputChannelMap(nint stream, out int count);
+    private static partial nint SDL_GetAudioStreamOutputChannelMap(AudioStreamHandle stream, out int count);
 
     /// <code>extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *count);</code>
     /// <summary>
@@ -924,7 +926,7 @@ public static partial class SDL
     /// <threadsafety> It is safe to call this function from any thread, as it holds a stream-specific mutex while running. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="SetAudioStreamInputChannelMap"/>
-    public static int[]? GetAudioStreamOutputChannelMap(nint stream, out int count)
+    public static int[]? GetAudioStreamOutputChannelMap(AudioStreamHandle stream, out int count)
     {
         var ptr = SDL_GetAudioStreamOutputChannelMap(stream, out count);
 
@@ -947,8 +949,8 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         The input channel map reorders data that is added to a stream via
-    ///         <see cref="PutAudioStreamData(nint, byte[], int)"/>. Future calls to
-    ///         <see cref="PutAudioStreamData(nint, byte[], int)"/> must provide data in the new channel order.
+    ///         <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>. Future calls to
+    ///         <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/> must provide data in the new channel order.
     ///     </para>
     ///     <para>
     ///         Each item in the array represents an input channel, and its value is the channel that it should be remapped to.
@@ -992,7 +994,7 @@ public static partial class SDL
     /// <seealso cref="SetAudioStreamInputChannelMap"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamInputChannelMap"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint SetAudioStreamInputChannelMap(nint stream,
+    public static partial nint SetAudioStreamInputChannelMap(AudioStreamHandle stream,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] int[]? chmap,
         int count);
 
@@ -1005,7 +1007,7 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         The output channel map reorders data that is leaving a stream via
-    ///         <see cref="GetAudioStreamData(nint, byte[], int)"/>.
+    ///         <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>.
     ///     </para>
     ///     <para>
     ///         Each item in the array represents an input channel, and its value is th channel that it should be remapped to. To
@@ -1017,7 +1019,7 @@ public static partial class SDL
     ///     <para> You cannot change the number of channels through a channel map, just reorder/mute them. </para>
     ///     <para>
     ///         The output channel map can be changed at any time, as output remapping is applied during
-    ///         <see cref="GetAudioStreamData(nint, byte[], int)"/>.
+    ///         <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>.
     ///     </para>
     ///     <para>
     ///         Audio streams default to no remapping applied. Passing a <c> null </c> channel map is legal, and turns off
@@ -1048,9 +1050,14 @@ public static partial class SDL
     /// <seealso cref="SetAudioStreamInputChannelMap"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamOutputChannelMap"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint SetAudioStreamOutputChannelMap(nint stream,
+    public static partial nint SetAudioStreamOutputChannelMap(AudioStreamHandle stream,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] int[]? chmap,
         int count);
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_PutAudioStreamData"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private static unsafe partial bool SDL_PutAudioStreamData(AudioStreamHandle stream, void* buf, int len);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len);</code>
     /// <summary>
@@ -1063,10 +1070,14 @@ public static partial class SDL
     ///         Note that this call simply copies the unconverted data for later. This is different than SDL2, where data was
     ///         converted during the Put call and the Get call would just dequeue the previously-converted data.
     ///     </para>
+    ///     <para>
+    ///         The <paramref name="data"/> span (of any unmanaged element type) is pinned for the call; its byte length is
+    ///         taken as <c> data.Length * sizeof(T) </c>, so no separate length parameter is needed.
+    ///     </para>
     /// </summary>
+    /// <typeparam name="T"> the unmanaged element type of the span (e.g. <see cref="byte"/>, <see cref="float"/>, <see cref="short"/>). </typeparam>
     /// <param name="stream"> the stream the audio data is being added to. </param>
-    /// <param name="buf"> a pointer to the audio data to add. </param>
-    /// <param name="len"> the number of bytes to write to the stream. </param>
+    /// <param name="data"> the audio data to add, in the stream's current input format. </param>
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
     ///     It is safe to call this function from any thread, but if the stream has a callback set, the caller might need
@@ -1075,18 +1086,18 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="ClearAudioStream"/>
     /// <seealso cref="FlushAudioStream"/>
-    /// <seealso cref="GetAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
     /// <seealso cref="GetAudioStreamQueued"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_PutAudioStreamData"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool PutAudioStreamData(nint stream, nint buf, int len);
+    public static unsafe bool PutAudioStreamData<T>(AudioStreamHandle stream, ReadOnlySpan<T> data) where T : unmanaged
+    {
+        fixed (T* buf = data) return SDL_PutAudioStreamData(stream, buf, checked(data.Length * sizeof(T)));
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamDataNoCopy(SDL_AudioStream *stream, const void *buf, int len, SDL_AudioStreamDataCompleteCallback callback, void *userdata);</code>
     /// <summary>
     ///     <para> Add external data to an audio stream without copying it. </para>
     ///     <para>
-    ///         Unlike <see cref="PutAudioStreamData(nint, nint, int)"/>, this function does not make a copy of the provided
+    ///         Unlike <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>, this function does not make a copy of the provided
     ///         data, instead storing the provided pointer. This means that the put operation does not need to allocate and copy the
     ///         data, but the original data must remain available until the stream is done with it, either by being read from the
     ///         stream in its entirety, or a call to <seealso cref="ClearAudioStream"/> or <see cref="DestroyAudioStream"/>.
@@ -1103,7 +1114,7 @@ public static partial class SDL
     ///     <para>
     ///         Note that there is still an allocation to store tracking information, so this function is more efficient for
     ///         larger blocks of data. If you're planning to put a few samples at a time, it will be more efficient to use
-    ///         <see cref="PutAudioStreamData(nint, nint, int)"/>, which allocates and buffers in blocks.
+    ///         <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>, which allocates and buffers in blocks.
     ///     </para>
     /// </summary>
     /// <param name="stream"> the stream the audio data is being added to. </param>
@@ -1119,48 +1130,60 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.4.0. </since>
     /// <seealso cref="ClearAudioStream"/>
     /// <seealso cref="FlushAudioStream"/>
-    /// <seealso cref="GetAudioStreamData(nint, nint, int)"/>
+    /// <seealso cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
     /// <seealso cref="GetAudioStreamQueued"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PutAudioStreamDataNoCopy"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool PutAudioStreamDataNoCopy(nint stream,
+    private static unsafe partial byte SDL_PutAudioStreamDataNoCopy(AudioStreamHandle stream,
         nint buf,
         int len,
-        AudioStreamDataCompleteCallback? callback,
+        delegate* unmanaged[Cdecl]<nint, nint, int, void> callback,
         nint userdata);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len);</code>
     /// <summary>
-    ///     <para> Add data to the stream. </para>
-    ///     <para>
-    ///         This data must match the format/channels/samplerate specified in the latest call to
-    ///         <see cref="SetAudioStreamFormat"/>, or the format specified when creating the stream if it hasn't been changed.
-    ///     </para>
-    ///     <para>
-    ///         Note that this call simply copies the unconverted data for later. This is different than SDL2, where data was
-    ///         converted during the Put call and the Get call would just dequeue the previously-converted data.
-    ///     </para>
+    ///     See the native documentation above. The callback is one-shot: it is rooted by the wrapper
+    ///     and released automatically when it fires (the stream guarantees it fires exactly once, even
+    ///     on clear/destroy).
     /// </summary>
-    /// <param name="stream"> the stream the audio data is being added to. </param>
-    /// <param name="buf"> a pointer to the audio data to add. </param>
-    /// <param name="len"> the number of bytes to write to the stream. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety>
-    ///     It is safe to call this function from any thread, but if the stream has a callback set, the caller might need
-    ///     to manage extra locking.
-    /// </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="ClearAudioStream"/>
-    /// <seealso cref="FlushAudioStream"/>
-    /// <seealso cref="GetAudioStreamData(nint, byte[], int)"/>
-    /// <seealso cref="GetAudioStreamQueued"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_PutAudioStreamData"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool PutAudioStreamData(nint stream,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buf,
-        int len);
+    public static unsafe bool PutAudioStreamDataNoCopy(AudioStreamHandle stream,
+        nint buf,
+        int len,
+        AudioStreamDataCompleteCallback? callback)
+    {
+        if (callback is null) return SDL_PutAudioStreamDataNoCopy(stream, buf, len, null, 0) != 0;
+
+        var invoker = PlainDataCompleteInvoker.Rent(callback);
+        var handle = GCHandle.Alloc(invoker);
+        var ok = SDL_PutAudioStreamDataNoCopy(stream, buf, len, &AudioDataCompleteThunk, GCHandle.ToIntPtr(handle)) != 0;
+        if (!ok)
+        {
+            handle.Free();
+            invoker.Recycle();
+        }
+
+        return ok;
+    }
+
+    /// <summary> Context-carrying variant of <see cref="PutAudioStreamDataNoCopy(nint, nint, int, AudioStreamDataCompleteCallback?)"/> (no boxing, no closure). </summary>
+    public static unsafe bool PutAudioStreamDataNoCopy<T>(AudioStreamHandle stream,
+        nint buf,
+        int len,
+        AudioStreamDataCompleteCallback<T> callback,
+        T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var invoker = StatefulDataCompleteInvoker<T>.Rent(callback, state);
+        var handle = GCHandle.Alloc(invoker);
+        var ok = SDL_PutAudioStreamDataNoCopy(stream, buf, len, &AudioDataCompleteThunk, GCHandle.ToIntPtr(handle)) != 0;
+        if (!ok)
+        {
+            handle.Free();
+            invoker.Recycle();
+        }
+
+        return ok;
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_channels, int num_samples);</code>
     /// <summary>
@@ -1204,44 +1227,19 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.4.0. </since>
     /// <seealso cref="ClearAudioStream"/>
     /// <seealso cref="FlushAudioStream"/>
-    /// <seealso cref="GetAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
     /// <seealso cref="GetAudioStreamQueued"/>
     [DllImport(SDLLibrary, EntryPoint = "SDL_PutAudioStreamPlanarData"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static extern bool PutAudioStreamPlanarData(nint stream,
+    public static extern bool PutAudioStreamPlanarData(AudioStreamHandle stream,
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPArray)] nint[] channelBuffers,
         int numChannels,
         int numSamples);
 
-    /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void *buf, int len);</code>
-    /// <summary>
-    ///     <para> Get converted/resampled data from the stream. </para>
-    ///     <para>
-    ///         The input/output data format/channels/samplerate is specified when creating the stream, and can be changed after
-    ///         creation by calling <see cref="SetAudioStreamFormat"/>.
-    ///     </para>
-    ///     <para>
-    ///         Note that any conversion and resampling necessary is done during this call, and SDL_PutAudioStreamData simply
-    ///         queues unconverted data for later. This is different than SDL2, where that work was done while inputting new data to
-    ///         the stream and requesting the output just copied the converted data.
-    ///     </para>
-    /// </summary>
-    /// <param name="stream"> the stream the audio is being requested from. </param>
-    /// <param name="buf"> a buffer to fill with audio data. </param>
-    /// <param name="len"> the maximum number of bytes to fill. </param>
-    /// <returns> the number of bytes read from the stream or -1 on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety>
-    ///     It is safe to call this function from any thread, but if the stream has a callback set, the caller might need
-    ///     to manage extra locking.
-    /// </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="ClearAudioStream"/>
-    /// <seealso cref="GetAudioStreamAvailable"/>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamData"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetAudioStreamData(nint stream, nint buf, int len);
+    private static unsafe partial int SDL_GetAudioStreamData(AudioStreamHandle stream, void* buf, int len);
 
     /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetAudioStreamData(SDL_AudioStream *stream, void *buf, int len);</code>
     /// <summary>
@@ -1255,10 +1253,14 @@ public static partial class SDL
     ///         queues unconverted data for later. This is different than SDL2, where that work was done while inputting new data to
     ///         the stream and requesting the output just copied the converted data.
     ///     </para>
+    ///     <para>
+    ///         The <paramref name="data"/> span (of any unmanaged element type) is pinned and filled in place; at most
+    ///         <c> data.Length * sizeof(T) </c> bytes are written, and the number of bytes actually produced is returned.
+    ///     </para>
     /// </summary>
+    /// <typeparam name="T"> the unmanaged element type of the span (e.g. <see cref="byte"/>, <see cref="float"/>, <see cref="short"/>). </typeparam>
     /// <param name="stream"> the stream the audio is being requested from. </param>
-    /// <param name="buf"> a buffer to fill with audio data. </param>
-    /// <param name="len"> the maximum number of bytes to fill. </param>
+    /// <param name="data"> the buffer to fill with audio data. </param>
     /// <returns> the number of bytes read from the stream or -1 on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety>
     ///     It is safe to call this function from any thread, but if the stream has a callback set, the caller might need
@@ -1267,12 +1269,11 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="ClearAudioStream"/>
     /// <seealso cref="GetAudioStreamAvailable"/>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamData"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetAudioStreamData(nint stream,
-        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buf,
-        int len);
+    /// <seealso cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>
+    public static unsafe int GetAudioStreamData<T>(AudioStreamHandle stream, Span<T> data) where T : unmanaged
+    {
+        fixed (T* buf = data) return SDL_GetAudioStreamData(stream, buf, checked(data.Length * sizeof(T)));
+    }
 
     /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetAudioStreamAvailable(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1284,7 +1285,7 @@ public static partial class SDL
     ///     <para>
     ///         If the stream has so much data that it would overflow an int, the return value is clamped to a maximum value, but
     ///         no queued data is lost; if there are gigabytes of data queued, the app might need to read some of it with
-    ///         <see cref="GetAudioStreamData(nint, byte[], int)"/> before this function's return value is no longer clamped.
+    ///         <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/> before this function's return value is no longer clamped.
     ///     </para>
     /// </summary>
     /// <param name="stream"> the audio stream to query. </param>
@@ -1294,11 +1295,11 @@ public static partial class SDL
     /// </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="GetAudioStreamData(nint, byte[], int)"/>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
+    /// <seealso cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamAvailable"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetAudioStreamAvailable(nint stream);
+    public static partial int GetAudioStreamAvailable(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC int SDLCALL SDL_GetAudioStreamQueued(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1314,24 +1315,24 @@ public static partial class SDL
     ///         Users of this API should be aware of format changes they make when feeding a stream and plan accordingly.
     ///     </para>
     ///     <para>
-    ///         Queued data is not converted until it is consumed by <see cref="GetAudioStreamData(nint, byte[], int)"/>, so this
+    ///         Queued data is not converted until it is consumed by <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>, so this
     ///         value should be representative of the exact data that was put into the stream.
     ///     </para>
     ///     <para>
     ///         If the stream has so much data that it would overflow an int, the return value is clamped to a maximum value, but
     ///         no queued data is lost; if there are gigabytes of data queued, the app might need to read some of it with
-    ///         <see cref="GetAudioStreamData(nint, byte[], int)"/> before this function's return value is no longer clamped.
+    ///         <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/> before this function's return value is no longer clamped.
     ///     </para>
     /// </summary>
     /// <param name="stream"> the audio stream to query. </param>
     /// <returns> the number of bytes queued or -1 on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>
     /// <seealso cref="ClearAudioStream"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAudioStreamQueued"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetAudioStreamQueued(nint stream);
+    public static partial int GetAudioStreamQueued(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1348,11 +1349,11 @@ public static partial class SDL
     /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_FlushAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool FlushAudioStream(nint stream);
+    public static partial bool FlushAudioStream(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1364,13 +1365,13 @@ public static partial class SDL
     /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="GetAudioStreamAvailable"/>
-    /// <seealso cref="GetAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/>
     /// <seealso cref="GetAudioStreamQueued"/>
-    /// <seealso cref="PutAudioStreamData(nint, byte[], int)"/>
+    /// <seealso cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ClearAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ClearAudioStream(nint stream);
+    public static partial bool ClearAudioStream(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioStreamDevice(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1392,7 +1393,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PauseAudioStreamDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool PauseAudioStreamDevice(nint stream);
+    public static partial bool PauseAudioStreamDevice(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1402,7 +1403,7 @@ public static partial class SDL
     ///         bound audio streams will begin to progress again, and audio can be generated.
     ///     </para>
     ///     <para>
-    ///         <see cref="OpenAudioDeviceStream(uint, in IntPtr, AudioStreamCallback, IntPtr)"/> opens audio devices in a paused
+    ///         <see cref="OpenAudioDeviceStream(AudioDeviceID, in AudioSpec, AudioStreamCallback)"/> opens audio devices in a paused
     ///         state, so this function call is required for audio playback to begin on such devices.
     ///     </para>
     /// </summary>
@@ -1414,7 +1415,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ResumeAudioStreamDevice"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ResumeAudioStreamDevice(nint stream);
+    public static partial bool ResumeAudioStreamDevice(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_AudioStreamDevicePaused(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1433,7 +1434,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_AudioStreamDevicePaused"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool AudioStreamDevicePaused(nint stream);
+    public static partial bool AudioStreamDevicePaused(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_LockAudioStream(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1461,7 +1462,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LockAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool LockAudioStream(nint stream);
+    public static partial bool LockAudioStream(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1476,7 +1477,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnlockAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool UnlockAudioStream(nint stream);
+    public static partial bool UnlockAudioStream(AudioStreamHandle stream);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata);</code>
     /// <summary>
@@ -1486,7 +1487,7 @@ public static partial class SDL
     ///         on-demand.
     ///     </para>
     ///     <para>
-    ///         The callback can (optionally) call <see cref="PutAudioStreamData(nint, byte[], int)"/> to add more audio to the
+    ///         The callback can (optionally) call <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/> to add more audio to the
     ///         stream during this call; if needed, the request that triggered this callback will obtain the new data immediately.
     ///     </para>
     ///     <para>
@@ -1518,8 +1519,29 @@ public static partial class SDL
     /// <seealso cref="SetAudioStreamPutCallback"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamGetCallback"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioStreamGetCallback(nint stream, AudioStreamCallback? callback, nint userdata);
+    private static unsafe partial byte SDL_SetAudioStreamGetCallback(AudioStreamHandle stream,
+        delegate* unmanaged[Cdecl]<nint, AudioStreamHandle, int, int, void> callback,
+        nint userdata);
+
+    /// <summary>
+    ///     See the native documentation above. The delegate is rooted by the wrapper until replaced,
+    ///     cleared with null, or the stream is destroyed via <see cref="DestroyAudioStream"/>.
+    /// </summary>
+    public static unsafe bool SetAudioStreamGetCallback(AudioStreamHandle stream, AudioStreamCallback? callback)
+        => SetAudioStreamCallbackCore(audioStreamGetCallbacks,
+            stream,
+            callback is null ? null : new PlainAudioStreamInvoker(callback),
+            &SDL_SetAudioStreamGetCallback);
+
+    /// <summary> Context-carrying variant of <see cref="SetAudioStreamGetCallback(nint, AudioStreamCallback?)"/> (no boxing, no closure). </summary>
+    public static unsafe bool SetAudioStreamGetCallback<T>(AudioStreamHandle stream, AudioStreamCallback<T> callback, T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return SetAudioStreamCallbackCore(audioStreamGetCallbacks,
+            stream,
+            new StatefulAudioStreamInvoker<T>(callback, state),
+            &SDL_SetAudioStreamGetCallback);
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata);</code>
     /// <summary>
@@ -1529,7 +1551,7 @@ public static partial class SDL
     ///         immediately.
     ///     </para>
     ///     <para>
-    ///         The callback can (optionally) call <see cref="GetAudioStreamData(nint, byte[], int)"/> to obtain audio from the
+    ///         The callback can (optionally) call <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/> to obtain audio from the
     ///         stream during this call.
     ///     </para>
     ///     <para>
@@ -1563,8 +1585,227 @@ public static partial class SDL
     /// </returns>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioStreamPutCallback"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioStreamPutCallback(nint stream, AudioStreamCallback? callback, nint userdata);
+    private static unsafe partial byte SDL_SetAudioStreamPutCallback(AudioStreamHandle stream,
+        delegate* unmanaged[Cdecl]<nint, AudioStreamHandle, int, int, void> callback,
+        nint userdata);
+
+    /// <summary>
+    ///     See the native documentation above. The delegate is rooted by the wrapper until replaced,
+    ///     cleared with null, or the stream is destroyed via <see cref="DestroyAudioStream"/>.
+    /// </summary>
+    public static unsafe bool SetAudioStreamPutCallback(AudioStreamHandle stream, AudioStreamCallback? callback)
+        => SetAudioStreamCallbackCore(audioStreamPutCallbacks,
+            stream,
+            callback is null ? null : new PlainAudioStreamInvoker(callback),
+            &SDL_SetAudioStreamPutCallback);
+
+    /// <summary> Context-carrying variant of <see cref="SetAudioStreamPutCallback(nint, AudioStreamCallback?)"/> (no boxing, no closure). </summary>
+    public static unsafe bool SetAudioStreamPutCallback<T>(AudioStreamHandle stream, AudioStreamCallback<T> callback, T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return SetAudioStreamCallbackCore(audioStreamPutCallbacks,
+            stream,
+            new StatefulAudioStreamInvoker<T>(callback, state),
+            &SDL_SetAudioStreamPutCallback);
+    }
+
+    #region Audio callback plumbing (storybrew fork)
+
+    static readonly Dictionary<AudioStreamHandle, GCHandle> audioStreamGetCallbacks = [];
+    static readonly Dictionary<AudioStreamHandle, GCHandle> audioStreamPutCallbacks = [];
+    static readonly Dictionary<AudioDeviceID, GCHandle> audioPostmixCallbacks = [];
+    static readonly object audioCallbackLock = new();
+
+    abstract class AudioStreamInvoker
+    {
+        public abstract void Invoke(AudioStreamHandle stream, int additionalAmount, int totalAmount);
+    }
+
+    sealed class PlainAudioStreamInvoker(AudioStreamCallback callback) : AudioStreamInvoker
+    {
+        public override void Invoke(AudioStreamHandle stream, int additionalAmount, int totalAmount)
+            => callback(stream, additionalAmount, totalAmount);
+    }
+
+    sealed class StatefulAudioStreamInvoker<T>(AudioStreamCallback<T> callback, T state) : AudioStreamInvoker
+    {
+        T state = state;
+
+        public override void Invoke(AudioStreamHandle stream, int additionalAmount, int totalAmount)
+            => callback(stream, additionalAmount, totalAmount, ref state);
+    }
+
+    abstract class AudioPostmixInvoker
+    {
+        public abstract void Invoke(in AudioSpec spec, Span<float> buffer);
+    }
+
+    sealed class PlainAudioPostmixInvoker(AudioPostmixCallback callback) : AudioPostmixInvoker
+    {
+        public override void Invoke(in AudioSpec spec, Span<float> buffer) => callback(in spec, buffer);
+    }
+
+    sealed class StatefulAudioPostmixInvoker<T>(AudioPostmixCallback<T> callback, T state) : AudioPostmixInvoker
+    {
+        T state = state;
+        public override void Invoke(in AudioSpec spec, Span<float> buffer) => callback(in spec, buffer, ref state);
+    }
+
+    // One-shot completion invokers are POOLED (single-slot Interlocked cache per closed type) so
+    // no-copy puts allocate nothing in steady state. The instance pools itself before running the
+    // callback; reentrant puts from the callback rent it right back.
+    abstract class AudioDataCompleteInvoker
+    {
+        public abstract void Invoke(nint buffer, int length);
+
+        /// <summary> Failure path: clear and pool without invoking. </summary>
+        public abstract void Recycle();
+    }
+
+    sealed class PlainDataCompleteInvoker : AudioDataCompleteInvoker
+    {
+        static PlainDataCompleteInvoker? pooled;
+        AudioStreamDataCompleteCallback? callback;
+
+        public static PlainDataCompleteInvoker Rent(AudioStreamDataCompleteCallback callback)
+        {
+            var invoker = System.Threading.Interlocked.Exchange(ref pooled, null) ?? new PlainDataCompleteInvoker();
+            invoker.callback = callback;
+            return invoker;
+        }
+
+        public override void Invoke(nint buffer, int length)
+        {
+            var run = callback!;
+            Recycle();
+            run(buffer, length);
+        }
+
+        public override void Recycle()
+        {
+            callback = null;
+            System.Threading.Volatile.Write(ref pooled, this);
+        }
+    }
+
+    sealed class StatefulDataCompleteInvoker<T> : AudioDataCompleteInvoker
+    {
+        static StatefulDataCompleteInvoker<T>? pooled;
+        AudioStreamDataCompleteCallback<T>? callback;
+        T state;
+
+        public static StatefulDataCompleteInvoker<T> Rent(AudioStreamDataCompleteCallback<T> callback, T state)
+        {
+            var invoker = System.Threading.Interlocked.Exchange(ref pooled, null) ??
+                new StatefulDataCompleteInvoker<T>();
+
+            invoker.callback = callback;
+            invoker.state = state;
+            return invoker;
+        }
+
+        public override void Invoke(nint buffer, int length)
+        {
+            var run = callback!;
+            var arg = state;
+            Recycle();
+            run(buffer, length, ref arg);
+        }
+
+        public override void Recycle()
+        {
+            callback = null;
+            state = default!;
+            System.Threading.Volatile.Write(ref pooled, this);
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void AudioStreamThunk(nint userdata, AudioStreamHandle stream, int additionalAmount, int totalAmount)
+    {
+        try
+        {
+            ((AudioStreamInvoker)GCHandle.FromIntPtr(userdata).Target!).Invoke(stream, additionalAmount, totalAmount);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe void AudioPostmixThunk(nint userdata, AudioSpec* spec, float* buffer, int buflen)
+    {
+        try
+        {
+            // buflen is in bytes per the native contract.
+            ((AudioPostmixInvoker)GCHandle.FromIntPtr(userdata).Target!).Invoke(in *spec,
+                new(buffer, buflen / sizeof(float)));
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void AudioDataCompleteThunk(nint userdata, nint buf, int buflen)
+    {
+        var handle = GCHandle.FromIntPtr(userdata);
+        try
+        {
+            ((AudioDataCompleteInvoker)handle.Target!).Invoke(buf, buflen);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
+
+    /// <summary>
+    ///     Commits a successful registration: the previous GCHandle is only freed AFTER the native
+    ///     setter returned, because the native call is what synchronizes against an audio thread that
+    ///     may still be inside the old callback (the setters take the stream/device lock).
+    /// </summary>
+    static void CommitAudioCallback<TKey>(Dictionary<TKey, GCHandle> registry, TKey key, GCHandle handle, bool rooted)
+        where TKey : notnull
+    {
+        lock (audioCallbackLock)
+        {
+            if (registry.Remove(key, out var previous)) previous.Free();
+            if (rooted) registry[key] = handle;
+        }
+    }
+
+    static void ReleaseAudioCallback<TKey>(Dictionary<TKey, GCHandle> registry, TKey key) where TKey : notnull
+    {
+        lock (audioCallbackLock)
+            if (registry.Remove(key, out var handle))
+                handle.Free();
+    }
+
+    static unsafe bool SetAudioStreamCallbackCore(Dictionary<AudioStreamHandle, GCHandle> registry,
+        AudioStreamHandle stream,
+        object? invoker,
+        delegate* managed<AudioStreamHandle, delegate* unmanaged[Cdecl]<nint, AudioStreamHandle, int, int, void>, nint, byte>
+            register)
+    {
+        var handle = invoker is null ? default : GCHandle.Alloc(invoker);
+
+        var ok = register(stream, invoker is null ? null : &AudioStreamThunk, invoker is null ? 0 : GCHandle.ToIntPtr(handle)) !=
+            0;
+
+        if (ok) CommitAudioCallback(registry, stream, handle, invoker is not null);
+        else if (invoker is not null) handle.Free();
+
+        return ok;
+    }
+
+    #endregion
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);</code>
     /// <summary>
@@ -1575,7 +1816,7 @@ public static partial class SDL
     ///     </para>
     ///     <para>
     ///         If this stream was bound to an audio device, it is unbound during this call. If this stream was created with
-    ///         <see cref="OpenAudioDeviceStream(uint, in nint, AudioStreamCallback, nint)"/>, the audio device that was opened
+    ///         <see cref="OpenAudioDeviceStream(AudioDeviceID, in AudioSpec, AudioStreamCallback)"/>, the audio device that was opened
     ///         alongside this stream's creation will be closed, too.
     ///     </para>
     /// </summary>
@@ -1585,7 +1826,19 @@ public static partial class SDL
     /// <seealso cref="CreateAudioStream"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroyAudioStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void DestroyAudioStream(nint stream);
+    private static partial void SDL_DestroyAudioStream(AudioStreamHandle stream);
+
+    /// <summary>
+    ///     See the native documentation above. Also releases any get/put callback rooting registered
+    ///     for the stream through these wrappers (pending no-copy completion callbacks fire and release
+    ///     themselves during the native destroy).
+    /// </summary>
+    public static void DestroyAudioStream(AudioStreamHandle stream)
+    {
+        SDL_DestroyAudioStream(stream);
+        ReleaseAudioCallback(audioStreamGetCallbacks, stream);
+        ReleaseAudioCallback(audioStreamPutCallbacks, stream);
+    }
 
     /// <code>extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata);</code>
     /// <summary>
@@ -1633,8 +1886,8 @@ public static partial class SDL
     /// <param name="spec"> the audio stream's data format. Can be <c> null </c>. </param>
     /// <param name="callback">
     ///     a callback where the app will provide new data for playback, or receive new data for recording. Can
-    ///     be <c> null </c>, in which case the app will need to call <see cref="PutAudioStreamData(nint, byte[], int)"/> or
-    ///     <see cref="GetAudioStreamData(nint, byte[], int)"/> as necessary.
+    ///     be <c> null </c>, in which case the app will need to call <see cref="PutAudioStreamData{T}(AudioStreamHandle, ReadOnlySpan{T})"/> or
+    ///     <see cref="GetAudioStreamData{T}(AudioStreamHandle, Span{T})"/> as necessary.
     /// </param>
     /// <param name="userdata">
     ///     app-controlled pointer passed to callback. Can be <c> null </c>. Ignored if callback is
@@ -1650,78 +1903,77 @@ public static partial class SDL
     /// <seealso cref="ResumeAudioStreamDevice"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_OpenAudioDeviceStream"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint OpenAudioDeviceStream(uint devid,
-        in AudioSpec spec,
-        AudioStreamCallback? callback,
+    private static unsafe partial AudioStreamHandle SDL_OpenAudioDeviceStream(AudioDeviceID devid,
+        AudioSpec* spec,
+        delegate* unmanaged[Cdecl]<nint, AudioStreamHandle, int, int, void> callback,
         nint userdata);
 
-    /// <code>extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata);</code>
+    static unsafe AudioStreamHandle OpenAudioDeviceStreamCore(AudioDeviceID devid, AudioSpec* spec, object? invoker)
+    {
+        if (invoker is null) return SDL_OpenAudioDeviceStream(devid, spec, null, 0);
+
+        var handle = GCHandle.Alloc(invoker);
+        var stream = SDL_OpenAudioDeviceStream(devid, spec, &AudioStreamThunk, GCHandle.ToIntPtr(handle));
+
+        if (stream.IsNull) handle.Free();
+        else CommitAudioCallback(audioStreamGetCallbacks, stream, handle, true);
+
+        return stream;
+    }
+
     /// <summary>
-    ///     <para> Convenience function for straightforward audio init for the common case. </para>
-    ///     <para>
-    ///         If all your app intends to do is provide a single source of PCM audio, this function allows you to do all your
-    ///         audio setup in a single call.
-    ///     </para>
-    ///     <para> This is also intended to be a clean means to migrate apps from SDL2. </para>
-    ///     <para>
-    ///         This function will open an audio device, create a stream and bind it. Unlike other methods of setup, the audio
-    ///         device will be closed when this stream is destroyed, so the app can treat the returned SDL_AudioStream as the only
-    ///         object needed to manage audio playback.
-    ///     </para>
-    ///     <para>
-    ///         Also unlike other functions, the audio device begins paused. This is to map more closely to SDL2-style behavior,
-    ///         since there is no extra step here to bind a stream to begin audio flowing. The audio device should be resumed with
-    ///         <c> ResumeAudioStreamDevice(stream); </c>
-    ///     </para>
-    ///     <para> This function works with both playback and recording devices. </para>
-    ///     <para>
-    ///         The <c> spec </c> parameter represents the app's side of the audio stream. That is, for recording audio, this
-    ///         will be the output format, and for playing audio, this will be the input format. If spec is <c> null </c>, the
-    ///         system will choose the format, and the app can use <see cref="GetAudioStreamFormat"/> to obtain this information
-    ///         later.
-    ///     </para>
-    ///     <para>
-    ///         If you don't care about opening a specific audio device, you can (and probably _should_), use
-    ///         <see cref="AudioDeviceDefaultPlayback"/> for playback and <see cref="AudioDeviceDefaultRecording"/> for recording.
-    ///     </para>
-    ///     <para>
-    ///         One can optionally provide a callback function; if <c> null </c>, the app is expected to queue audio data for
-    ///         playback (or unqueue audio data if capturing). Otherwise, the callback will begin to fire once the device is
-    ///         unpaused.
-    ///     </para>
-    ///     <para>
-    ///         Destroying the returned stream with <see cref="DestroyAudioStream"/> will also close the audio device associated
-    ///         with this stream.
-    ///     </para>
+    ///     See the native documentation above. The device picks the format (query it later with
+    ///     <see cref="GetAudioStreamFormat"/>); data is queued/dequeued manually.
     /// </summary>
-    /// <param name="devid">
-    ///     an audio device to open, or <see cref="AudioDeviceDefaultPlayback"/> or
-    ///     <see cref="AudioDeviceDefaultRecording"/>.
-    /// </param>
-    /// <param name="spec"> the audio stream's data format. Can be <c> null </c>. </param>
-    /// <param name="callback">
-    ///     a callback where the app will provide new data for playback, or receive new data for recording. Can
-    ///     be <c> null </c>, in which case the app will need to call <see cref="PutAudioStreamData(nint, byte[], int)"/> or
-    ///     <see cref="GetAudioStreamData(nint, byte[], int)"/> as necessary.
-    /// </param>
-    /// <param name="userdata">
-    ///     app-controlled pointer passed to callback. Can be <c> null </c>. Ignored if callback is
-    ///     <c> null </c>.
-    /// </param>
-    /// <returns>
-    ///     an audio stream on success, ready to use, or <c> null </c> on failure; call <see cref="GetError"/> for more
-    ///     information. When done with this stream, call <see cref="DestroyAudioStream"/> to free resources and close the device.
-    /// </returns>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="GetAudioStreamDevice"/>
-    /// <seealso cref="ResumeAudioStreamDevice"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_OpenAudioDeviceStream"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint OpenAudioDeviceStream(uint devid,
-        nint spec,
-        AudioStreamCallback? callback,
-        nint userdata);
+    public static unsafe AudioStreamHandle OpenAudioDeviceStream(AudioDeviceID devid)
+        => OpenAudioDeviceStreamCore(devid, null, null);
+
+    /// <summary> See the native documentation above. Data is queued/dequeued manually (no callback). </summary>
+    public static unsafe AudioStreamHandle OpenAudioDeviceStream(AudioDeviceID devid, in AudioSpec spec)
+    {
+        fixed (AudioSpec* specPtr = &spec) return OpenAudioDeviceStreamCore(devid, specPtr, null);
+    }
+
+    /// <summary>
+    ///     See the native documentation above. The callback is rooted by the wrapper until the stream
+    ///     is destroyed via <see cref="DestroyAudioStream"/> (or the callback is replaced through the
+    ///     stream callback setters).
+    /// </summary>
+    public static unsafe AudioStreamHandle OpenAudioDeviceStream(AudioDeviceID devid, AudioStreamCallback callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return OpenAudioDeviceStreamCore(devid, null, new PlainAudioStreamInvoker(callback));
+    }
+
+    /// <inheritdoc cref="OpenAudioDeviceStream(AudioDeviceID, AudioStreamCallback)"/>
+    public static unsafe AudioStreamHandle OpenAudioDeviceStream(AudioDeviceID devid,
+        in AudioSpec spec,
+        AudioStreamCallback callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        fixed (AudioSpec* specPtr = &spec)
+            return OpenAudioDeviceStreamCore(devid, specPtr, new PlainAudioStreamInvoker(callback));
+    }
+
+    /// <summary> Context-carrying variant of <see cref="OpenAudioDeviceStream(AudioDeviceID, AudioStreamCallback)"/> (no boxing, no closure). </summary>
+    public static unsafe AudioStreamHandle OpenAudioDeviceStream<T>(AudioDeviceID devid,
+        AudioStreamCallback<T> callback,
+        T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return OpenAudioDeviceStreamCore(devid, null, new StatefulAudioStreamInvoker<T>(callback, state));
+    }
+
+    /// <inheritdoc cref="OpenAudioDeviceStream{T}(AudioDeviceID, AudioStreamCallback{T}, T)"/>
+    public static unsafe AudioStreamHandle OpenAudioDeviceStream<T>(AudioDeviceID devid,
+        in AudioSpec spec,
+        AudioStreamCallback<T> callback,
+        T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        fixed (AudioSpec* specPtr = &spec)
+            return OpenAudioDeviceStreamCore(devid, specPtr, new StatefulAudioStreamInvoker<T>(callback, state));
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallback callback, void *userdata);</code>
     /// <summary>
@@ -1773,8 +2025,43 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAudioPostmixCallback"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetAudioPostmixCallback(uint devid, AudioPostmixCallback? callback, nint userdata);
+    private static unsafe partial byte SDL_SetAudioPostmixCallback(AudioDeviceID devid,
+        delegate* unmanaged[Cdecl]<nint, AudioSpec*, float*, int, void> callback,
+        nint userdata);
+
+    /// <summary>
+    ///     See the native documentation above. The delegate is rooted by the wrapper until replaced or
+    ///     cleared with null (the native setter blocks until any in-flight callback returns, so
+    ///     replacement is race-free).
+    /// </summary>
+    public static unsafe bool SetAudioPostmixCallback(AudioDeviceID devid, AudioPostmixCallback? callback)
+    {
+        var invoker = callback is null ? null : new PlainAudioPostmixInvoker(callback);
+        var handle = invoker is null ? default : GCHandle.Alloc(invoker);
+
+        var ok = SDL_SetAudioPostmixCallback(devid,
+            invoker is null ? null : &AudioPostmixThunk,
+            invoker is null ? 0 : GCHandle.ToIntPtr(handle)) != 0;
+
+        if (ok) CommitAudioCallback(audioPostmixCallbacks, devid, handle, invoker is not null);
+        else if (invoker is not null) handle.Free();
+
+        return ok;
+    }
+
+    /// <summary> Context-carrying variant of <see cref="SetAudioPostmixCallback(uint, AudioPostmixCallback?)"/> (no boxing, no closure). </summary>
+    public static unsafe bool SetAudioPostmixCallback<T>(AudioDeviceID devid, AudioPostmixCallback<T> callback, T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var handle = GCHandle.Alloc(new StatefulAudioPostmixInvoker<T>(callback, state));
+        var ok = SDL_SetAudioPostmixCallback(devid, &AudioPostmixThunk, GCHandle.ToIntPtr(handle)) != 0;
+
+        if (ok) CommitAudioCallback(audioPostmixCallbacks, devid, handle, true);
+        else handle.Free();
+
+        return ok;
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len);</code>
     /// <summary>
@@ -1851,7 +2138,7 @@ public static partial class SDL
     /// <seealso cref="LoadWAV"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadWAV_IO"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool LoadWAVIO(nint src,
+    public static partial bool LoadWAVIO(IOStreamHandle src,
         [MarshalAs(UnmanagedType.I1)] bool closeio,
         out AudioSpec spec,
         out nint audioBuf,
@@ -1927,7 +2214,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_MixAudio"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool MixAudio(nint dst, nint src, AudioFormat format, uint len, float volume);
+    public static partial bool MixAudio(nint dst, IOStreamHandle src, AudioFormat format, uint len, float volume);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data, int src_len, const SDL_AudioSpec *dst_spec, Uint8 **dst_data, int *dst_len);</code>
     /// <summary>
@@ -1959,7 +2246,7 @@ public static partial class SDL
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool ConvertAudioSamples(in AudioSpec srcSpec,
-        nint srcData,
+        IOStreamHandle srcData,
         int srcLen,
         in AudioSpec dstSpec,
         out nint dstData,

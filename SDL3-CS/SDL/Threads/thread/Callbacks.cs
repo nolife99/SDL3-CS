@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -23,30 +23,32 @@
 
 #endregion
 
-namespace SDL3;
+// This file is an altered version (storybrew fork): thread callbacks are fully managed delegates
+// (state is captured by closure); native thunking and rooting live in PInvoke.cs.
 
-using System.Runtime.InteropServices;
+namespace SDL3;
 
 public static partial class SDL
 {
     /// <code>typedef int (SDLCALL * SDL_ThreadFunction) (void *data);</code>
     /// <summary>
-    ///     <para> The function passed to <see cref="CreateThread"/> as the new thread's entry point. </para>
+    /// <para> The function passed to <see cref="CreateThread"/> as the new thread's entry point. </para>
+    /// <para>
+    /// Exceptions never propagate into native SDL: they are routed to
+    /// <see cref="UnhandledCallbackException"/> and the thread reports -1.
+    /// </para>
     /// </summary>
-    /// <param name="data"> what was passed as <c> data </c> to <see cref="CreateThread"/>. </param>
     /// <returns> a value that can be reported through <see cref="WaitThread"/>. </returns>
     /// <since> This datatype is available since SDL 3.2.0 </since>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int ThreadFunction(nint data);
+    public delegate int ThreadFunction();
 
     /// <code>typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);</code>
     /// <summary>
-    ///     <para> The callback used to cleanup data passed to <see cref="SetTLS"/>. </para>
-    ///     <para> This is called when a thread exits, to allow an app to free any resources. </para>
+    /// <para> The callback used to cleanup data passed to <see cref="SetTLS"/>. </para>
+    /// <para> This is called when a thread exits, to allow an app to free any resources. </para>
     /// </summary>
     /// <param name="value"> a pointer previously handed to <see cref="SetTLS"/>. </param>
     /// <since> This datatype is available since SDL 3.2.0 </since>
     /// <seealso cref="SetTLS"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void TLSDestructorCallback(nint value);
 }

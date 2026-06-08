@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,11 +25,35 @@
 
 namespace SDL3;
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
+    // Watch registrations stay rooted here for as long as SDL holds the native pair; also guards the
+    // event-filter root. (Previously the delegates were marshaled per call and rooted by NOTHING — a
+    // watch could be collected while SDL still invoked its thunk.)
+    static readonly Dictionary<EventFilter, GCHandle> eventWatches = new();
+    static GCHandle eventFilterHandle;
+
+    /// <summary>The one native-callable event filter; the managed delegate travels in userdata.</summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe byte EventFilterThunk(nint userdata, Event* @event)
+    {
+        try
+        {
+            var filter = (EventFilter)GCHandle.FromIntPtr(userdata).Target!;
+            return filter(in Unsafe.AsRef<Event>(@event)) ? (byte)1 : (byte)0;
+        }
+        catch (Exception exception)
+        {
+            // Never unwind into native SDL; permitting the event is the conservative default.
+            ReportCallbackException(exception);
+            return 1;
+        }
+    }
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_PumpEvents(void);</code>
     /// <summary>
     /// <para> Pump the event loop, gathering events from the input devices. </para>
@@ -246,7 +270,7 @@ public static partial class SDL
     ///     while (SDL.PollEvent(out var e)) {  // poll until all events are handled!
     ///         // decide what to do with this event.
     ///     }
-    ///
+    /// 
     /// // update game state, draw the current frame
     /// }
     /// </code>
@@ -389,8 +413,34 @@ public static partial class SDL
     /// <seealso cref="PeepEvents(nint, int, EventAction, uint, uint)"/>
     /// <seealso cref="PushEvent"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetEventFilter"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void SetEventFilter(EventFilter filter, nint userdata);
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial void SDL_SetEventFilter(delegate* unmanaged[Cdecl]<nint, Event*, byte> filter,
+        nint userdata);
+
+    /// <summary>
+    ///     See the native documentation above. Pass <c> null </c> to clear the filter. The delegate is
+    ///     rooted by the wrapper until replaced, so it can never be collected behind SDL's back.
+    /// </summary>
+    public static unsafe void SetEventFilter(EventFilter? filter)
+    {
+        GCHandle previous;
+        lock (eventWatches)
+        {
+            previous = eventFilterHandle;
+            if (filter is null)
+            {
+                eventFilterHandle = default;
+                SDL_SetEventFilter(null, 0);
+            }
+            else
+            {
+                eventFilterHandle = GCHandle.Alloc(filter);
+                SDL_SetEventFilter(&EventFilterThunk, GCHandle.ToIntPtr(eventFilterHandle));
+            }
+        }
+
+        if (previous.IsAllocated) previous.Free();
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata);</code>
     /// <summary>
@@ -407,9 +457,23 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="SetEventFilter"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetEventFilter"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetEventFilter(out EventFilter filter, out nint userdata);
+    private static partial bool SDL_GetEventFilter(out nint filter, out nint userdata);
+
+    /// <summary>
+    ///     Query the current event filter. Returns false when none is set, or when the native filter was
+    ///     not installed through this wrapper (and therefore has no managed identity).
+    /// </summary>
+    public static unsafe bool GetEventFilter(out EventFilter? filter)
+    {
+        filter = null;
+        if (!SDL_GetEventFilter(out var native, out var userdata)) return false;
+        if (native != (nint)(delegate* unmanaged[Cdecl]<nint, Event*, byte>)&EventFilterThunk) return false;
+
+        filter = (EventFilter?)GCHandle.FromIntPtr(userdata).Target;
+        return filter is not null;
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void *userdata);</code>
     /// <summary>
@@ -434,9 +498,35 @@ public static partial class SDL
     /// <seealso cref="RemoveEventWatch"/>
     /// <seealso cref="SetEventFilter"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddEventWatch"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool AddEventWatch(EventFilter filter, nint userdata);
+    private static unsafe partial bool SDL_AddEventWatch(delegate* unmanaged[Cdecl]<nint, Event*, byte> filter,
+        nint userdata);
+
+    /// <summary>
+    ///     See the native documentation above. The delegate is rooted by the wrapper until
+    ///     <see cref="RemoveEventWatch"/> is called with the same instance. Adding an instance that is
+    ///     already watching is a no-op.
+    /// </summary>
+    public static unsafe bool AddEventWatch(EventFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        lock (eventWatches)
+        {
+            if (eventWatches.ContainsKey(filter)) return true;
+
+            var handle = GCHandle.Alloc(filter);
+            if (!SDL_AddEventWatch(&EventFilterThunk, GCHandle.ToIntPtr(handle)))
+            {
+                handle.Free();
+                return false;
+            }
+
+            eventWatches.Add(filter, handle);
+            return true;
+        }
+    }
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_RemoveEventWatch(SDL_EventFilter filter, void *userdata);</code>
     /// <summary>
@@ -449,8 +539,26 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="AddEventWatch"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_RemoveEventWatch"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void RemoveEventWatch(EventFilter filter, nint userdata);
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial void SDL_RemoveEventWatch(delegate* unmanaged[Cdecl]<nint, Event*, byte> filter,
+        nint userdata);
+
+    /// <summary>
+    ///     Remove an event watch added with <see cref="AddEventWatch"/>, identified by the same delegate
+    ///     instance, and release its root.
+    /// </summary>
+    public static unsafe void RemoveEventWatch(EventFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        lock (eventWatches)
+        {
+            if (!eventWatches.Remove(filter, out var handle)) return;
+
+            SDL_RemoveEventWatch(&EventFilterThunk, GCHandle.ToIntPtr(handle));
+            handle.Free();
+        }
+    }
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter, void *userdata);</code>
     /// <summary>
@@ -466,9 +574,77 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="GetEventFilter"/>
     /// <seealso cref="SetEventFilter"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_FilterEvents"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void FilterEvents(EventFilter filter, nint userdata);
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_FilterEvents"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial void SDL_FilterEvents(delegate* unmanaged[Cdecl]<nint, Event*, byte> filter,
+        nint userdata);
+
+    /// <summary>
+    ///     See the native documentation above. The filter only runs during this call, so its root is
+    ///     scoped to the call.
+    /// </summary>
+    public static unsafe void FilterEvents(EventFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var handle = GCHandle.Alloc(filter);
+        try
+        {
+            SDL_FilterEvents(&EventFilterThunk, GCHandle.ToIntPtr(handle));
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
+
+    // The typed state lives in this generic class field: no boxing, no closure capture. Only the
+    // call-scoped FilterEvents offers the stateful form — watch/filter registrations are identified by
+    // their delegate instance, which a shared static lambda would break.
+    sealed class StatefulEventFilterInvoker<T>(EventFilter<T> filter, T state) : IEventFilterInvoker
+    {
+        public bool Invoke(ref readonly Event @event) => filter(state, in @event);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe byte EventFilterContextThunk(nint userdata, Event* @event)
+    {
+        try
+        {
+            return ((IEventFilterInvoker)GCHandle.FromIntPtr(userdata).Target!).Invoke(in Unsafe.AsRef<Event>(@event))
+                ? (byte)1
+                : (byte)0;
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 1;
+        }
+    }
+
+    interface IEventFilterInvoker
+    {
+        bool Invoke(ref readonly Event @event);
+    }
+
+    /// <summary>
+    ///     Stateful variant of <see cref="FilterEvents(EventFilter)"/>: <paramref name="state"/> reaches
+    ///     the filter without boxing or closure captures — use a static lambda.
+    /// </summary>
+    public static unsafe void FilterEvents<T>(EventFilter<T> filter, T state)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var handle = GCHandle.Alloc(new StatefulEventFilterInvoker<T>(filter, state));
+        try
+        {
+            SDL_FilterEvents(&EventFilterContextThunk, GCHandle.ToIntPtr(handle));
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
+
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetEventEnabled(Uint32 type, bool enabled);</code>
     /// <summary> Set the state of processing events by type. </summary>

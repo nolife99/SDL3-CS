@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,132 +25,163 @@
 
 namespace SDL3;
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
- /// <code>extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file, int line) SDL_ANALYZER_NORETURN;</code>
- /// <summary>
- ///     <para> Never call this directly. </para> <para> Use the SDL_assert macros instead. </para>
- /// </summary>
- /// <param name="data"> assert data structure. </param>
- /// <param name="func"> function name. </param>
- /// <param name="file"> file name. </param>
- /// <param name="line"> line number. </param>
- /// <returns> assert state. </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_ReportAssertion"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    /// <code>extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file, int line) SDL_ANALYZER_NORETURN;</code>
+    /// <summary>
+    /// <para> Never call this directly. </para> <para> Use the SDL_assert macros instead. </para>
+    /// </summary>
+    /// <param name="data"> assert data structure. </param>
+    /// <param name="func"> function name. </param>
+    /// <param name="file"> file name. </param>
+    /// <param name="line"> line number. </param>
+    /// <returns> assert state. </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_ReportAssertion"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial AssertState ReportAssertion(nint data,
         [MarshalAs(UnmanagedType.LPUTF8Str)] string func,
         [MarshalAs(UnmanagedType.LPUTF8Str)] string file,
         int line);
 
- /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetAssertionHandler(SDL_AssertionHandler handler, void *userdata);</code>
- /// <summary>
- ///     <para> Set an application-defined assertion handler. </para>
- ///     <para>
- ///         This function allows an application to show its own assertion UI and/or force the response to an assertion
- ///         failure. If the application doesn't provide this, SDL will try to do the right thing, popping up a system-specific
- ///         GUI dialog, and probably minimizing any fullscreen windows.
- ///     </para>
- ///     <para>
- ///         This callback may fire from any thread, but it runs wrapped in a mutex, so it will only fire from one thread at a
- ///         time.
- ///     </para>
- ///     <para> This callback is NOT reset to SDL's internal handler upon <see cref="Quit"/>! </para>
- /// </summary>
- /// <param name="handler">
- ///     the <see cref="AssertionHandler"/> function to call when an assertion fails or <c> null </c> for the
- ///     default handler.
- /// </param>
- /// <param name="userdata"> a pointer that is passed to <c> handler </c>. </param>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="GetAssertionHandler"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAssertionHandler"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void SetAssertionHandler(AssertionHandler handler, nint userdata);
+    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetAssertionHandler(SDL_AssertionHandler handler, void *userdata);</code>
+    /// <summary>
+    /// <para> Set an application-defined assertion handler. </para>
+    /// <para>
+    /// This function allows an application to show its own assertion UI and/or force the response to an assertion failure.
+    /// If the application doesn't provide this, SDL will try to do the right thing, popping up a system-specific GUI dialog, and
+    /// probably minimizing any fullscreen windows.
+    /// </para>
+    /// <para>
+    /// This callback may fire from any thread, but it runs wrapped in a mutex, so it will only fire from one thread at a
+    /// time.
+    /// </para>
+    /// <para> This callback is NOT reset to SDL's internal handler upon <see cref="Quit"/>! </para>
+    /// </summary>
+    /// <param name="handler">
+    /// the <see cref="AssertionHandler"/> function to call when an assertion fails or <c> null </c> for the
+    /// default handler.
+    /// </param>
+    /// <param name="userdata"> a pointer that is passed to <c> handler </c>. </param>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="GetAssertionHandler"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetAssertionHandler"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial void SDL_SetAssertionHandler(
+        delegate* unmanaged[Cdecl]<NativeAssertData*, nint, AssertState> handler,
+        nint userdata);
 
- /// <code>extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(void);</code>
- /// <summary>
- ///     <para> Get the default assertion handler. </para>
- ///     <para>
- ///         This returns the function pointer that is called by default when an assertion is triggered. This is an internal
- ///         function provided by SDL, that is used for assertions when <see cref="SetAssertionHandler"/> hasn't been used to
- ///         provide a different function.
- ///     </para>
- /// </summary>
- /// <returns> the default <see cref="AssertionHandler"/> that is called when an assert triggers. </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="GetAssertionHandler"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDefaultAssertionHandler"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial AssertionHandler GetDefaultAssertionHandler();
+    /// <summary>Mirror of the native SDL_AssertData (the managed <see cref="AssertData"/> holds strings).</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeAssertData
+    {
+        public byte AlwaysIgnore;
+        public uint TriggerCount;
+        public nint Condition;
+        public nint Filename;
+        public int Linenum;
+        public nint Function;
+        public nint Next;
+    }
 
- /// <code>extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puserdata);</code>
- /// <summary>
- ///     <para> Get the current assertion handler. </para>
- ///     <para>
- ///         This returns the function pointer that is called when an assertion is triggered. This is either the value last
- ///         passed to <see cref="SetAssertionHandler"/>, or if no application-specified function is set, is equivalent to
- ///         calling <see cref="GetDefaultAssertionHandler"/>.
- ///     </para>
- ///     <para>
- ///         The parameter <c> puserdata </c> is a pointer to a void*, which will store the "userdata" pointer that was passed
- ///         to <see cref="SetAssertionHandler"/>. This value will always be <c> null </c> for the default handler. If you don't
- ///         care about this data, it is safe to pass a <c> null </c> pointer to this function to ignore it.
- ///     </para>
- /// </summary>
- /// <param name="puserdata">
- ///     pointer which is filled with the "userdata" pointer that was passed to
- ///     <see cref="SetAssertionHandler"/>.
- /// </param>
- /// <returns> the <see cref="AssertionHandler"/> that is called when an assert triggers. </returns>
- /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="SetAssertionHandler"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAssertionHandler"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial AssertionHandler GetAssertionHandler(nint puserdata);
+    // Rooted for as long as native SDL can invoke it (note: NOT reset by SDL.Quit).
+    static AssertionHandler? assertionHandler;
 
- /// <code>extern SDL_DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);</code>
- /// <summary>
- ///     <para> Get a list of all assertion failures. </para>
- ///     <para>
- ///         This function gets all assertions triggered since the last call to <see cref="ResetAssertionReport"/>, or the
- ///         start of the program.
- ///     </para>
- ///     <para> The proper way to examine this data looks something like this: </para>
- ///     <code>const SDL_AssertData *item = SDL_GetAssertionReport();
- /// while (item) {
- ///    printf("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\\n",
- ///           item->condition, item->function, item->filename,
- ///           item->linenum, item->trigger_count,
- ///           item->always_ignore ? "yes" : "no");
- ///    item = item->next;</code>
- /// </summary>
- /// <returns>
- ///     a list of all failed assertions or <c> null </c> if the list is empty. This memory should not be modified or freed
- ///     by the application. This pointer remains valid until the next call to <see cref="Quit"/> or
- ///     <see cref="ResetAssertionReport"/>.
- /// </returns>
- /// <threadsafety>
- ///     This function is not thread safe. Other threads calling <see cref="ResetAssertionReport"/> simultaneously,
- ///     may render the returned pointer invalid.
- /// </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="ResetAssertionReport"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAssertionReport"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetAssertionReport();
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe AssertState AssertionThunk(NativeAssertData* data, nint userdata)
+    {
+        try
+        {
+            var handler = assertionHandler;
+            if (handler is null) return AssertState.Abort;
 
- /// <code>extern SDL_DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);</code>
- /// <summary>
- ///     <para> Clear the list of all assertion failures. </para>
+            // Assertions are exceptional; materializing strings here is fine.
+            AssertData managed = new()
+            {
+                AlwaysIgonre = data->AlwaysIgnore != 0,
+                TriggerCount = data->TriggerCount,
+                Condition = Marshal.PtrToStringUTF8(data->Condition)!,
+                Filename = Marshal.PtrToStringUTF8(data->Filename)!,
+                Lineum = data->Linenum,
+                Function = Marshal.PtrToStringUTF8(data->Function)!
+            };
+
+            return handler(in managed);
+        }
+        catch (Exception exception)
+        {
+            // A handler that itself failed cannot make a safety decision; abort is the honest answer.
+            ReportCallbackException(exception);
+            return AssertState.Abort;
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. Pass <c> null </c> to restore SDL's default handler. The
+    ///     delegate is rooted by the wrapper until replaced (SDL does not reset it on <see cref="Quit"/>).
+    /// </summary>
+    public static unsafe void SetAssertionHandler(AssertionHandler? handler)
+    {
+        assertionHandler = handler;
+        if (handler is null) SDL_SetAssertionHandler((delegate* unmanaged[Cdecl]<NativeAssertData*, nint, AssertState>)(void*)SDL_GetDefaultAssertionHandler(), 0);
+        else SDL_SetAssertionHandler(&AssertionThunk, 0);
+    }
+
+    /// <summary>The current managed assertion handler, or <c> null </c> when SDL's default is active.</summary>
+    public static AssertionHandler? GetAssertionHandler() => assertionHandler;
+
+    /// <code>extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(void);</code>
+    /// <summary>
+    /// <para> Get the default assertion handler. </para>
+    /// <para>
+    /// This returns the function pointer that is called by default when an assertion is triggered. This is an internal
+    /// function provided by SDL, that is used for assertions when <see cref="SetAssertionHandler"/> hasn't been used to provide a
+    /// different function.
+    /// </para>
+    /// </summary>
+    /// <returns> the default <see cref="AssertionHandler"/> that is called when an assert triggers. </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="GetAssertionHandler"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetDefaultAssertionHandler"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial nint SDL_GetDefaultAssertionHandler();
+
+    /// <code>extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puserdata);</code>
+    /// <summary>
+    /// <para> Get the current assertion handler. </para>
+    /// <para>
+    /// This returns the function pointer that is called when an assertion is triggered. This is either the value last passed
+    /// to <see cref="SetAssertionHandler"/>, or if no application-specified function is set, is equivalent to calling
+    /// <see cref="GetDefaultAssertionHandler"/>.
+    /// </para>
+    /// <para>
+    /// The parameter <c> puserdata </c> is a pointer to a void*, which will store the "userdata" pointer that was passed to
+    /// <see cref="SetAssertionHandler"/>. This value will always be <c> null </c> for the default handler. If you don't care about
+    /// this data, it is safe to pass a <c> null </c> pointer to this function to ignore it.
+    /// </para>
+    /// </summary>
+    /// <param name="puserdata">
+    /// pointer which is filled with the "userdata" pointer that was passed to
+    /// <see cref="SetAssertionHandler"/>.
+    /// </param>
+    /// <returns> the <see cref="AssertionHandler"/> that is called when an assert triggers. </returns>
+    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="SetAssertionHandler"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetAssertionHandler"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static partial nint SDL_GetAssertionHandler(nint puserdata);
+
+    /// <code>extern SDL_DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);</code>
+    /// <summary>
+    /// <para> Get a list of all assertion failures. </para>
  ///     <para>
  ///         This function will clear the list of all assertions triggered up to that point. Immediately following this call,
  ///         <see cref="GetAssertionReport"/> will return no items. In addition, any previously-triggered assertions will be

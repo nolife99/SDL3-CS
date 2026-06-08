@@ -66,7 +66,7 @@ public static partial class SDL
     ///     </para>
     /// </summary>
     /// <since> This macro is available since SDL 3.2.0 </since>
-    public const uint AudioDeviceDefaultPlayback = 0xFFFFFFFFu;
+    public static AudioDeviceID AudioDeviceDefaultPlayback => AudioDeviceID.DefaultPlayback;
 
     /// <summary>
     ///     <para> A value used to request a default recording audio device. </para>
@@ -76,5 +76,5 @@ public static partial class SDL
     ///     </para>
     /// </summary>
     /// <since> This macro is available since SDL 3.2.0 </since>
-    public const uint AudioDeviceDefaultRecording = 0xFFFFFFFEu;
+    public static AudioDeviceID AudioDeviceDefaultRecording => AudioDeviceID.DefaultRecording;
 }

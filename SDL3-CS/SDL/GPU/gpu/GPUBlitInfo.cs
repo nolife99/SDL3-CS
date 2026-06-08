@@ -53,13 +53,19 @@ public static partial class SDL
         /// <summary> The filter mode used when blitting. </summary>
         public GPUFilter Filter;
 
-        /// <summary> true cycles the destination texture if it is already bound. </summary>
-        public byte Cycle;
+        byte _cycle;
 
         byte _padding1;
 
         byte _padding2;
 
         byte _padding3;
+
+        /// <summary> true cycles the destination texture if it is already bound. </summary>
+        public bool Cycle
+        {
+            get => _cycle > 0;
+            set => _cycle = (byte)(value ? 1 : 0);
+        }
     }
 }

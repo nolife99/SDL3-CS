@@ -39,19 +39,19 @@ public static partial class SDL
     public struct GPUColorTargetBlendState
     {
         /// <summary> The value to be multiplied by the source RGB value. </summary>
-        public GPUBlendFactor SrcColorBlendfactor;
+        public GPUBlendFactor SrcColorBlendFactor;
 
         /// <summary> The value to be multiplied by the destination RGB value. </summary>
-        public GPUBlendFactor DstColorBlendfactor;
+        public GPUBlendFactor DstColorBlendFactor;
 
         /// <summary> The blend operation for the RGB components. </summary>
         public GPUBlendOp ColorBlendOp;
 
         /// <summary> The value to be multiplied by the source alpha. </summary>
-        public GPUBlendFactor SrcAlphaBlendfactor;
+        public GPUBlendFactor SrcAlphaBlendFactor;
 
         /// <summary> The value to be multiplied by the destination alpha. </summary>
-        public GPUBlendFactor DstAlphaBlendfactor;
+        public GPUBlendFactor DstAlphaBlendFactor;
 
         /// <summary> The blend operation for the alpha component. </summary>
         public GPUBlendOp AlphaBlendOp;
@@ -62,14 +62,26 @@ public static partial class SDL
         /// </summary>
         public GPUColorComponentFlags ColorWriteMask;
 
-        /// <summary> Whether blending is enabled for the color target. </summary>
-        public byte EnableBlend;
+        byte _enableBlend;
 
-        /// <summary> Whether the color write mask is enabled. </summary>
-        public byte EnableColorWriteMask;
+        byte _enableColorWriteMask;
 
         byte _padding1;
 
         byte _padding2;
+
+        /// <summary> Whether blending is enabled for the color target. </summary>
+        public bool EnableBlend
+        {
+            get => _enableBlend > 0;
+            set => _enableBlend = (byte)(value ? 1 : 0);
+        }
+
+        /// <summary> Whether the color write mask is enabled. </summary>
+        public bool EnableColorWriteMask
+        {
+            get => _enableColorWriteMask > 0;
+            set => _enableColorWriteMask = (byte)(value ? 1 : 0);
+        }
     }
 }

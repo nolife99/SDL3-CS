@@ -109,14 +109,26 @@ public static partial class SDL
         /// </summary>
         public uint ResolveLayer;
 
-        /// <summary> true cycles the texture if the texture is bound and load_op is not LOAD </summary>
-        public byte Cycle;
+        byte _cycle;
 
-        /// <summary> true cycles the resolve texture if the resolve texture is bound. Ignored if a RESOLVE* store_op is not used. </summary>
-        public byte CycleResolveTexture;
+        byte _cycleResolveTexture;
 
         byte _padding1;
 
         byte _padding2;
+
+        /// <summary> true cycles the texture if the texture is bound and load_op is not LOAD </summary>
+        public bool Cycle
+        {
+            get => _cycle > 0;
+            set => _cycle = (byte)(value ? 1 : 0);
+        }
+
+        /// <summary> true cycles the resolve texture if the resolve texture is bound. Ignored if a RESOLVE* store_op is not used. </summary>
+        public bool CycleResolveTexture
+        {
+            get => _cycleResolveTexture > 0;
+            set => _cycleResolveTexture = (byte)(value ? 1 : 0);
+        }
     }
 }

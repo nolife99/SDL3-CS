@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* SDL3# - C# Wrapper for SDL3
  *
@@ -30,19 +30,20 @@
 
 namespace SDL3;
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 public static partial class SDL
 {
- /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_HasMouse(void);</code>
- /// <summary> Return whether a mouse is currently connected. </summary>
- /// <returns> <c> true </c> if a mouse is connected, <c> false </c> otherwise. </returns>
- /// <threadsafety> This function should only be called on the main thread. </threadsafety>
- /// <since> This function is available since SDL 3.2.0 </since>
- /// <seealso cref="GetMice"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_HasMouse"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-  MethodImpl(MethodImplOptions.AggressiveInlining)]
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_HasMouse(void);</code>
+    /// <summary> Return whether a mouse is currently connected. </summary>
+    /// <returns> <c> true </c> if a mouse is connected, <c> false </c> otherwise. </returns>
+    /// <threadsafety> This function should only be called on the main thread. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="GetMice"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_HasMouse"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
+     MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool HasMouse();
 
@@ -52,16 +53,16 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_MouseID * SDLCALL SDL_GetMice(int *count);</code>
     /// <summary>
-    ///     <para> Get a list of currently connected mice. </para>
-    ///     <para>
-    ///         Note that this will include any device or virtual driver that includes mouse functionality, including some game
-    ///         controllers, KVM switches, etc. You should wait for input from a device before you consider it actively in use.
-    ///     </para>
+    /// <para> Get a list of currently connected mice. </para>
+    /// <para>
+    /// Note that this will include any device or virtual driver that includes mouse functionality, including some game
+    /// controllers, KVM switches, etc. You should wait for input from a device before you consider it actively in use.
+    /// </para>
     /// </summary>
     /// <param name="count"> a pointer filled in with the number of mice returned, may be <c> null </c>. </param>
     /// <returns>
-    ///     a 0 terminated array of mouse instance IDs or <c> null </c> on failure; call <see cref="GetError"/> for more
-    ///     information. This should be freed with <see cref="Free"/> when it is no longer needed.
+    /// a 0 terminated array of mouse instance IDs or <c> null </c> on failure; call <see cref="GetError"/> for more
+    /// information. This should be freed with <see cref="Free"/> when it is no longer needed.
     /// </returns>
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
     /// <since> This function is available since SDL 3.2.0 </since>
@@ -87,7 +88,7 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID instance_id);</code>
     /// <summary>
-    ///     <para> Get the name of a mouse. </para> <para> This function returns "" if the mouse doesn't have a name. </para>
+    /// <para> Get the name of a mouse. </para> <para> This function returns "" if the mouse doesn't have a name. </para>
     /// </summary>
     /// <param name="instanceId"> the mouse instance ID. </param>
     /// <returns> the name of the selected mouse, or <c> null </c> on failure; call <see cref="GetError"/> for more information. </returns>
@@ -111,17 +112,17 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);</code>
     /// <summary>
-    ///     <para> Query SDL's cache for the synchronous mouse button state and the window-relative SDL-cursor position. </para>
-    ///     <para> This function returns the cached synchronous state as SDL understands it from the last pump of the event queue. </para>
-    ///     <para> To query the platform for immediate asynchronous state, use <see cref="GetGlobalMouseState"/>. </para>
+    /// <para> Query SDL's cache for the synchronous mouse button state and the window-relative SDL-cursor position. </para>
+    /// <para> This function returns the cached synchronous state as SDL understands it from the last pump of the event queue. </para>
+    /// <para> To query the platform for immediate asynchronous state, use <see cref="GetGlobalMouseState"/>. </para>
     /// </summary>
     /// <param name="x">
-    ///     a pointer to receive the SDL-cursor's x-position from the focused window's top left corner, can be
-    ///     <c> null </c> if unused.
+    /// a pointer to receive the SDL-cursor's x-position from the focused window's top left corner, can be
+    /// <c> null </c> if unused.
     /// </param>
     /// <param name="y">
-    ///     a pointer to receive the SDL-cursor's y-position from the focused window's top left corner, can be
-    ///     <c> null </c> if unused.
+    /// a pointer to receive the SDL-cursor's y-position from the focused window's top left corner, can be
+    /// <c> null </c> if unused.
     /// </param>
     /// <returns> a 32-bit bitmask of the button state that can be bitwise-compared against the <see cref="ButtonMask"/> macro. </returns>
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
@@ -134,32 +135,32 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *x, float *y);</code>
     /// <summary>
-    ///     <para> Query the platform for the asynchronous mouse button state and the desktop-relative platform-cursor position. </para>
-    ///     <para>
-    ///         This function immediately queries the platform for the most recent asynchronous state, more costly than
-    ///         retrieving SDL's cached state in <see cref="GetMouseState"/>.
-    ///     </para>
-    ///     <para>
-    ///         Passing non-NULL pointers to <c> x </c> or <c> y </c> will write the destination with respective x or y
-    ///         coordinates relative to the desktop.
-    ///     </para>
-    ///     <para>
-    ///         In Relative Mode, the platform-cursor's position usually contradicts the SDL-cursor's position as manually
-    ///         calculated from <see cref="GetMouseState"/> and <see cref="GetWindowPosition"/>.
-    ///     </para>
-    ///     <para>
-    ///         This function can be useful if you need to track the mouse outside of a specific window and
-    ///         <see cref="CaptureMouse"/> doesn't fit your needs. For example, it could be useful if you need to track the mouse
-    ///         while dragging a window, where coordinates relative to a window might not be in sync at all times.
-    ///     </para>
+    /// <para> Query the platform for the asynchronous mouse button state and the desktop-relative platform-cursor position. </para>
+    /// <para>
+    /// This function immediately queries the platform for the most recent asynchronous state, more costly than retrieving
+    /// SDL's cached state in <see cref="GetMouseState"/>.
+    /// </para>
+    /// <para>
+    /// Passing non-NULL pointers to <c> x </c> or <c> y </c> will write the destination with respective x or y coordinates
+    /// relative to the desktop.
+    /// </para>
+    /// <para>
+    /// In Relative Mode, the platform-cursor's position usually contradicts the SDL-cursor's position as manually calculated
+    /// from <see cref="GetMouseState"/> and <see cref="GetWindowPosition"/>.
+    /// </para>
+    /// <para>
+    /// This function can be useful if you need to track the mouse outside of a specific window and
+    /// <see cref="CaptureMouse"/> doesn't fit your needs. For example, it could be useful if you need to track the mouse while
+    /// dragging a window, where coordinates relative to a window might not be in sync at all times.
+    /// </para>
     /// </summary>
     /// <param name="x">
-    ///     a pointer to receive the platform-cursor's x-position from the desktop's top left corner, can be
-    ///     <c> null </c> if unused.
+    /// a pointer to receive the platform-cursor's x-position from the desktop's top left corner, can be
+    /// <c> null </c> if unused.
     /// </param>
     /// <param name="y">
-    ///     a pointer to receive the platform-cursor's y-position from the desktop's top left corner, can be
-    ///     <c> null </c> if unused.
+    /// a pointer to receive the platform-cursor's y-position from the desktop's top left corner, can be
+    /// <c> null </c> if unused.
     /// </param>
     /// <returns> a 32-bit bitmask of the button state that can be bitwise-compared against the <see cref="ButtonMask"/> macro. </returns>
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
@@ -173,22 +174,22 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float *x, float *y);</code>
     /// <summary>
-    ///     <para> Query SDL's cache for the synchronous mouse button state and accumulated mouse delta since last call. </para>
-    ///     <para> This function returns the cached synchronous state as SDL understands it from the last pump of the event queue. </para>
-    ///     <para> To query the platform for immediate asynchronous state, use <see cref="GetGlobalMouseState"/>. </para>
-    ///     <para>
-    ///         In Relative Mode, the platform-cursor's position usually contradicts the SDL-cursor's position as manually
-    ///         calculated from <see cref="GetMouseState"/> and <see cref="GetWindowPosition"/>.
-    ///     </para>
-    ///     <para>
-    ///         Passing non-NULL pointers to <c> x </c> or <c> y </c> will write the destination with respective x or y deltas
-    ///         accumulated since the last call to this function (or since event initialization).
-    ///     </para>
-    ///     <para>
-    ///         This function is useful for reducing overhead by processing relative mouse inputs in one go per-frame instead of
-    ///         individually per-event, at the expense of losing the order between events within the frame (e.g. quickly pressing
-    ///         and releasing a button within the same frame).
-    ///     </para>
+    /// <para> Query SDL's cache for the synchronous mouse button state and accumulated mouse delta since last call. </para>
+    /// <para> This function returns the cached synchronous state as SDL understands it from the last pump of the event queue. </para>
+    /// <para> To query the platform for immediate asynchronous state, use <see cref="GetGlobalMouseState"/>. </para>
+    /// <para>
+    /// In Relative Mode, the platform-cursor's position usually contradicts the SDL-cursor's position as manually calculated
+    /// from <see cref="GetMouseState"/> and <see cref="GetWindowPosition"/>.
+    /// </para>
+    /// <para>
+    /// Passing non-NULL pointers to <c> x </c> or <c> y </c> will write the destination with respective x or y deltas
+    /// accumulated since the last call to this function (or since event initialization).
+    /// </para>
+    /// <para>
+    /// This function is useful for reducing overhead by processing relative mouse inputs in one go per-frame instead of
+    /// individually per-event, at the expense of losing the order between events within the frame (e.g. quickly pressing and
+    /// releasing a button within the same frame).
+    /// </para>
     /// </summary>
     /// <param name="x"> a pointer to receive the x mouse delta accumulated since last call, can be <c> null </c> if unused. </param>
     /// <param name="y"> a pointer to receive the y mouse delta accumulated since last call, can be <c> null </c> if unused. </param>
@@ -203,15 +204,15 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window, float x, float y);</code>
     /// <summary>
-    ///     <para> Move the mouse cursor to the given position within the window. </para>
-    ///     <para>
-    ///         This function generates a mouse motion event if relative mode is not enabled. If relative mode is enabled, you
-    ///         can force mouse events for the warp by setting the <see cref="Hints.MouseRelativeWarpMotion"/> hint.
-    ///     </para>
-    ///     <para>
-    ///         Note that this function will appear to succeed, but not actually move the mouse when used over Microsoft Remote
-    ///         Desktop.
-    ///     </para>
+    /// <para> Move the mouse cursor to the given position within the window. </para>
+    /// <para>
+    /// This function generates a mouse motion event if relative mode is not enabled. If relative mode is enabled, you can
+    /// force mouse events for the warp by setting the <see cref="Hints.MouseRelativeWarpMotion"/> hint.
+    /// </para>
+    /// <para>
+    /// Note that this function will appear to succeed, but not actually move the mouse when used over Microsoft Remote
+    /// Desktop.
+    /// </para>
     /// </summary>
     /// <param name="window"> the window to move the mouse into, or <c> null </c> for the current mouse focus. </param>
     /// <param name="x"> the x coordinate within the window. </param>
@@ -225,13 +226,13 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);</code>
     /// <summary>
-    ///     <para> Move the mouse to the given position in global screen space. </para>
-    ///     <para> This function generates a mouse motion event. </para>
-    ///     <para> A failure of this function usually means that it is unsupported by a platform. </para>
-    ///     <para>
-    ///         Note that this function will appear to succeed, but not actually move the mouse when used over Microsoft Remote
-    ///         Desktop.
-    ///     </para>
+    /// <para> Move the mouse to the given position in global screen space. </para>
+    /// <para> This function generates a mouse motion event. </para>
+    /// <para> A failure of this function usually means that it is unsupported by a platform. </para>
+    /// <para>
+    /// Note that this function will appear to succeed, but not actually move the mouse when used over Microsoft Remote
+    /// Desktop.
+    /// </para>
     /// </summary>
     /// <param name="x"> the x coordinate. </param>
     /// <param name="y"> the y coordinate. </param>
@@ -246,11 +247,11 @@ public static partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback callback, void *userdata);</code>
     /// <summary>
-    ///     <para> Set a user-defined function by which to transform relative mouse inputs. </para>
-    ///     <para>
-    ///         This overrides the relative system scale and relative speed scale hints. Should be called prior to enabling
-    ///         relative mouse mode, fails otherwise.
-    ///     </para>
+    /// <para> Set a user-defined function by which to transform relative mouse inputs. </para>
+    /// <para>
+    /// This overrides the relative system scale and relative speed scale hints. Should be called prior to enabling relative
+    /// mouse mode, fails otherwise.
+    /// </para>
     /// </summary>
     /// <param name="callback"> a callback used to transform relative mouse motion, or <c> null </c> for default behavior. </param>
     /// <param name="userdata"> a pointer that will be passed to <c> callback </c>. </param>
@@ -258,9 +259,48 @@ public static partial class SDL
     /// <threadsafety> This function should only be called on the main thread. </threadsafety>
     /// <since> This function is available since SDL 3.4.0. </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetRelativeMouseTransform"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetRelativeMouseTransform(MouseMotionTransformCallback callback, nint userdata);
+    private static unsafe partial bool SDL_SetRelativeMouseTransform(
+        delegate* unmanaged[Cdecl]<nint, ulong, nint, uint, float*, float*, void> callback,
+        nint userdata);
+
+    // Rooted for as long as native SDL can invoke it. This callback runs on the realtime input thread,
+    // so the thunk does nothing beyond the dispatch and the exception barrier.
+    static MouseMotionTransformCallback? mouseMotionTransform;
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static unsafe void MouseMotionTransformThunk(nint userdata,
+        ulong timestamp,
+        nint window,
+        uint mouseId,
+        float* x,
+        float* y)
+    {
+        try
+        {
+            mouseMotionTransform?.Invoke(timestamp, window, mouseId, ref *x, ref *y);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. Pass <c> null </c> for default behavior. The delegate is
+    ///     rooted by the wrapper until replaced.
+    /// </summary>
+    public static unsafe bool SetRelativeMouseTransform(MouseMotionTransformCallback? callback)
+    {
+        var previous = mouseMotionTransform;
+        mouseMotionTransform = callback;
+
+        if (SDL_SetRelativeMouseTransform(callback is null ? null : &MouseMotionTransformThunk, 0)) return true;
+
+        mouseMotionTransform = previous;
+        return false;
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowRelativeMouseMode(SDL_Window *window, bool enabled);</code>
     /// <summary>

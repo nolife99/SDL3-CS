@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -23,41 +23,43 @@
 
 #endregion
 
+// This file is an altered version (storybrew fork): clipboard callbacks are fully managed; the data
+// provider returns a transient span that the wrapper copies into SDL-visible storage. Native thunking
+// and lifetime live in PInvoke.cs.
+
 namespace SDL3;
 
-using System.Runtime.InteropServices;
+using System;
 
 public static partial class SDL
 {
     /// <code>typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);</code>
-    /// <summary> Callback function that will be called when the clipboard is cleared, or when new data is set. </summary>
-    /// <param name="userdata"> a pointer to the provided user data. </param>
+    /// <summary>
+    /// Callback function that will be called when the clipboard is cleared, or when new data is set.
+    /// Invoked exactly once per offer; afterwards the offer's resources are released.
+    /// </summary>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="SetClipboardData"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ClipboardCleanupCallback(nint userdata);
+    /// <seealso cref="SetClipboardData(ClipboardDataCallback, ClipboardCleanupCallback, string[])"/>
+    public delegate void ClipboardCleanupCallback();
 
     /// <code>typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const char *mime_type, size_t *size);</code>
     /// <summary>
-    ///     <para> Callback function that will be called when data for the specified mime-type is requested by the OS. </para>
-    ///     <para>
-    ///         The callback function is called with <c> null </c> as the mime_type when the clipboard is cleared or new data is
-    ///         set. The clipboard is automatically cleared in <see cref="Quit()"/>.
-    ///     </para>
+    /// <para> Callback function that will be called when data for the specified mime-type is requested by the OS. </para>
+    /// <para>
+    /// The callback function is called with <c> null </c> as the mime_type when the clipboard is cleared or new data is set.
+    /// The clipboard is automatically cleared in <see cref="Quit()"/>.
+    /// </para>
+    /// <para>
+    /// The returned span is copied by the wrapper into storage that satisfies SDL's retention requirement,
+    /// so it may be transient (pooled or stack memory included). Returning an empty span sends no data —
+    /// receivers may handle that poorly, so prefer always producing data for offered mime-types.
+    /// Exceptions never propagate into native SDL: they are routed to
+    /// <see cref="UnhandledCallbackException"/> and no data is sent.
+    /// </para>
     /// </summary>
-    /// <param name="userdata"> a pointer to the provided user data. </param>
-    /// <param name="mimeType"> the requested mime-type. </param>
-    /// <param name="size"> a pointer filled in with the length of the returned data. </param>
-    /// <returns>
-    ///     a pointer to the data for the provided mime-type. Returning <c> null </c> or setting the length to 0 will cause no
-    ///     data to be sent to the "receiver". It is up to the receiver to handle this. Essentially returning no data is more or
-    ///     less undefined behavior and may cause breakage in receiving applications. The returned data will not be freed, so it
-    ///     needs to be retained and dealt with internally.
-    /// </returns>
+    /// <param name="mimeType"> the requested mime-type as transient UTF-8 bytes; empty on clear. </param>
+    /// <returns> the data for the provided mime-type. </returns>
     /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="SetClipboardData"/>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate nint ClipboardDataCallback(nint userdata,
-        [MarshalAs(UnmanagedType.LPUTF8Str)] string mimeType,
-        out nuint size);
+    /// <seealso cref="SetClipboardData(ClipboardDataCallback, ClipboardCleanupCallback, string[])"/>
+    public delegate ReadOnlySpan<byte> ClipboardDataCallback(ReadOnlySpan<byte> mimeType);
 }

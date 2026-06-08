@@ -406,7 +406,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_StartTextInputWithProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool StartTextInputWithProperties(nint window, uint props);
+    public static partial bool StartTextInputWithProperties(nint window, PropertiesID props);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_TextInputActive(SDL_Window *window);</code>
     /// <summary>

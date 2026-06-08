@@ -25,6 +25,8 @@
 
 namespace SDL3;
 
+using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 public partial class Image
@@ -47,5 +49,33 @@ public partial class Image
 
         /// <summary> An array of frame delays, in milliseconds </summary>
         public IntPtr Delays;
+    }
+
+    /// <summary>
+    ///     Opaque handle to a native <c> IMG_Animation* </c>. Unlike SDL's forward-declared handles,
+    ///     <see cref="Animation"/> is a public, layout-defined struct, so this handle exposes
+    ///     <see cref="AsRef"/> for direct (read-only-intent) field access — the same convenience
+    ///     <see cref="SurfaceHandle"/> provides.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly struct AnimationHandle(nint value) : IEquatable<AnimationHandle>
+    {
+        public readonly nint Value = value;
+
+        public static AnimationHandle Null => default;
+        public bool IsNull => Value == 0;
+
+        /// <summary> View of the animation header. Valid only while the animation is alive (before FreeAnimation). </summary>
+        public unsafe ref Animation AsRef() => ref Unsafe.AsRef<Animation>((void*)Value);
+
+        public bool Equals(AnimationHandle other) => Value == other.Value;
+        public override bool Equals(object obj) => obj is AnimationHandle other && Equals(other);
+        public override int GetHashCode() => Value.GetHashCode();
+        public override string ToString() => $"IMG_Animation*(0x{Value:x})";
+
+        public static bool operator ==(AnimationHandle left, AnimationHandle right) => left.Equals(right);
+        public static bool operator !=(AnimationHandle left, AnimationHandle right) => !left.Equals(right);
+
+        public static explicit operator nint(AnimationHandle handle) => handle.Value;
     }
 }

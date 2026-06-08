@@ -327,6 +327,19 @@ public enum EventType : uint
 
     #endregion
 
+    #region Pinch events
+
+    /// <summary> Pinch gesture started </summary>
+    PinchBegin = 0x710,
+
+    /// <summary> Pinch gesture updated </summary>
+    PinchUpdate,
+
+    /// <summary> Pinch gesture ended </summary>
+    PinchEnd,
+
+    #endregion
+
     #region Clipboard events
 
     /// <summary> The clipboard or primary selection changed </summary>

@@ -60,8 +60,8 @@ public partial class ShaderCross
         public uint ThreadCountZ;
 
         /// <summary>
-        ///     A properties ID for extensions. This is allocated and freed by the caller, and should be 0 if no extensions are
-        ///     needed.
+        /// A properties ID for extensions. This is allocated and freed by the caller, and should be 0 if no extensions are
+        /// needed.
         /// </summary>
         public uint Props;
     }

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -23,14 +23,14 @@
 
 #endregion
 
+// This file is an altered version (storybrew fork): the type is declared at namespace level
+// instead of nested in the SDL class.
+
 namespace SDL3;
 
-public static partial class SDL
+/// <summary> The predefined log priorities </summary>
+/// <since> since This enum is available since SDL 3.2.0 </since>
+public enum LogPriority
 {
-    /// <summary> The predefined log priorities </summary>
-    /// <since> since This enum is available since SDL 3.2.0 </since>
-    public enum LogPriority
-    {
-        Invalid, Trace, Verbose, Debug, Info, Warn, Error, Critical, Count
-    }
+    Invalid, Trace, Verbose, Debug, Info, Warn, Error, Critical, Count
 }

@@ -1,6 +1,7 @@
 using Android.Content.PM;
 using Org.Libsdl.App;
 using static Android.Content.PM.ConfigChanges;
+using SDL3;
 using SDL = SDL3.SDL;
 namespace AndroidCircularColorFade;
 
@@ -24,13 +25,13 @@ public class MainActivity : SDLActivity
     {
         if (!SDL.Init(SDL.InitFlags.Video))
         {
-            SDL.LogError(SDL.LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
+            SDL.LogError(LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
             return;
         }
 
         if (!SDL.CreateWindowAndRenderer("SDL3 Circular Color Fade", 800, 600, 0, out var window, out var renderer))
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
         

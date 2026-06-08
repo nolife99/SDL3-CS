@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -26,76 +26,78 @@
 namespace SDL3;
 
 using System.Buffers;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System;
 
 public unsafe partial class SDL
 {
- /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsTraySupported(void);</code>
- /// <summary>
- ///     <para> Check whether or not tray icons can be created. </para>
- ///     <para>
- ///         Note that this function does not guarantee that <see cref="CreateTray"/> will or will not work; you should still
- ///         check <see cref="CreateTray"/> for errors.
- ///     </para>
- ///     <para> Using tray icons require the video subsystem. </para>
- /// </summary>
- /// <returns> true if trays are available, false otherwise. </returns>
- /// <threadsafety>
- ///     This function should only be called on the main thread. It will return false if not called on the main
- ///     thread.
- /// </threadsafety>
- /// <returns> This function is available since SDL 3.4.0. </returns>
- /// <seealso cref="CreateTray"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsTraySupported"),
-  UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_IsTraySupported(void);</code>
+    /// <summary>
+    /// <para> Check whether or not tray icons can be created. </para>
+    /// <para>
+    /// Note that this function does not guarantee that <see cref="CreateTray"/> will or will not work; you should still
+    /// check <see cref="CreateTray"/> for errors.
+    /// </para>
+    /// <para> Using tray icons require the video subsystem. </para>
+    /// </summary>
+    /// <returns> true if trays are available, false otherwise. </returns>
+    /// <threadsafety>
+    /// This function should only be called on the main thread. It will return false if not called on the main
+    /// thread.
+    /// </threadsafety>
+    /// <returns> This function is available since SDL 3.4.0. </returns>
+    /// <seealso cref="CreateTray"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_IsTraySupported"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool IsTraySupported();
 
- /// <code>extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);</code>
- /// <summary>
- ///     <para> Create an icon to be placed in the operating system's tray, or equivalent. </para>
- ///     <para>
- ///         Many platforms advise not using a system tray unless persistence is a necessary feature. Avoid needlessly
- ///         creating a tray icon, as the user may feel like it clutters their interface.
- ///     </para>
- ///     <para> Using tray icons require the video subsystem. </para>
- /// </summary>
- /// <param name="icon"> a surface to be used as icon. May be <c> null </c>. </param>
- /// <param name="tooltip">
- ///     a tooltip to be displayed when the mouse hovers the icon in UTF-8 encoding. Not supported on all
- ///     platforms. May be <c> null </c>.
- /// </param>
- /// <returns> The newly created system tray icon. </returns>
- /// <threadsafety> This function should only be called on the main thread. </threadsafety>
- /// <since> This function is available since SDL 3.1.8. </since>
- /// <seealso cref="CreateTrayMenu"/>
- /// <seealso cref="GetTrayMenu"/>
- /// <seealso cref="DestroyTray"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateTray"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-  MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial nint CreateTray(nint icon, [MarshalAs(UnmanagedType.LPUTF8Str)] string? tooltip);
+    /// <code>extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);</code>
+    /// <summary>
+    /// <para> Create an icon to be placed in the operating system's tray, or equivalent. </para>
+    /// <para>
+    /// Many platforms advise not using a system tray unless persistence is a necessary feature. Avoid needlessly creating a
+    /// tray icon, as the user may feel like it clutters their interface.
+    /// </para>
+    /// <para> Using tray icons require the video subsystem. </para>
+    /// </summary>
+    /// <param name="icon"> a surface to be used as icon. May be <c> null </c>. </param>
+    /// <param name="tooltip">
+    /// a tooltip to be displayed when the mouse hovers the icon in UTF-8 encoding. Not supported on all
+    /// platforms. May be <c> null </c>.
+    /// </param>
+    /// <returns> The newly created system tray icon. </returns>
+    /// <threadsafety> This function should only be called on the main thread. </threadsafety>
+    /// <since> This function is available since SDL 3.1.8. </since>
+    /// <seealso cref="CreateTrayMenu"/>
+    /// <seealso cref="GetTrayMenu"/>
+    /// <seealso cref="DestroyTray"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateTray"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
+     MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static partial nint CreateTray(SurfaceHandle icon, [MarshalAs(UnmanagedType.LPUTF8Str)] string? tooltip);
 
- /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon);</code>
- /// <summary> Updates the system tray icon's icon. </summary>
- /// <param name="tray"> the tray icon to be updated. </param>
- /// <param name="icon"> the new icon. May be <c> null </c>. </param>
- /// <threadsafety> This function should be called on the thread that created the tray. </threadsafety>
- /// <since> This function is available since SDL 3.1.8. </since>
- /// <seealso cref="CreateTray"/>
- [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetTrayIcon"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-  MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void SetTrayIcon(nint tray, nint icon);
+    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon);</code>
+    /// <summary> Updates the system tray icon's icon. </summary>
+    /// <param name="tray"> the tray icon to be updated. </param>
+    /// <param name="icon"> the new icon. May be <c> null </c>. </param>
+    /// <threadsafety> This function should be called on the thread that created the tray. </threadsafety>
+    /// <since> This function is available since SDL 3.1.8. </since>
+    /// <seealso cref="CreateTray"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetTrayIcon"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
+     MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static partial void SetTrayIcon(nint tray, SurfaceHandle icon);
 
- /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip);</code>
- /// <summary> Updates the system tray icon's tooltip. </summary>
- /// <param name="tray"> the tray icon to be updated. </param>
- /// <param name="tooltip"> the new tooltip in UTF-8 encoding. May be <c> null </c>. </param>
- /// <threadsafety> This function should be called on the thread that created the tray. </threadsafety>
- /// <since> This function is available since SDL 3.1.8. </since>
- /// <seealso cref="CreateTray"/>
- public static void SetTrayTooltip(nint tray, scoped ReadOnlySpan<char> tooltip)
+    /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip);</code>
+    /// <summary> Updates the system tray icon's tooltip. </summary>
+    /// <param name="tray"> the tray icon to be updated. </param>
+    /// <param name="tooltip"> the new tooltip in UTF-8 encoding. May be <c> null </c>. </param>
+    /// <threadsafety> This function should be called on the thread that created the tray. </threadsafety>
+    /// <since> This function is available since SDL 3.1.8. </since>
+    /// <seealso cref="CreateTray"/>
+    public static void SetTrayTooltip(nint tray, scoped ReadOnlySpan<char> tooltip)
     {
         var byteCount = Encoding.UTF8.GetByteCount(tooltip) + 1;
 
@@ -123,12 +125,12 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);</code>
     /// <summary>
-    ///     <para> Create a menu for a system tray. </para> <para> This should be called at most once per tray icon. </para>
-    ///     <para>
-    ///         This function does the same thing as <see cref="CreateTraySubmenu"/>, except that it takes a SDL_Tray instead of
-    ///         a SDL_TrayEntry.
-    ///     </para>
-    ///     <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
+    /// <para> Create a menu for a system tray. </para> <para> This should be called at most once per tray icon. </para>
+    /// <para>
+    /// This function does the same thing as <see cref="CreateTraySubmenu"/>, except that it takes a SDL_Tray instead of a
+    /// SDL_TrayEntry.
+    /// </para>
+    /// <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
     /// </summary>
     /// <param name="tray"> the tray to bind the menu to. </param>
     /// <returns> the newly created menu. </returns>
@@ -143,13 +145,12 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *entry);</code>
     /// <summary>
-    ///     <para> Create a submenu for a system tray entry. </para>
-    ///     <para> This should be called at most once per tray entry. </para>
-    ///     <para>
-    ///         This function does the same thing as <see cref="CreateTrayMenu"/>, except that it takes a SDL_TrayEntry instead
-    ///         of a SDL_Tray.
-    ///     </para>
-    ///     <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
+    /// <para> Create a submenu for a system tray entry. </para> <para> This should be called at most once per tray entry. </para>
+    /// <para>
+    /// This function does the same thing as <see cref="CreateTrayMenu"/>, except that it takes a SDL_TrayEntry instead of a
+    /// SDL_Tray.
+    /// </para>
+    /// <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
     /// </summary>
     /// <param name="entry"> the tray entry to bind the menu to. </param>
     /// <returns> the newly created menu. </returns>
@@ -164,16 +165,16 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);</code>
     /// <summary>
-    ///     <para> Gets a previously created tray menu. </para>
-    ///     <para>
-    ///         You should have called <see cref="CreateTrayMenu"/> on the tray object. This function allows you to fetch it
-    ///         again later.
-    ///     </para>
-    ///     <para>
-    ///         This function does the same thing as <see cref="GetTraySubmenu"/>, except that it takes a SDL_Tray instead of a
-    ///         SDL_TrayEntry.
-    ///     </para>
-    ///     <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
+    /// <para> Gets a previously created tray menu. </para>
+    /// <para>
+    /// You should have called <see cref="CreateTrayMenu"/> on the tray object. This function allows you to fetch it again
+    /// later.
+    /// </para>
+    /// <para>
+    /// This function does the same thing as <see cref="GetTraySubmenu"/>, except that it takes a SDL_Tray instead of a
+    /// SDL_TrayEntry.
+    /// </para>
+    /// <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
     /// </summary>
     /// <param name="tray"> the tray entry to bind the menu to. </param>
     /// <returns> the newly created menu. </returns>
@@ -187,16 +188,16 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *entry);</code>
     /// <summary>
-    ///     <para> Gets a previously created tray entry submenu. </para>
-    ///     <para>
-    ///         You should have called <see cref="CreateTraySubmenu"/> on the entry object. This function allows you to fetch it
-    ///         again later.
-    ///     </para>
-    ///     <para>
-    ///         This function does the same thing as <see cref="GetTrayMenu"/>, except that it takes a SDL_TrayEntry instead of a
-    ///         SDL_Tray.
-    ///     </para>
-    ///     <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
+    /// <para> Gets a previously created tray entry submenu. </para>
+    /// <para>
+    /// You should have called <see cref="CreateTraySubmenu"/> on the entry object. This function allows you to fetch it
+    /// again later.
+    /// </para>
+    /// <para>
+    /// This function does the same thing as <see cref="GetTrayMenu"/>, except that it takes a SDL_TrayEntry instead of a
+    /// SDL_Tray.
+    /// </para>
+    /// <para> A menu does not need to be destroyed; it will be destroyed with the tray. </para>
     /// </summary>
     /// <param name="entry"> the tray entry to bind the menu to. </param>
     /// <returns> the newly created menu. </returns>
@@ -217,8 +218,8 @@ public unsafe partial class SDL
     /// <param name="menu"> The menu to get entries from. </param>
     /// <param name="size"> An optional pointer to obtain the number of entries in the menu. </param>
     /// <returns>
-    ///     a NULL-terminated list of entries within the given menu. The pointer becomes invalid when any function that
-    ///     inserts or deletes entries in the menu is called.
+    /// a NULL-terminated list of entries within the given menu. The pointer becomes invalid when any function that
+    /// inserts or deletes entries in the menu is called.
     /// </returns>
     /// <threadsafety> This function should be called on the thread that created the tray. </threadsafety>
     /// <since> This function is available since SDL 3.1.8. </since>
@@ -251,17 +252,14 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags);</code>
     /// <summary>
-    ///     <para> Insert a tray entry at a given position. </para>
-    ///     <para>
-    ///         If label is <c> null </c>, the entry will be a separator. Many functions won't work for an entry that is a
-    ///         separator.
-    ///     </para>
-    ///     <para> An entry does not need to be destroyed; it will be destroyed with the tray. </para>
+    /// <para> Insert a tray entry at a given position. </para>
+    /// <para> If label is <c> null </c>, the entry will be a separator. Many functions won't work for an entry that is a separator. </para>
+    /// <para> An entry does not need to be destroyed; it will be destroyed with the tray. </para>
     /// </summary>
     /// <param name="menu"> the menu to append the entry to. </param>
     /// <param name="pos">
-    ///     the desired position for the new entry. Entries at or following this place will be moved. If pos is -1,
-    ///     the entry is appended.
+    /// the desired position for the new entry. Entries at or following this place will be moved. If pos is -1,
+    /// the entry is appended.
     /// </param>
     /// <param name="label"> the text to be displayed on the entry, in UTF-8 encoding, or <c> null </c> for a separator. </param>
     /// <param name="flags"> a combination of flags, some of which are mandatory. </param>
@@ -281,12 +279,12 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label);</code>
     /// <summary>
-    ///     <para> Sets the label of an entry. </para>
-    ///     <para>
-    ///         An entry cannot change between a separator and an ordinary entry; that is, it is not possible to set a non-NULL
-    ///         label on an entry that has a <c> null </c> label (separators), or to set a <c> null </c> label to an entry that has
-    ///         a non-NULL label. The function will silently fail if that happens.
-    ///     </para>
+    /// <para> Sets the label of an entry. </para>
+    /// <para>
+    /// An entry cannot change between a separator and an ordinary entry; that is, it is not possible to set a non-NULL label
+    /// on an entry that has a <c> null </c> label (separators), or to set a <c> null </c> label to an entry that has a non-NULL
+    /// label. The function will silently fail if that happens.
+    /// </para>
     /// </summary>
     /// <param name="entry"> the entry to be updated. </param>
     /// <param name="label"> the new label for the entry in UTF-8 encoding. </param>
@@ -305,8 +303,7 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC const char *SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *entry);</code>
     /// <summary>
-    ///     <para> Gets the label of an entry. </para>
-    ///     <para> If the returned value is <c> null </c>, the entry is a separator. </para>
+    /// <para> Gets the label of an entry. </para> <para> If the returned value is <c> null </c>, the entry is a separator. </para>
     /// </summary>
     /// <param name="entry"> the entry to be read. </param>
     /// <returns> the label of the entry in UTF-8 encoding. </returns>
@@ -323,8 +320,8 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked);</code>
     /// <summary>
-    ///     <para> Sets whether or not an entry is checked. </para>
-    ///     <para> The entry must have been created with the <see cref="TrayEntryFlags.CheckBox"/> flag. </para>
+    /// <para> Sets whether or not an entry is checked. </para>
+    /// <para> The entry must have been created with the <see cref="TrayEntryFlags.CheckBox"/> flag. </para>
     /// </summary>
     /// <param name="entry"> the entry to be updated. </param>
     /// <param name="checked"> <c> true </c> if the entry should be checked; <c> false </c> otherwise. </param>
@@ -339,8 +336,8 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);</code>
     /// <summary>
-    ///     <para> Gets whether or not an entry is checked. </para>
-    ///     <para> The entry must have been created with the <see cref="TrayEntryFlags.CheckBox"/> flag. </para>
+    /// <para> Gets whether or not an entry is checked. </para>
+    /// <para> The entry must have been created with the <see cref="TrayEntryFlags.CheckBox"/> flag. </para>
     /// </summary>
     /// <param name="entry"> the entry to be read. </param>
     /// <returns> <c> true </c> if the entry is checked; <c> false </c> otherwise. </returns>
@@ -391,8 +388,50 @@ public unsafe partial class SDL
     /// <seealso cref="GetTrayEntries"/>
     /// <seealso cref="InsertTrayEntryAt"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetTrayEntryCallback"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void SetTrayEntryCallback(nint entry, TrayCallback callback, nint userdata);
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial void SDL_SetTrayEntryCallback(nint entry,
+        delegate* unmanaged[Cdecl]<nint, nint, void> callback,
+        nint userdata);
+
+    // Tray entry callback roots, keyed by entry: an entry has at most one callback, replaced as a unit.
+    // Note that destroying a tray without clearing its entry callbacks leaves their roots behind; clear
+    // them (pass null) before destruction if churn matters.
+    static readonly Dictionary<nint, GCHandle> trayEntryCallbacks = new();
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void TrayEntryThunk(nint userdata, nint entry)
+    {
+        try
+        {
+            ((TrayCallback)GCHandle.FromIntPtr(userdata).Target!)(entry);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. Pass <c> null </c> to clear. The delegate is rooted by the
+    ///     wrapper until the entry's callback is replaced or cleared.
+    /// </summary>
+    public static unsafe void SetTrayEntryCallback(nint entry, TrayCallback? callback)
+    {
+        lock (trayEntryCallbacks)
+        {
+            if (callback is null) SDL_SetTrayEntryCallback(entry, null, 0);
+            else
+            {
+                var handle = GCHandle.Alloc(callback);
+                SDL_SetTrayEntryCallback(entry, &TrayEntryThunk, GCHandle.ToIntPtr(handle));
+                if (trayEntryCallbacks.Remove(entry, out var previous)) previous.Free();
+                trayEntryCallbacks.Add(entry, handle);
+                return;
+            }
+
+            if (trayEntryCallbacks.Remove(entry, out var cleared)) cleared.Free();
+        }
+    }
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_ClickTrayEntry(SDL_TrayEntry *entry);</code>
     /// <summary> Simulate a click on a tray entry. </summary>
@@ -405,7 +444,7 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroyTray(SDL_Tray *tray);</code>
     /// <summary>
-    ///     <para> Destroys a tray object. </para> <para> This also destroys all associated menus and entries. </para>
+    /// <para> Destroys a tray object. </para> <para> This also destroys all associated menus and entries. </para>
     /// </summary>
     /// <param name="tray"> the tray icon to be destroyed. </param>
     /// <threadsafety> This function should be called on the thread that created the tray. </threadsafety>
@@ -428,8 +467,8 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu);</code>
     /// <summary>
-    ///     <para> Gets the entry for which the menu is a submenu, if the current menu is a submenu. </para>
-    ///     <para> Either this function or <see cref="GetTrayMenuParentTray"/> will return non-NULL for any given menu. </para>
+    /// <para> Gets the entry for which the menu is a submenu, if the current menu is a submenu. </para>
+    /// <para> Either this function or <see cref="GetTrayMenuParentTray"/> will return non-NULL for any given menu. </para>
     /// </summary>
     /// <param name="menu"> the menu for which to get the parent entry. </param>
     /// <returns> the parent entry, or <c> null </c> if this menu is not a submenu. </returns>
@@ -443,7 +482,7 @@ public unsafe partial class SDL
 
     /// <code>extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu);</code>
     /// <summary>
-    ///     <para> Gets the tray for which this menu is the first-level menu, if the current menu isn't a submenu. </para>
+    /// <para> Gets the tray for which this menu is the first-level menu, if the current menu isn't a submenu. </para>
     ///     <para> Either this function or <see cref="GetTrayMenuParentEntry"/> will return non-NULL for any given menu. </para>
     /// </summary>
     /// <param name="menu"> the menu for which to get the parent enttrayry. </param>

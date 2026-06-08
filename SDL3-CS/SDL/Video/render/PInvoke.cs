@@ -212,7 +212,7 @@ public static partial class SDL
     /// <seealso cref="GetRendererName"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateRendererWithProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateRendererWithProperties(uint props);
+    public static partial nint CreateRendererWithProperties(PropertiesID props);
 
     /// <code>extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device);</code>
     /// <summary>
@@ -257,7 +257,7 @@ public static partial class SDL
     /// <seealso cref="DestroyRenderer"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSoftwareRenderer"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateSoftwareRenderer(nint surface);
+    public static partial nint CreateSoftwareRenderer(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_GetRenderer(SDL_Window *window);</code>
     /// <summary> Get the renderer associated with a window. </summary>
@@ -376,7 +376,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetRendererProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetRendererProperties(nint renderer);
+    public static partial PropertiesID GetRendererProperties(nint renderer);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);</code>
     /// <summary>
@@ -598,7 +598,7 @@ public static partial class SDL
     /// <seealso cref="UpdateTexture(IntPtr, IntPtr, IntPtr, int)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateTextureWithProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateTextureWithProperties(nint renderer, uint props);
+    public static partial nint CreateTextureWithProperties(nint renderer, PropertiesID props);
 
     /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *texture);</code>
     /// <summary>
@@ -699,7 +699,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetTextureProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetTextureProperties(nint texture);
+    public static partial PropertiesID GetTextureProperties(nint texture);
 
     /// <code>extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_GetRendererFromTexture(SDL_Texture *texture);</code>
     /// <summary> Get the renderer that created an SDL_Texture. </summary>
@@ -1120,7 +1120,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LockTextureToSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool LockTextureToSurface(nint texture, nint rect, out nint surface);
+    public static partial bool LockTextureToSurface(nint texture, nint rect, out SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect, SDL_Surface **surface);</code>
     /// <summary>
@@ -1154,7 +1154,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LockTextureToSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool LockTextureToSurface(nint texture, in Rect rect, out nint surface);
+    public static partial bool LockTextureToSurface(nint texture, in Rect rect, out SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);</code>
     /// <summary>
@@ -2853,7 +2853,7 @@ public static partial class SDL
         nint srcrect,
         nint dstrect,
         double angle,
-        in FRect center,
+        in FPoint center,
         FlipMode flip);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect, double angle, const SDL_FPoint *center, SDL_FlipMode flip);</code>
@@ -2919,7 +2919,7 @@ public static partial class SDL
         nint srcrect,
         in FRect dstrect,
         double angle,
-        in FRect center,
+        in FPoint center,
         FlipMode flip);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect, double angle, const SDL_FPoint *center, SDL_FlipMode flip);</code>
@@ -2952,7 +2952,7 @@ public static partial class SDL
         in FRect srcrect,
         nint dstrect,
         double angle,
-        in FRect center,
+        in FPoint center,
         FlipMode flip);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect, double angle, const SDL_FPoint *center, SDL_FlipMode flip);</code>

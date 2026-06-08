@@ -64,14 +64,26 @@ public static partial class SDL
         /// <summary> A scalar factor applied to a fragment's slope in depth calculations. </summary>
         public float DepthBiasSlopeFactor;
 
-        /// <summary> true to bias fragment depth values. </summary>
-        public byte EnableDepthBias;
+        byte _enableDepthBias;
 
-        /// <summary> true to enable depth clip, false to enable depth clamp. </summary>
-        public byte EnableDepthClip;
+        byte _enableDepthClip;
 
         byte _padding1;
 
         byte _padding2;
+
+        /// <summary> true to bias fragment depth values. </summary>
+        public bool EnableDepthBias
+        {
+            get => _enableDepthBias > 0;
+            set => _enableDepthBias = (byte)(value ? 1 : 0);
+        }
+
+        /// <summary> true to enable depth clip, false to enable depth clamp. </summary>
+        public bool EnableDepthClip
+        {
+            get => _enableDepthClip > 0;
+            set => _enableDepthClip = (byte)(value ? 1 : 0);
+        }
     }
 }

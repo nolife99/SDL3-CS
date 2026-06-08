@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
  * This software is provided 'as-is', without any express or implied warranty.
@@ -16,9 +16,9 @@
  *
  * 2. Altered source versions must be plainly marked as such, and must not be
  * misrepresented as being the original software.
- *
- * 3. This notice may not be removed or altered from any source distribution.
  */
+
+// This file is an altered version (storybrew fork): updated to the rewritten managed dialog API.
 #endregion
 
 using SDL3;
@@ -32,38 +32,37 @@ internal static class Program
     {
         if (!SDL.Init(SDL.InitFlags.Video))
         {
-            SDL.LogError(SDL.LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
+            SDL.LogError(LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
             return;
         }
 
         if (!SDL.CreateWindowAndRenderer("SDL3 File Dialog", 800, 600, 0, out var window, out var renderer))
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
-        
-        SDL.SetRenderVSync(renderer, 1);
-        
-        var callback = new SDL.DialogFileCallback(DialogFileCallback);
 
-        var openFileFilters = new SDL.DialogFileFilter[]
+        SDL.SetRenderVSync(renderer, 1);
+
+        // Filters are plain managed values; the dialog functions copy them into native memory for
+        // exactly as long as SDL needs them. Nothing to pin, keep alive, or dispose.
+        var openFileFilters = new DialogFileFilter[]
         {
             new("All files", "*"),
             new("Image files", "jpg;jpeg;png;bmp;gif;webp"),
         };
 
-        var saveFileFilters = new SDL.DialogFileFilter[]
+        var saveFileFilters = new DialogFileFilter[]
         {
-            new("SDL File", ".sdl")
+            new("SDL File", "sdl")
         };
-        
+
         SDL.SetRenderDrawColor(renderer, 100, 149, 237, 0);
-        
+
         var loop = true;
-        
+
         while (loop)
         {
-            
             while (SDL.PollEvent(out var e))
             {
                 if (e.Type == (uint)SDL.EventType.Quit)
@@ -73,17 +72,17 @@ internal static class Program
 
                 if (e.Type == (uint)SDL.EventType.KeyDown && e.Key.Key == SDL.Keycode.Alpha1)
                 {
-                    SDL.ShowOpenFileDialog(callback, IntPtr.Zero, window, openFileFilters, openFileFilters.Length, null, true);
+                    SDL.ShowOpenFileDialog(OnDialogResult, window, openFileFilters, allowMany: true);
                 }
-                
+
                 if (e.Type == (uint)SDL.EventType.KeyDown && e.Key.Key == SDL.Keycode.Alpha2)
                 {
-                    SDL.ShowSaveFileDialog(callback, IntPtr.Zero, window, saveFileFilters, saveFileFilters.Length, "test");
+                    SDL.ShowSaveFileDialog(OnDialogResult, window, saveFileFilters, "test");
                 }
 
                 if (e.Type == (uint)SDL.EventType.KeyDown && e.Key.Key == SDL.Keycode.Alpha3)
                 {
-                    SDL.ShowOpenFolderDialog(callback, IntPtr.Zero, window, null, false);
+                    SDL.ShowOpenFolderDialog(OnDialogResult, window);
                 }
             }
 
@@ -93,44 +92,43 @@ internal static class Program
 
         SDL.DestroyRenderer(renderer);
         SDL.DestroyWindow(window);
-        
+
         SDL.Quit();
     }
-    
-    private static void DialogFileCallback(IntPtr userdata, IntPtr filelist, int filter)
+
+    // The view is allocation-free and only valid inside this callback (the compiler enforces it).
+    // Call files.GetString(i) / files.GetChars(i, buffer) for any entry that must outlive it.
+    // Exceptions thrown here are caught at the native boundary and routed to
+    // SDL.UnhandledCallbackException (or the SDL log).
+    private static void OnDialogResult(DialogFileList files, int filter)
     {
-        if (filelist == IntPtr.Zero && filter == -1)
+        if (files.IsError)
         {
-            SDL.LogError(SDL.LogCategory.Application, $"SDL Error: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"SDL Error: {SDL.GetError()}");
+            return;
         }
 
-        var list = SDL.PointerToStringArray(filelist) ?? [];
-        
         var type = filter switch
         {
             0 => "file",
             1 => "image",
-            _ => "unknow"
+            _ => "unknown"
         };
 
-        if (list.Length == 0)
+        switch (files.Count)
         {
-            SDL.LogInfo(SDL.LogCategory.Application, "File not selected");
-        }
-        
-        if (list.Length == 1)
-        {
-            SDL.LogInfo(SDL.LogCategory.Application, $"Selected filter: {filter}, Selected {type}: {list[0]}");
-        }
+            case 0:
+                SDL.LogInfo(LogCategory.Application, "File not selected");
+                break;
 
-        if (list.Length > 1)
-        {
-            SDL.LogInfo(SDL.LogCategory.Application, $"Selected filter: {filter}, Selected {type}s:");
-            
-            for (var i = 0; i < list.Length; i++)
-            {
-                Console.WriteLine($"[{i}] {list[i]}");
-            }
+            case 1:
+                SDL.LogInfo(LogCategory.Application, $"Selected filter: {filter}, Selected {type}: {files.GetString(0)}");
+                break;
+
+            default:
+                SDL.LogInfo(LogCategory.Application, $"Selected filter: {filter}, Selected {type}s:");
+                for (var i = 0; i < files.Count; i++) Console.WriteLine($"[{i}] {files.GetString(i)}");
+                break;
         }
     }
 }

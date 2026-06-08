@@ -145,7 +145,7 @@ public static partial class SDL
  /// <seealso cref="DestroyProcess"/>
  [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateProcessWithProperties"),
   UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial nint CreateProcessWithProperties(uint props);
+    public static partial nint CreateProcessWithProperties(PropertiesID props);
 
  /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetProcessProperties(SDL_Process *process);</code>
  /// <summary>
@@ -178,7 +178,7 @@ public static partial class SDL
  /// <seealso cref="CreateProcessWithProperties"/>
  [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetProcessProperties"),
   UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial uint GetProcessProperties(nint process);
+    public static partial PropertiesID GetProcessProperties(nint process);
 
  /// <code>extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t *datasize, int *exitcode);</code>
  /// <summary>

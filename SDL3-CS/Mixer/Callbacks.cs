@@ -39,27 +39,27 @@ public partial class Mixer
 
     /// <code>typedef void (SDLCALL *Mix_EffectDone_t)(int chan, void *udata);</code>
     /// <summary>
-    ///     <para> This is a callback that signifies that a channel has finished all its loops and has completed playback. </para>
-    ///     <para>
-    ///         This gets called if the buffer plays out normally, or if you call <see cref="HaltChannel"/>, implicitly stop a
-    ///         channel via <see cref="AllocateChannels"/>, or unregister a callback while it's still playing.
-    ///     </para>
+    /// <para> This is a callback that signifies that a channel has finished all its loops and has completed playback. </para>
+    /// <para>
+    /// This gets called if the buffer plays out normally, or if you call <see cref="HaltChannel"/>, implicitly stop a
+    /// channel via <see cref="AllocateChannels"/>, or unregister a callback while it's still playing.
+    /// </para>
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void EffectDoneT(int chan, nint udata);
 
     /// <code>typedef void (SDLCALL *Mix_EffectFunc_t)(int chan, void *stream, int len, void *udata);</code>
     /// <summary>
-    ///     <para> This is the format of a special effect callback: </para>
-    ///     <code>myeffect(int chan, void *stream, int len, void *udata);</code>
-    ///     <para>
-    ///         chan) is the channel number that your effect is affecting. (stream) is the buffer of data to work upon. (len) is
-    ///         the size of (stream), and (udata) is a user-defined bit of data, which you pass as the last arg of
-    ///         <see cref="RegisterEffect"/>, and is passed back unmolested to your callback. Your effect changes the contents of
-    ///         (stream) based on whatever parameters are significant, or just leaves it be, if you prefer. You can do whatever you
-    ///         like to the buffer, though, and it will continue in its changed state down the mixing pipeline, through any other
-    ///         effect functions, then finally to be mixed with the rest of the channels and music for the final output stream.
-    ///     </para>
+    /// <para> This is the format of a special effect callback: </para>
+    /// <code>myeffect(int chan, void *stream, int len, void *udata);</code>
+    /// <para>
+    /// chan) is the channel number that your effect is affecting. (stream) is the buffer of data to work upon. (len) is the
+    /// size of (stream), and (udata) is a user-defined bit of data, which you pass as the last arg of <see cref="RegisterEffect"/>,
+    /// and is passed back unmolested to your callback. Your effect changes the contents of (stream) based on whatever parameters
+    /// are significant, or just leaves it be, if you prefer. You can do whatever you like to the buffer, though, and it will
+    /// continue in its changed state down the mixing pipeline, through any other effect functions, then finally to be mixed with
+    /// the rest of the channels and music for the final output stream.
+    /// </para>
     /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void EffectFuncT(int chan, nint stream, int len, nint udata);

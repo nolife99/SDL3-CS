@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -28,16 +28,16 @@ namespace SDL3;
 public static partial class SDL
 {
     /// <summary>
-    ///     <para> Function interface for SDL_Storage. </para>
-    ///     <para>
-    ///         Apps that want to supply a custom implementation of SDL_Storage will fill in all the functions in this struct,
-    ///         and then pass it to <see cref="OpenStorage"/> to create a custom SDL_Storage object.
-    ///     </para>
-    ///     <para>
-    ///         It is not usually necessary to do this; SDL provides standard implementations for many things you might expect to
-    ///         do with an SDL_Storage.
-    ///     </para>
-    ///     <para> This structure should be initialized using <see cref="InitInterface(ref StorageInterface)"/> </para>
+    /// <para> Function interface for SDL_Storage. </para>
+    /// <para>
+    /// Apps that want to supply a custom implementation of SDL_Storage will fill in all the functions in this struct, and
+    /// then pass it to <see cref="OpenStorage"/> to create a custom SDL_Storage object.
+    /// </para>
+    /// <para>
+    /// It is not usually necessary to do this; SDL provides standard implementations for many things you might expect to do
+    /// with an SDL_Storage.
+    /// </para>
+    /// <para> This structure should be initialized using <see cref="InitInterface(ref StorageInterface)"/> </para>
     /// </summary>
     /// <since> This struct is available since SDL 3.2.0 </since>
     /// <seealso cref="InitInterface(ref StorageInterface)"/>
@@ -83,9 +83,13 @@ public static partial class SDL
 
         public delegate bool ReadyDelegate(nint userdata);
 
+        // The enumerate callback arrives as a raw SDL_EnumerateDirectoryCallback function pointer plus
+        // its userdata; a custom storage backend forwards both verbatim to each entry it reports
+        // (storybrew fork: the managed EnumerateDirectoryCallback delegate no longer mirrors the native
+        // signature, so this advanced vtable field stays at the raw ABI level).
         public delegate bool EnumerateDelegate(nint userdata,
             string path,
-            EnumerateDirectoryCallback callback,
+            nint callback,
             nint callbackUserdata);
 
         public delegate bool InfoDelegate(nint userdata, string path, out PathInfo info);

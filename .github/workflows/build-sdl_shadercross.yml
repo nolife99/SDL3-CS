@@ -1,0 +1,291 @@
+name: Build SDL_shadercross
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build SDL_shadercross for ${{ matrix.os }} (${{ matrix.arch_label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            host_os: Windows
+            arch_label: x64
+            vs_arch: x64
+            triplet: x64-windows
+          - os: windows-11-arm
+            host_os: Windows
+            arch_label: arm64
+            vs_arch: ARM64
+            triplet: arm64-windows
+          - os: macos-15-intel
+            host_os: macOS
+            arch_label: x64
+            triplet: x64-osx
+            cmake_osx_arch: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+          - os: macos-latest
+            host_os: macOS
+            arch_label: arm64
+            triplet: arm64-osx
+            cmake_osx_arch: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+          - os: ubuntu-latest
+            host_os: Linux
+            arch_label: x64
+            triplet: x64-linux
+          - os: ubuntu-24.04-arm
+            host_os: Linux
+            arch_label: arm64
+            triplet: arm64-linux
+
+    env:
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      BUILD_DIR: ${{ github.workspace }}/build
+      CMAKE_BUILD_TYPE: Release
+
+    steps:
+      - name: Checkout SDL (your fork)
+        uses: actions/checkout@v4
+        with:
+          repository: edwardgushchin/SDL
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL
+
+      - name: Checkout SDL_shadercross
+        uses: actions/checkout@v4
+        with:
+          repository: edwardgushchin/SDL_shadercross
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL_shadercross
+
+      - name: Install Linux deps
+        if: matrix.host_os == 'Linux'
+        shell: bash
+        run: |
+          set -eux
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            build-essential cmake ninja-build pkg-config git \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+            libxi-dev libxrender-dev libxss-dev libxtst-dev \
+            libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev \
+            libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libvulkan-dev \
+            libudev-dev libdrm-dev libgbm-dev autoconf autoconf-archive automake libtool
+
+      - name: Configure SDL (Windows)
+        if: matrix.host_os == 'Windows'
+        shell: pwsh
+        run: |
+          $args = @(
+            "-S","SDL",
+            "-B","$env:BUILD_DIR/SDL",
+            "-G","Visual Studio 17 2022",
+            "-A","${{ matrix.vs_arch }}",
+            "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
+            "-DSDL_INSTALL=ON",
+            "-DSDL_TESTS=OFF","-DSDL_EXAMPLES=OFF",
+            "-DSDL_VIDEO=ON","-DSDL_RENDER=ON"
+          )
+          cmake @args
+
+      - name: Configure SDL (Unix)
+        if: matrix.host_os != 'Windows'
+        shell: bash
+        run: |
+          set -eux
+          cmake -S SDL -B "$BUILD_DIR/SDL" \
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
+            -DSDL_INSTALL=ON \
+            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
+            -DSDL_VIDEO=ON -DSDL_RENDER=ON \
+            -DSDL_X11=ON -DSDL_WAYLAND=ON \
+            -DSDL_OPENGL=ON -DSDL_OPENGLES=ON -DSDL_VULKAN=ON \
+            ${{ matrix.cmake_osx_arch || '' }}
+
+      - name: Build SDL
+        shell: bash
+        run: cmake --build "$BUILD_DIR/SDL" --config ${CMAKE_BUILD_TYPE} --parallel
+
+      - name: Install SDL
+        shell: bash
+        run: cmake --install "$BUILD_DIR/SDL" --config ${CMAKE_BUILD_TYPE}
+
+      # DXC/vcpkg шаги удалены (собираем без DXC)
+      - name: Download DXC binaries (Windows)
+        if: matrix.host_os == 'Windows'
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $headers = @{
+            "User-Agent" = "SDL3-CS-CI"
+            "Accept" = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          if ($env:GITHUB_TOKEN) {
+            $headers["Authorization"] = "Bearer $env:GITHUB_TOKEN"
+          }
+
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/latest" -Headers $headers
+          $asset = $release.assets |
+            Where-Object { $_.name -like 'dxc_*.zip' -and $_.name -notlike 'pdb_*' } |
+            Select-Object -First 1
+
+          if (-not $asset) {
+            throw "DXC .zip asset not found in latest release."
+          }
+
+          $dxcZip = $asset.name
+          $dxcUrl = $asset.browser_download_url
+
+          $destRoot = Join-Path $env:GITHUB_WORKSPACE "SDL_shadercross/external/DirectXShaderCompiler-binaries"
+          $zipPath  = Join-Path $env:RUNNER_TEMP $dxcZip
+
+          New-Item -ItemType Directory -Force -Path $destRoot | Out-Null
+          Write-Host "Downloading: $dxcUrl"
+          Invoke-WebRequest -Uri $dxcUrl -OutFile $zipPath
+
+          # Extract
+          Expand-Archive -Path $zipPath -DestinationPath $destRoot -Force
+
+          # Flatten: GitHub zip обычно содержит верхнюю папку dxc_YYYY_MM_DD/...
+          $top = Get-ChildItem -Path $destRoot -Directory -Filter "dxc_*" | Select-Object -First 1
+          if ($top -and (Test-Path (Join-Path $top.FullName "bin"))) {
+            Write-Host "Flattening DXC folder: $($top.Name)"
+            Get-ChildItem -Path $top.FullName -Force | ForEach-Object {
+              Move-Item -Path $_.FullName -Destination $destRoot -Force
+            }
+            Remove-Item -Path $top.FullName -Recurse -Force
+          }
+
+          # Quick sanity check
+          Write-Host "DXC root contents:"
+          Get-ChildItem -Path $destRoot -Force | Format-Table -AutoSize
+          if (!(Test-Path (Join-Path $destRoot "bin"))) { throw "DXC bin/ not found after extraction." }
+          if (!(Test-Path (Join-Path $destRoot "lib"))) { throw "DXC lib/ not found after extraction." }
+          if (!(Test-Path (Join-Path $destRoot "inc"))) { throw "DXC inc/ not found after extraction." }
+
+
+      - name: Build & Install SPIRV-Cross
+        shell: bash
+        run: |
+          set -eux
+          git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Cross.git
+          cmake -S SPIRV-Cross -B build_spvc \
+            -DSPIRV_CROSS_ENABLE_C_API=ON \
+            -DSPIRV_CROSS_SHARED=ON \
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
+            ${{ matrix.cmake_osx_arch || '' }}
+          cmake --build build_spvc --config ${CMAKE_BUILD_TYPE} --parallel
+          cmake --install build_spvc --config ${CMAKE_BUILD_TYPE}
+
+      - name: Configure SDL_shadercross
+        shell: bash
+        run: |
+          set -eux
+
+          # Подсказка для SDL3 (если найдётся config)
+          SDL3_DIR_CANDIDATES=("${INSTALL_PREFIX}/lib/cmake/SDL3" "${INSTALL_PREFIX}/share/SDL3")
+          SDL_HINT=""
+          for d in "${SDL3_DIR_CANDIDATES[@]}"; do
+            if [[ -f "$d/SDL3Config.cmake" ]]; then SDL_HINT="-DSDL3_DIR=$d"; break; fi
+          done
+
+          DXC_FLAG=""
+          if [[ "${{ matrix.host_os }}" == "Windows" ]]; then
+            DXC_FLAG="-DSDLSHADERCROSS_DXC=ON"
+          else
+            DXC_FLAG="-DSDLSHADERCROSS_DXC=OFF"
+          fi
+
+          cmake -S SDL_shadercross -B "$BUILD_DIR/SDL_shadercross" \
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
+            -DCMAKE_PREFIX_PATH="${INSTALL_PREFIX}" \
+            -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+            -DSDLSHADERCROSS_INSTALL=ON \
+            -DSDLSHADERCROSS_SHARED=ON \
+            -DSDLSHADERCROSS_STATIC=ON \
+            -DSDLSHADERCROSS_CLI=OFF \
+            -DSDLSHADERCROSS_SPIRVCROSS_SHARED=ON \
+            ${DXC_FLAG} \
+            ${SDL_HINT} \
+            ${{ matrix.cmake_osx_arch || '' }}
+
+      - name: Build SDL_shadercross
+        shell: bash
+        run: cmake --build "$BUILD_DIR/SDL_shadercross" --config ${CMAKE_BUILD_TYPE} --parallel
+
+      - name: Install SDL_shadercross
+        shell: bash
+        run: cmake --install "$BUILD_DIR/SDL_shadercross" --config ${CMAKE_BUILD_TYPE}
+
+      - name: Download DXC binaries (Windows)
+        if: matrix.host_os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $dxcVersion = "v1.8.2505.1"
+          $dxcZip = "dxc_2025_07_14.zip"
+          $dxcUrl = "https://github.com/microsoft/DirectXShaderCompiler/releases/download/$dxcVersion/$dxcZip"
+
+          $destRoot = Join-Path $env:GITHUB_WORKSPACE "SDL_shadercross/external/DirectXShaderCompiler-binaries"
+          $zipPath  = Join-Path $env:RUNNER_TEMP $dxcZip
+
+          New-Item -ItemType Directory -Force -Path $destRoot | Out-Null
+          Invoke-WebRequest -Uri $dxcUrl -OutFile $zipPath
+          Expand-Archive -Path $zipPath -DestinationPath $destRoot -Force
+
+          # Flatten: если внутри появилась папка dxc_YYYY_MM_DD, переносим её содержимое вверх
+          $top = Get-ChildItem -Path $destRoot -Directory -Filter "dxc_*" | Select-Object -First 1
+          if ($top -and (Test-Path (Join-Path $top.FullName "bin"))) {
+            Get-ChildItem -Path $top.FullName -Force | ForEach-Object {
+              Move-Item -Path $_.FullName -Destination $destRoot -Force
+            }
+            Remove-Item -Path $top.FullName -Recurse -Force
+          }
+
+          if (!(Test-Path (Join-Path $destRoot "bin"))) { throw "DXC bin/ not found after extraction" }
+
+      - name: Assert SDL3_shadercross is installed
+        shell: bash
+        run: |
+          set -eux
+          shopt -s nullglob
+          found=0
+          for f in \
+            "${INSTALL_PREFIX}/lib/libSDL3_shadercross.so"* \
+            "${INSTALL_PREFIX}/lib/libSDL3_shadercross.dylib" \
+            "${INSTALL_PREFIX}/lib/libSDL3_shadercross.a" \
+            "${INSTALL_PREFIX}/bin/SDL3_shadercross.dll" \
+            "${INSTALL_PREFIX}/lib/SDL3_shadercross.lib" \
+            "${INSTALL_PREFIX}/lib/SDL3_shadercross-static.lib"
+          do
+            if [[ -f "$f" ]]; then echo "Found: $f"; found=1; fi
+          done
+          if [[ $found -eq 0 ]]; then
+            echo "SDL3_shadercross not found in ${INSTALL_PREFIX}"
+            ls -R "${INSTALL_PREFIX}" || true
+            exit 1
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SDL_shadercross-${{ matrix.os }}-${{ matrix.arch_label }}
+          path: |
+            ${{ env.INSTALL_PREFIX }}/include/**
+            ${{ env.INSTALL_PREFIX }}/lib/**
+            ${{ env.INSTALL_PREFIX }}/bin/**
+            ${{ env.INSTALL_PREFIX }}/lib/cmake/SDL3_shadercross/**

@@ -32,13 +32,13 @@ internal static class Program
     {
         if (!SDL.Init(SDL.InitFlags.Video | SDL.InitFlags.Camera))
         {
-            SDL.LogError(SDL.LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
+            SDL.LogError(LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
             return;
         }
         
         if (!SDL.CreateWindowAndRenderer("SDL3 Camera example", 800, 600, 0, out var window, out var renderer))
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
         
@@ -48,13 +48,13 @@ internal static class Program
 
         if (devices == null)
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Couldn't enumerate camera devices: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Couldn't enumerate camera devices: {SDL.GetError()}");
             return;
         }
         
         if (camerasCount == 0)
         {
-            SDL.LogError(SDL.LogCategory.Application, "Couldn't find any camera devices! Please connect a camera and try again.");
+            SDL.LogError(LogCategory.Application, "Couldn't find any camera devices! Please connect a camera and try again.");
             return;
         }
         
@@ -62,7 +62,7 @@ internal static class Program
         
         if (camera == IntPtr.Zero) 
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Couldn't open camera: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Couldn't open camera: {SDL.GetError()}");
             return;
         }
 
@@ -82,12 +82,12 @@ internal static class Program
 
                 if (sdlEvent.Type == (uint)SDL.EventType.CameraDeviceApproved)
                 {
-                    SDL.LogInfo(SDL.LogCategory.Application, "Camera use approved by user!");
+                    SDL.LogInfo(LogCategory.Application, "Camera use approved by user!");
                 }
 
                 if (sdlEvent.Type == (uint)SDL.EventType.CameraDeviceDenied)
                 {
-                    SDL.LogInfo(SDL.LogCategory.Application, "Camera use denied by user!");
+                    SDL.LogInfo(LogCategory.Application, "Camera use denied by user!");
                 }
             }
 
@@ -95,7 +95,7 @@ internal static class Program
 
             if (framePtr != IntPtr.Zero)
             {
-                var frame = SDL.PointerToStructure<SDL.Surface>(framePtr) ?? default;
+                var frame = SDL.PointerToStructure<Surface>(framePtr) ?? default;
                 
                 if (texture == IntPtr.Zero)
                 {

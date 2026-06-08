@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,6 +25,7 @@
 
 namespace SDL3;
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -140,10 +141,10 @@ public partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetOriginalMemoryFunctions"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void GetOriginalMemoryFunctions(out MallocFunc mallocFunc,
-        out CallocFunc callocFunc,
-        out ReallocFunc reallocFunc,
-        out FreeFunc freeFunc);
+    public static partial void GetOriginalMemoryFunctions(out nint mallocFunc,
+        out nint callocFunc,
+        out nint reallocFunc,
+        out nint freeFunc);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func, SDL_calloc_func *calloc_func, SDL_realloc_func *realloc_func, SDL_free_func *free_func);</code>
     /// <summary>
@@ -162,10 +163,10 @@ public partial class SDL
     /// <seealso cref="GetOriginalMemoryFunctions"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetMemoryFunctions"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial void GetMemoryFunctions(out MallocFunc mallocFunc,
-        out CallocFunc callocFunc,
-        out ReallocFunc reallocFunc,
-        out FreeFunc freeFunc);
+    public static partial void GetMemoryFunctions(out nint mallocFunc,
+        out nint callocFunc,
+        out nint reallocFunc,
+        out nint freeFunc);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func, SDL_calloc_func calloc_func, SDL_realloc_func realloc_func, SDL_free_func free_func);</code>
     /// <summary>
@@ -192,12 +193,97 @@ public partial class SDL
     /// <seealso cref="GetMemoryFunctions"/>
     /// <seealso cref="GetOriginalMemoryFunctions"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetMemoryFunctions"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetMemoryFunctions(MallocFunc mallocFunc,
+    private static unsafe partial bool SDL_SetMemoryFunctions(delegate* unmanaged[Cdecl]<nuint, nint> mallocFunc,
+        delegate* unmanaged[Cdecl]<nuint, nuint, nint> callocFunc,
+        delegate* unmanaged[Cdecl]<nint, nuint, nint> reallocFunc,
+        delegate* unmanaged[Cdecl]<nint, void> freeFunc);
+
+    // Rooted forever once set: allocator callbacks must outlive every allocation SDL ever makes.
+    static MallocFunc? mallocFunction;
+    static CallocFunc? callocFunction;
+    static ReallocFunc? reallocFunction;
+    static FreeFunc? freeFunction;
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static nint MallocThunk(nuint size)
+    {
+        try
+        {
+            return mallocFunction!(size);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 0; // allocation failure is the only sane signal here
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static nint CallocThunk(nuint nmemb, nuint size)
+    {
+        try
+        {
+            return callocFunction!(nmemb, size);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 0;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static nint ReallocThunk(nint mem, nuint size)
+    {
+        try
+        {
+            return reallocFunction!(mem, size);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            return 0;
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void FreeThunk(nint mem)
+    {
+        try
+        {
+            freeFunction!(mem);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+    }
+
+    /// <summary>
+    ///     See the native documentation above. All four are required and are rooted permanently — SDL may
+    ///     call them at any time, from any thread, for the lifetime of the process. Be aware these run
+    ///     managed code inside every SDL allocation; replacing SDL's allocator from C# is rarely the
+    ///     right tool.
+    /// </summary>
+    public static unsafe bool SetMemoryFunctions(MallocFunc mallocFunc,
         CallocFunc callocFunc,
         ReallocFunc reallocFunc,
-        FreeFunc freeFunc);
+        FreeFunc freeFunc)
+    {
+        ArgumentNullException.ThrowIfNull(mallocFunc);
+        ArgumentNullException.ThrowIfNull(callocFunc);
+        ArgumentNullException.ThrowIfNull(reallocFunc);
+        ArgumentNullException.ThrowIfNull(freeFunc);
+
+        mallocFunction = mallocFunc;
+        callocFunction = callocFunc;
+        reallocFunction = reallocFunc;
+        freeFunction = freeFunc;
+
+        return SDL_SetMemoryFunctions(&MallocThunk, &CallocThunk, &ReallocThunk, &FreeThunk);
+    }
 
     /// <code>extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);</code>
     /// <summary>
@@ -452,7 +538,7 @@ public partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="SRand"/>
     /// <seealso cref="Rand"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"),
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_randf"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl), typeof(CallConvSuppressGCTransition)]),
      MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial float RandF();
@@ -473,7 +559,7 @@ public partial class SDL
     /// <seealso cref="Rand"/>
     /// <seealso cref="RandF"/>
     /// <seealso cref="SRand"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand"),
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_rand_bits"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl), typeof(CallConvSuppressGCTransition)]),
      MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static partial uint RandBits();

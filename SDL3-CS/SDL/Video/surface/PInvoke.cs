@@ -48,7 +48,7 @@ public static partial class SDL
     /// <seealso cref="DestroySurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateSurface(int width, int height, PixelFormat format);
+    public static partial SurfaceHandle CreateSurface(int width, int height, PixelFormat format);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void *pixels, int pitch);</code>
     /// <summary>
@@ -81,7 +81,7 @@ public static partial class SDL
     /// <seealso cref="DestroySurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurfaceFrom"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial nint CreateSurfaceFrom(int width, int height, PixelFormat format, nint pixels, int pitch);
+    public static partial SurfaceHandle CreateSurfaceFrom(int width, int height, PixelFormat format, nint pixels, int pitch);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);</code>
     /// <summary>
@@ -94,7 +94,7 @@ public static partial class SDL
     /// <seealso cref="CreateSurfaceFrom"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_DestroySurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void DestroySurface(nint surface);
+    public static partial void DestroySurface(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);</code>
     /// <summary>
@@ -135,7 +135,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetSurfaceProperties(nint surface);
+    public static partial PropertiesID GetSurfaceProperties(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace);</code>
     /// <summary>
@@ -151,7 +151,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceColorspace"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceColorspace(nint surface, Colorspace colorspace);
+    public static partial bool SetSurfaceColorspace(SurfaceHandle surface, Colorspace colorspace);
 
     /// <code>extern SDL_DECLSPEC SDL_Colorspace SDLCALL SDL_GetSurfaceColorspace(SDL_Surface *surface);</code>
     /// <summary>
@@ -169,7 +169,7 @@ public static partial class SDL
     /// <seealso cref="SetSurfaceColorspace"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceColorspace"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial Colorspace GetSurfaceColorspace(nint surface);
+    public static partial Colorspace GetSurfaceColorspace(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *surface);</code>
     /// <summary>
@@ -196,7 +196,7 @@ public static partial class SDL
     /// <seealso cref="SetPaletteColors"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateSurfacePalette"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateSurfacePalette(nint surface);
+    public static partial nint CreateSurfacePalette(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette);</code>
     /// <summary>
@@ -212,7 +212,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfacePalette"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfacePalette(nint surface, nint palette);
+    public static partial bool SetSurfacePalette(SurfaceHandle surface, nint palette);
 
     /// <code>extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetSurfacePalette(SDL_Surface *surface);</code>
     /// <summary> Get the palette used by a surface. </summary>
@@ -222,7 +222,7 @@ public static partial class SDL
     /// <seealso cref="SetSurfacePalette"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfacePalette"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetSurfacePalette(nint surface);
+    public static partial nint GetSurfacePalette(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image);</code>
     /// <summary>
@@ -248,7 +248,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddSurfaceAlternateImage"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool AddSurfaceAlternateImage(nint surface, nint image);
+    public static partial bool AddSurfaceAlternateImage(SurfaceHandle surface, SurfaceHandle image);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasAlternateImages(SDL_Surface *surface);</code>
     /// <summary> Return whether a surface has alternate versions available. </summary>
@@ -262,11 +262,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SurfaceHasAlternateImages"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SurfaceHasAlternateImages(nint surface);
+    public static partial bool SurfaceHasAlternateImages(SurfaceHandle surface);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceImages"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    private static partial nint SDL_GetSurfaceImages(nint surface, out int count);
+    private static partial nint SDL_GetSurfaceImages(SurfaceHandle surface, out int count);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface ** SDLCALL SDL_GetSurfaceImages(SDL_Surface *surface, int *count);</code>
     /// <summary>
@@ -288,17 +288,18 @@ public static partial class SDL
     /// <seealso cref="AddSurfaceAlternateImage"/>
     /// <seealso cref="RemoveSurfaceAlternateImages"/>
     /// <seealso cref="SurfaceHasAlternateImages"/>
-    public static nint[]? GetSurfaceImages(nint surface, out int count)
+    public static unsafe SurfaceHandle[]? GetSurfaceImages(SurfaceHandle surface, out int count)
     {
         var ptr = SDL_GetSurfaceImages(surface, out count);
+        if (ptr == nint.Zero) return null;
 
         try
         {
-            return PointerToPointerArray(ptr, count);
+            return new ReadOnlySpan<SurfaceHandle>((void*)ptr, count).ToArray();
         }
         finally
         {
-            if (ptr != nint.Zero) Free(ptr);
+            Free(ptr);
         }
     }
 
@@ -318,7 +319,7 @@ public static partial class SDL
     /// <seealso cref="SurfaceHasAlternateImages"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_RemoveSurfaceAlternateImages"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void RemoveSurfaceAlternateImages(nint surface);
+    public static partial void RemoveSurfaceAlternateImages(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_LockSurface(SDL_Surface *surface);</code>
     /// <summary>
@@ -344,7 +345,7 @@ public static partial class SDL
     /// <seealso cref="UnlockSurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LockSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool LockSurface(nint surface);
+    public static partial bool LockSurface(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);</code>
     /// <summary> Release a surface after directly accessing the pixels. </summary>
@@ -357,7 +358,7 @@ public static partial class SDL
     /// <seealso cref="LockSurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_UnlockSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void UnlockSurface(nint surface);
+    public static partial void UnlockSurface(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio);</code>
     /// <summary>
@@ -379,7 +380,7 @@ public static partial class SDL
     /// <seealso cref="LoadBMP"/>
     /// <seealso cref="SaveBMPIO"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadBMP_IO"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint LoadBMPIO(nint src, [MarshalAs(UnmanagedType.I1)] bool closeio);
+    public static partial SurfaceHandle LoadBMPIO(IOStreamHandle src, [MarshalAs(UnmanagedType.I1)] bool closeio);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP(const char *file);</code>
     /// <summary>
@@ -397,7 +398,7 @@ public static partial class SDL
     /// <seealso cref="LoadBMPIO"/>
     /// <seealso cref="SaveBMP"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_LoadBMP"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint LoadBMP([MarshalAs(UnmanagedType.LPUTF8Str)] string file);
+    public static partial SurfaceHandle LoadBMP([MarshalAs(UnmanagedType.LPUTF8Str)] string file);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio);</code>
     /// <summary>
@@ -421,7 +422,7 @@ public static partial class SDL
     /// <seealso cref="SaveBMP"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SaveBMP_IO"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SaveBMPIO(nint surface, nint dst, [MarshalAs(UnmanagedType.I1)] bool closeio);
+    public static partial bool SaveBMPIO(SurfaceHandle surface, IOStreamHandle dst, [MarshalAs(UnmanagedType.I1)] bool closeio);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);</code>
     /// <summary>
@@ -441,7 +442,7 @@ public static partial class SDL
     /// <seealso cref="SaveBMPIO"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SaveBMP"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SaveBMP(nint surface, [MarshalAs(UnmanagedType.LPUTF8Str)] string file);
+    public static partial bool SaveBMP(SurfaceHandle surface, [MarshalAs(UnmanagedType.LPUTF8Str)] string file);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled);</code>
     /// <summary>
@@ -462,7 +463,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceRLE"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceRLE(nint surface, [MarshalAs(UnmanagedType.I1)] bool enabled);
+    public static partial bool SetSurfaceRLE(SurfaceHandle surface, [MarshalAs(UnmanagedType.I1)] bool enabled);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);</code>
     /// <summary>
@@ -477,7 +478,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SurfaceHasRLE"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SurfaceHasRLE(nint surface);
+    public static partial bool SurfaceHasRLE(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key);</code>
     /// <summary>
@@ -500,7 +501,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceColorKey"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceColorKey(nint surface, [MarshalAs(UnmanagedType.I1)] bool enabled, uint key);
+    public static partial bool SetSurfaceColorKey(SurfaceHandle surface, [MarshalAs(UnmanagedType.I1)] bool enabled, uint key);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface);</code>
     /// <summary>
@@ -516,7 +517,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SurfaceHasColorKey"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SurfaceHasColorKey(nint surface);
+    public static partial bool SurfaceHasColorKey(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key);</code>
     /// <summary>
@@ -534,7 +535,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceColorKey"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetSurfaceColorKey(nint surface, out uint key);
+    public static partial bool GetSurfaceColorKey(SurfaceHandle surface, out uint key);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);</code>
     /// <summary>
@@ -557,7 +558,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceColorMod"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceColorMod(nint surface, byte r, byte g, byte b);
+    public static partial bool SetSurfaceColorMod(SurfaceHandle surface, byte r, byte g, byte b);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b);</code>
     /// <summary> Get the additional color value multiplied into blit operations. </summary>
@@ -573,7 +574,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceColorMod"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetSurfaceColorMod(nint surface, out byte r, out byte g, out byte b);
+    public static partial bool GetSurfaceColorMod(SurfaceHandle surface, out byte r, out byte g, out byte b);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha);</code>
     /// <summary>
@@ -594,7 +595,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceAlphaMod"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceAlphaMod(nint surface, byte alpha);
+    public static partial bool SetSurfaceAlphaMod(SurfaceHandle surface, byte alpha);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha);</code>
     /// <summary> Get the additional alpha value used in blit operations. </summary>
@@ -608,7 +609,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceAlphaMod"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetSurfaceAlphaMod(nint surface, out byte alpha);
+    public static partial bool GetSurfaceAlphaMod(SurfaceHandle surface, out byte alpha);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode);</code>
     /// <summary>
@@ -627,7 +628,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceBlendMode"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceBlendMode(nint surface, BlendMode blendMode);
+    public static partial bool SetSurfaceBlendMode(SurfaceHandle surface, BlendMode blendMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode);</code>
     /// <summary> Get the blend mode used for blit operations. </summary>
@@ -640,7 +641,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceBlendMode"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetSurfaceBlendMode(nint surface, out BlendMode blendMode);
+    public static partial bool GetSurfaceBlendMode(SurfaceHandle surface, out BlendMode blendMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect);</code>
     /// <summary>
@@ -660,7 +661,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceClipRect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceClipRect(nint surface, nint rect);
+    public static partial bool SetSurfaceClipRect(SurfaceHandle surface, nint rect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect);</code>
     /// <summary>
@@ -679,7 +680,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetSurfaceClipRect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SetSurfaceClipRect(nint surface, in Rect rect);
+    public static partial bool SetSurfaceClipRect(SurfaceHandle surface, in Rect rect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect);</code>
     /// <summary>
@@ -695,7 +696,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetSurfaceClipRect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GetSurfaceClipRect(nint surface, out Rect rect);
+    public static partial bool GetSurfaceClipRect(SurfaceHandle surface, out Rect rect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip);</code>
     /// <summary> Flip a surface vertically or horizontally. </summary>
@@ -706,7 +707,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_FlipSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool FlipSurface(nint surface, FlipMode flip);
+    public static partial bool FlipSurface(SurfaceHandle surface, FlipMode flip);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);</code>
     /// <summary>
@@ -721,7 +722,7 @@ public static partial class SDL
     /// <seealso cref="DestroySurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_DuplicateSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint DuplicateSurface(nint surface);
+    public static partial SurfaceHandle DuplicateSurface(SurfaceHandle surface);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_ScaleMode scaleMode);</code>
     /// <summary>
@@ -737,7 +738,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="DestroySurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ScaleSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint ScaleSurface(nint surface, int width, int height, ScaleMode scaleMode);
+    public static partial SurfaceHandle ScaleSurface(SurfaceHandle surface, int width, int height, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format);</code>
     /// <summary>
@@ -765,7 +766,7 @@ public static partial class SDL
     /// <seealso cref="DestroySurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ConvertSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint ConvertSurface(nint surface, PixelFormat format);
+    public static partial SurfaceHandle ConvertSurface(SurfaceHandle surface, PixelFormat format);
 
     /// <code>extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);</code>
     /// <summary>
@@ -791,11 +792,11 @@ public static partial class SDL
     /// <seealso cref="DestroySurface"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ConvertSurfaceAndColorspace"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint ConvertSurfaceAndColorspace(nint surface,
+    public static partial SurfaceHandle ConvertSurfaceAndColorspace(SurfaceHandle surface,
         PixelFormat format,
         nint palette,
         Colorspace colorspace,
-        uint props);
+        PropertiesID props);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch);</code>
     /// <summary> Copy a block of pixels of one format to another format. </summary>
@@ -1225,7 +1226,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_PremultiplySurfaceAlpha"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool PremultiplySurfaceAlpha(nint surface, [MarshalAs(UnmanagedType.I1)] bool linear);
+    public static partial bool PremultiplySurfaceAlpha(SurfaceHandle surface, [MarshalAs(UnmanagedType.I1)] bool linear);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a);</code>
     /// <summary>
@@ -1246,7 +1247,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ClearSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ClearSurface(nint surface, float r, float g, float b, float a);
+    public static partial bool ClearSurface(SurfaceHandle surface, float r, float g, float b, float a);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color);</code>
     /// <summary>
@@ -1274,7 +1275,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_FillSurfaceRect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool FillSurfaceRect(nint dst, nint rect, uint color);
+    public static partial bool FillSurfaceRect(SurfaceHandle dst, nint rect, uint color);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color);</code>
     /// <summary>
@@ -1302,7 +1303,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_FillSurfaceRect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool FillSurfaceRect(nint dst, in Rect rect, uint color);
+    public static partial bool FillSurfaceRect(SurfaceHandle dst, in Rect rect, uint color);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color);</code>
     /// <summary>
@@ -1328,7 +1329,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_FillSurfaceRects"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool FillSurfaceRects(nint dst,
+    public static partial bool FillSurfaceRects(SurfaceHandle dst,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] Rect[] rects,
         int count,
         uint color);
@@ -1399,7 +1400,7 @@ public static partial class SDL
     /// <seealso cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface(nint src, nint srcrect, nint dst, nint dstrect);
+    public static partial bool BlitSurface(SurfaceHandle src, nint srcrect, SurfaceHandle dst, nint dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1467,7 +1468,7 @@ public static partial class SDL
     /// <seealso cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface(nint src, nint srcrect, nint dst, in Rect dstrect);
+    public static partial bool BlitSurface(SurfaceHandle src, nint srcrect, SurfaceHandle dst, in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1535,7 +1536,7 @@ public static partial class SDL
     /// <seealso cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface(nint src, in Rect srcrect, nint dst, nint dstrect);
+    public static partial bool BlitSurface(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, nint dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1603,7 +1604,7 @@ public static partial class SDL
     /// <seealso cref="BlitSurfaceScaled(nint, nint, nint, nint, ScaleMode)"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface(nint src, in Rect srcrect, nint dst, in Rect dstrect);
+    public static partial bool BlitSurface(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1627,7 +1628,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceUnchecked"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceUnchecked(nint src, in Rect srcrect, nint dst, in Rect dstrect);
+    public static partial bool BlitSurfaceUnchecked(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
@@ -1649,30 +1650,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceScaled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceScaled(nint src, nint srcrect, nint dst, nint dstrect, ScaleMode scaleMode);
-
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
-    /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
-    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
-    /// <param name="srcrect">
-    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
-    /// the entire surface.
-    /// </param>
-    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
-    /// <param name="dstrect">
-    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    /// <c> null </c> to fill the entire destination surface.
-    /// </param>
-    /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceScaled"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool
-        BlitSurfaceScaled(nint src, in Rect srcrect, nint dst, nint dstrect, ScaleMode scaleMode);
+    public static partial bool BlitSurfaceScaled(SurfaceHandle src, nint srcrect, SurfaceHandle dst, nint dstrect, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
@@ -1695,7 +1673,7 @@ public static partial class SDL
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool
-        BlitSurfaceScaled(nint src, nint srcrect, nint dst, in Rect dstrect, ScaleMode scaleMode);
+        BlitSurfaceScaled(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, nint dstrect, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
@@ -1717,9 +1695,32 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceScaled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceScaled(nint src,
+    public static partial bool
+        BlitSurfaceScaled(SurfaceHandle src, nint srcrect, SurfaceHandle dst, in Rect dstrect, ScaleMode scaleMode);
+
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
+    /// <summary> Perform a scaled blit to a destination surface, which may be of a different format. </summary>
+    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
+    /// <param name="srcrect">
+    /// the <see cref="Rect"/> structure representing the rectangle to be copied, or <c> null </c> to copy
+    /// the entire surface.
+    /// </param>
+    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
+    /// <param name="dstrect">
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire destination surface.
+    /// </param>
+    /// <param name="scaleMode"> the <see cref="ScaleMode"/> to be used. </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceScaled"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [return: MarshalAs(UnmanagedType.I1)]
+    public static partial bool BlitSurfaceScaled(SurfaceHandle src,
         in Rect srcrect,
-        nint dst,
+        SurfaceHandle dst,
         in Rect dstrect,
         ScaleMode scaleMode);
 
@@ -1746,9 +1747,9 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceUncheckedScaled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceUncheckedScaled(nint src,
+    public static partial bool BlitSurfaceUncheckedScaled(SurfaceHandle src,
         in Rect srcrect,
-        nint dst,
+        SurfaceHandle dst,
         in Rect dstrect,
         ScaleMode scaleMode);
 
@@ -1773,7 +1774,7 @@ public static partial class SDL
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool
-        StretchSurface(nint src, in Rect srcrect, nint dst, in Rect dstrect, ScaleMode scaleMode);
+        StretchSurface(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, in Rect dstrect, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
@@ -1795,7 +1796,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_StretchSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool StretchSurface(nint src, nint srcrect, nint dst, in Rect dstrect, ScaleMode scaleMode);
+    public static partial bool StretchSurface(SurfaceHandle src, nint srcrect, SurfaceHandle dst, in Rect dstrect, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
@@ -1817,7 +1818,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_StretchSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool StretchSurface(nint src, in Rect srcrect, nint dst, nint dstrect, ScaleMode scaleMode);
+    public static partial bool StretchSurface(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, nint dstrect, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);</code>
     /// <summary> Perform a stretched pixel copy from one surface to another. </summary>
@@ -1839,7 +1840,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_StretchSurface"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool StretchSurface(nint src, nint srcrect, nint dst, nint dstrect, ScaleMode scaleMode);
+    public static partial bool StretchSurface(SurfaceHandle src, nint srcrect, SurfaceHandle dst, nint dstrect, ScaleMode scaleMode);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1863,7 +1864,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiled(nint src, nint srcrect, nint dst, nint dstrect);
+    public static partial bool BlitSurfaceTiled(SurfaceHandle src, nint srcrect, SurfaceHandle dst, nint dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1887,7 +1888,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiled(nint src, in Rect srcrect, nint dst, nint dstrect);
+    public static partial bool BlitSurfaceTiled(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, nint dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1911,7 +1912,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiled(nint src, nint srcrect, nint dst, in Rect dstrect);
+    public static partial bool BlitSurfaceTiled(SurfaceHandle src, nint srcrect, SurfaceHandle dst, in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1935,7 +1936,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiled"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiled(nint src, in Rect srcrect, nint dst, in Rect dstrect);
+    public static partial bool BlitSurfaceTiled(SurfaceHandle src, in Rect srcrect, SurfaceHandle dst, in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
     /// <summary>
@@ -1967,11 +1968,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiledWithScale"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiledWithScale(nint src,
+    public static partial bool BlitSurfaceTiledWithScale(SurfaceHandle src,
         nint srcrect,
         float scale,
         ScaleMode scaleMode,
-        nint dst,
+        SurfaceHandle dst,
         nint dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
@@ -2004,11 +2005,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiledWithScale"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiledWithScale(nint src,
+    public static partial bool BlitSurfaceTiledWithScale(SurfaceHandle src,
         in Rect srcrect,
         float scale,
         ScaleMode scaleMode,
-        nint dst,
+        SurfaceHandle dst,
         nint dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
@@ -2041,11 +2042,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiledWithScale"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiledWithScale(nint src,
+    public static partial bool BlitSurfaceTiledWithScale(SurfaceHandle src,
         nint srcrect,
         float scale,
         ScaleMode scaleMode,
-        nint dst,
+        SurfaceHandle dst,
         in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
@@ -2078,152 +2079,11 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurfaceTiledWithScale"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurfaceTiledWithScale(nint src,
+    public static partial bool BlitSurfaceTiledWithScale(SurfaceHandle src,
         in Rect srcrect,
         float scale,
         ScaleMode scaleMode,
-        nint dst,
-        in Rect dstrect);
-
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
-    /// <summary>
-    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    /// <para>
-    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
-    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
-    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
-    /// rectangle.
-    /// </para>
-    /// </summary>
-    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
-    /// <param name="srcrect">
-    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    /// <c> null </c> to use the entire surface.
-    /// </param>
-    /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
-    /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
-    /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
-    /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
-    /// <param name="scale">
-    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    /// for an unscaled blit.
-    /// </param>
-    /// <param name="scaleMode"> scale algorithm to be used. </param>
-    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
-    /// <param name="dstrect">
-    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    /// <c> null </c> to fill the entire surface.
-    /// </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface9Grid(nint src,
-        nint srcrect,
-        int leftWidth,
-        int rightWidth,
-        int topHeight,
-        int bottomHeight,
-        float scale,
-        ScaleMode scaleMode,
-        nint dst,
-        nint dstrect);
-
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
-    /// <summary>
-    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    /// <para>
-    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
-    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
-    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
-    /// rectangle.
-    /// </para>
-    /// </summary>
-    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
-    /// <param name="srcrect">
-    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    /// <c> null </c> to use the entire surface.
-    /// </param>
-    /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
-    /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
-    /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
-    /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
-    /// <param name="scale">
-    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    /// for an unscaled blit.
-    /// </param>
-    /// <param name="scaleMode"> scale algorithm to be used. </param>
-    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
-    /// <param name="dstrect">
-    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    /// <c> null </c> to fill the entire surface.
-    /// </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface9Grid(nint src,
-        in Rect srcrect,
-        int leftWidth,
-        int rightWidth,
-        int topHeight,
-        int bottomHeight,
-        float scale,
-        ScaleMode scaleMode,
-        nint dst,
-        nint dstrect);
-
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
-    /// <summary>
-    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
-    /// <para>
-    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
-    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
-    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
-    /// rectangle.
-    /// </para>
-    /// </summary>
-    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
-    /// <param name="srcrect">
-    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
-    /// <c> null </c> to use the entire surface.
-    /// </param>
-    /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
-    /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
-    /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
-    /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
-    /// <param name="scale">
-    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
-    /// for an unscaled blit.
-    /// </param>
-    /// <param name="scaleMode"> scale algorithm to be used. </param>
-    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
-    /// <param name="dstrect">
-    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
-    /// <c> null </c> to fill the entire surface.
-    /// </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface9Grid(nint src,
-        nint srcrect,
-        int leftWidth,
-        int rightWidth,
-        int topHeight,
-        int bottomHeight,
-        float scale,
-        ScaleMode scaleMode,
-        nint dst,
+        SurfaceHandle dst,
         in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
@@ -2262,7 +2122,54 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool BlitSurface9Grid(nint src,
+    public static partial bool BlitSurface9Grid(SurfaceHandle src,
+        nint srcrect,
+        int leftWidth,
+        int rightWidth,
+        int topHeight,
+        int bottomHeight,
+        float scale,
+        ScaleMode scaleMode,
+        SurfaceHandle dst,
+        nint dstrect);
+
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
+    /// <summary>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
+    /// </summary>
+    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
+    /// <param name="srcrect">
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
+    /// </param>
+    /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
+    /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
+    /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
+    /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
+    /// <param name="scale">
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
+    /// </param>
+    /// <param name="scaleMode"> scale algorithm to be used. </param>
+    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
+    /// <param name="dstrect">
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
+    /// </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [return: MarshalAs(UnmanagedType.I1)]
+    public static partial bool BlitSurface9Grid(SurfaceHandle src,
         in Rect srcrect,
         int leftWidth,
         int rightWidth,
@@ -2270,7 +2177,101 @@ public static partial class SDL
         int bottomHeight,
         float scale,
         ScaleMode scaleMode,
-        nint dst,
+        SurfaceHandle dst,
+        nint dstrect);
+
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
+    /// <summary>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
+    /// </summary>
+    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
+    /// <param name="srcrect">
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
+    /// </param>
+    /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
+    /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
+    /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
+    /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
+    /// <param name="scale">
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
+    /// </param>
+    /// <param name="scaleMode"> scale algorithm to be used. </param>
+    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
+    /// <param name="dstrect">
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
+    /// </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [return: MarshalAs(UnmanagedType.I1)]
+    public static partial bool BlitSurface9Grid(SurfaceHandle src,
+        nint srcrect,
+        int leftWidth,
+        int rightWidth,
+        int topHeight,
+        int bottomHeight,
+        float scale,
+        ScaleMode scaleMode,
+        SurfaceHandle dst,
+        in Rect dstrect);
+
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);</code>
+    /// <summary>
+    /// <para> Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different format. </para>
+    /// <para>
+    /// The pixels in the source surface are split into a 3x3 grid, using the different corner sizes for each corner, and the
+    /// sides and center making up the remaining pixels. The corners are then scaled using <c> scale </c> and fit into the corners
+    /// of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination
+    /// rectangle.
+    /// </para>
+    /// </summary>
+    /// <param name="src"> the <see cref="Surface"/> structure to be copied from. </param>
+    /// <param name="srcrect">
+    /// the <see cref="Rect"/> structure representing the rectangle to be used for the 9-grid, or
+    /// <c> null </c> to use the entire surface.
+    /// </param>
+    /// <param name="leftWidth"> the width, in pixels, of the left corners in <c> srcrect </c>. </param>
+    /// <param name="rightWidth"> the width, in pixels, of the right corners in <c> srcrect </c>. </param>
+    /// <param name="topHeight"> the height, in pixels, of the top corners in <c> srcrect </c>. </param>
+    /// <param name="bottomHeight"> the height, in pixels, of the bottom corners in <c> srcrect </c>. </param>
+    /// <param name="scale">
+    /// the scale used to transform the corner of <c> srcrect </c> into the corner of <c> dstrect </c>, or 0.0f
+    /// for an unscaled blit.
+    /// </param>
+    /// <param name="scaleMode"> scale algorithm to be used. </param>
+    /// <param name="dst"> the <see cref="Surface"/> structure that is the blit target. </param>
+    /// <param name="dstrect">
+    /// the <see cref="Rect"/> structure representing the target rectangle in the destination surface, or
+    /// <c> null </c> to fill the entire surface.
+    /// </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <threadsafety> Only one thread should be using the <c> src </c> and <c> dst </c> surfaces at any given time. </threadsafety>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    /// <seealso cref="BlitSurface(nint, nint, nint, nint)"/>
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_BlitSurface9Grid"),
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [return: MarshalAs(UnmanagedType.I1)]
+    public static partial bool BlitSurface9Grid(SurfaceHandle src,
+        in Rect srcrect,
+        int leftWidth,
+        int rightWidth,
+        int topHeight,
+        int bottomHeight,
+        float scale,
+        ScaleMode scaleMode,
+        SurfaceHandle dst,
         in Rect dstrect);
 
     /// <code>extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);</code>
@@ -2298,7 +2299,7 @@ public static partial class SDL
     /// <seealso cref="MapSurfaceRGBA"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_MapSurfaceRGB"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint MapSurfaceRGB(nint surface, byte r, byte g, byte b);
+    public static partial uint MapSurfaceRGB(SurfaceHandle surface, byte r, byte g, byte b);
 
     /// <code>extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a);</code>
     /// <summary>
@@ -2329,7 +2330,7 @@ public static partial class SDL
     /// <seealso cref="MapSurfaceRGB"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_MapSurfaceRGBA"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint MapSurfaceRGBA(nint surface, byte r, byte g, byte b, byte a);
+    public static partial uint MapSurfaceRGBA(SurfaceHandle surface, byte r, byte g, byte b, byte a);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);</code>
     /// <summary>
@@ -2356,7 +2357,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ReadSurfacePixel"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ReadSurfacePixel(nint surface,
+    public static partial bool ReadSurfacePixel(SurfaceHandle surface,
         int x,
         int y,
         out byte r,
@@ -2397,7 +2398,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_ReadSurfacePixelFloat"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool ReadSurfacePixelFloat(nint surface,
+    public static partial bool ReadSurfacePixelFloat(SurfaceHandle surface,
         int x,
         int y,
         out float r,
@@ -2430,7 +2431,7 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_WriteSurfacePixel"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool WriteSurfacePixel(nint surface, int x, int y, byte r, byte g, byte b, byte a);
+    public static partial bool WriteSurfacePixel(SurfaceHandle surface, int x, int y, byte r, byte g, byte b, byte a);
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, float g, float b, float a);</code>
     /// <summary>
@@ -2452,5 +2453,5 @@ public static partial class SDL
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_WriteSurfacePixelFloat"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool WriteSurfacePixelFloat(nint surface, int x, int y, float r, float g, float b, float a);
+    public static partial bool WriteSurfacePixelFloat(SurfaceHandle surface, int x, int y, float r, float g, float b, float a);
 }

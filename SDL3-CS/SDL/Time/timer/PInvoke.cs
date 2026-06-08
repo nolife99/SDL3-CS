@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,8 +25,10 @@
 
 namespace SDL3;
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 public static partial class SDL
 {
@@ -163,52 +165,186 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="AddTimerNS"/>
     /// <seealso cref="RemoveTimer"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddTimer"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial uint AddTimer(uint interval, TimerCallback callback, nint userdata);
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddTimer"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial uint SDL_AddTimer(uint interval,
+        delegate* unmanaged[Cdecl]<nint, uint, uint, uint> callback,
+        nint userdata);
 
-    /// <code>extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata);</code>
+    // Live timer roots, keyed by timer id. A registration is released by whoever loses the race between
+    // RemoveTimer and the callback cancelling itself by returning 0 (the timer thread may fire before
+    // AddTimer even returns, hence the interlocked flag on the registration itself).
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, TimerRegistration> timers = new();
+
+    abstract class TimerRegistration
+    {
+        public GCHandle Self;
+        int released;
+
+        public virtual uint InvokeMs(uint timerId, uint interval) => 0;
+        public virtual ulong InvokeNs(uint timerId, ulong interval) => 0;
+
+        public void Release(uint id)
+        {
+            if (Interlocked.Exchange(ref released, 1) != 0) return;
+
+            timers.TryRemove(id, out _);
+            Self.Free();
+        }
+
+        public bool IsReleased => Volatile.Read(ref released) != 0;
+    }
+
+    sealed class MsTimerRegistration(TimerCallback callback) : TimerRegistration
+    {
+        public override uint InvokeMs(uint timerId, uint interval) => callback(timerId, interval);
+    }
+
+    // The typed state lives in this generic class field: no boxing, no closure capture.
+    sealed class MsTimerRegistration<T>(TimerCallback<T> callback, T state) : TimerRegistration
+    {
+        public override uint InvokeMs(uint timerId, uint interval) => callback(state, timerId, interval);
+    }
+
+    sealed class NsTimerRegistration(NSTimerCallback callback) : TimerRegistration
+    {
+        public override ulong InvokeNs(uint timerId, ulong interval) => callback(timerId, interval);
+    }
+
+    sealed class NsTimerRegistration<T>(NSTimerCallback<T> callback, T state) : TimerRegistration
+    {
+        public override ulong InvokeNs(uint timerId, ulong interval) => callback(state, timerId, interval);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static uint TimerThunk(nint userdata, uint timerId, uint interval)
+    {
+        var registration = (TimerRegistration)GCHandle.FromIntPtr(userdata).Target!;
+        uint next;
+        try
+        {
+            next = registration.InvokeMs(timerId, interval);
+        }
+        catch (Exception exception)
+        {
+            // Cancel a throwing timer rather than letting it throw every tick.
+            ReportCallbackException(exception);
+            next = 0;
+        }
+
+        if (next == 0) registration.Release(timerId);
+        return next;
+    }
+
+    static uint AddTimerCore(uint interval, TimerRegistration registration)
+    {
+        registration.Self = GCHandle.Alloc(registration);
+
+        uint id;
+        unsafe
+        {
+            id = SDL_AddTimer(interval, &TimerThunk, GCHandle.ToIntPtr(registration.Self));
+        }
+
+        if (id == 0)
+        {
+            registration.Self.Free();
+            return 0;
+        }
+
+        // Publish for RemoveTimer; if the callback already self-cancelled, undo the publish.
+        timers[id] = registration;
+        if (registration.IsReleased) timers.TryRemove(id, out _);
+        return id;
+    }
+
     /// <summary>
-    /// <para> Call a callback function at a future time. </para>
-    /// <para>
-    /// The callback function is passed the current timer interval and the user supplied parameter from the
-    /// <see cref="AddTimerNS"/> call and should return the next timer interval. If the value returned from the callback is 0, the
-    /// timer is canceled and will be removed.
-    /// </para>
-    /// <para>
-    /// The callback is run on a separate thread, and for short timeouts can potentially be called before this function
-    /// returns.
-    /// </para>
-    /// <para>
-    /// Timers take into account the amount of time it took to execute the callback. For example, if the callback took 250 ns
-    /// to execute and returned 1000 (ns), the timer would only wait another 750 ns before its next iteration.
-    /// </para>
-    /// <para>
-    /// Timing may be inexact due to OS scheduling. Be sure to note the current time with <see cref="GetTicksNS"/> or
-    /// <see cref="GetPerformanceCounter"/> in case your callback needs to adjust for variances.
-    /// </para>
+    ///     See the native documentation above. State is captured by closure; the delegate is rooted until
+    ///     the timer is removed or its callback returns 0.
     /// </summary>
-    /// <param name="interval"> the timer delay, in nanoseconds, passed to <c> callback </c>. </param>
-    /// <param name="callback"> the <see cref="TimerCallback"/> function to call when the specified <c> interval </c> elapses. </param>
-    /// <param name="userdata"> a pointer that is passed to <c> callback </c>. </param>
-    /// <returns> a timer ID or 0 on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="AddTimer"/>
-    /// <seealso cref="RemoveTimer"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddTimerNS"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial uint AddTimerNS(ulong interval, NSTimerCallback callback, nint userdata);
+    public static uint AddTimer(uint interval, TimerCallback callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return AddTimerCore(interval, new MsTimerRegistration(callback));
+    }
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_RemoveTimer(SDL_TimerID id);</code>
-    /// <summary> Remove a timer created with <see cref="AddTimer"/>. </summary>
-    /// <param name="id"> the ID of the timer to remove. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <threadsafety> It is safe to call this function from any thread. </threadsafety>
-    /// <since> This function is available since SDL 3.2.0 </since>
-    /// <seealso cref="AddTimer"/>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_RemoveTimer"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]),
-     MethodImpl(MethodImplOptions.AggressiveInlining)]
+    /// <summary>Stateful variant: state reaches the callback without boxing — use a static lambda.</summary>
+    public static uint AddTimer<T>(uint interval, TimerCallback<T> callback, T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return AddTimerCore(interval, new MsTimerRegistration<T>(callback, state));
+    }
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_AddTimerNS"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial uint SDL_AddTimerNS(ulong interval,
+        delegate* unmanaged[Cdecl]<nint, uint, ulong, ulong> callback,
+        nint userdata);
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static ulong NSTimerThunk(nint userdata, uint timerId, ulong interval)
+    {
+        var registration = (TimerRegistration)GCHandle.FromIntPtr(userdata).Target!;
+        ulong next;
+        try
+        {
+            next = registration.InvokeNs(timerId, interval);
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+            next = 0;
+        }
+
+        if (next == 0) registration.Release(timerId);
+        return next;
+    }
+
+    static uint AddTimerNSCore(ulong interval, TimerRegistration registration)
+    {
+        registration.Self = GCHandle.Alloc(registration);
+
+        uint id;
+        unsafe
+        {
+            id = SDL_AddTimerNS(interval, &NSTimerThunk, GCHandle.ToIntPtr(registration.Self));
+        }
+
+        if (id == 0)
+        {
+            registration.Self.Free();
+            return 0;
+        }
+
+        timers[id] = registration;
+        if (registration.IsReleased) timers.TryRemove(id, out _);
+        return id;
+    }
+
+    /// <summary>
+    ///     See the native documentation above. State is captured by closure; the delegate is rooted until
+    ///     the timer is removed or its callback returns 0.
+    /// </summary>
+    public static uint AddTimerNS(ulong interval, NSTimerCallback callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return AddTimerNSCore(interval, new NsTimerRegistration(callback));
+    }
+
+    /// <summary>Stateful variant: state reaches the callback without boxing — use a static lambda.</summary>
+    public static uint AddTimerNS<T>(ulong interval, NSTimerCallback<T> callback, T state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return AddTimerNSCore(interval, new NsTimerRegistration<T>(callback, state));
+    }
+
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_RemoveTimer"), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool RemoveTimer(uint id);
+    private static partial bool SDL_RemoveTimer(uint id);
+
+    /// <summary>Remove a timer created with <see cref="AddTimer(uint, TimerCallback)"/>, releasing its root.</summary>
+    public static bool RemoveTimer(uint id)
+    {
+        var removed = SDL_RemoveTimer(id);
+        if (timers.TryGetValue(id, out var registration)) registration.Release(id);
+        return removed;
+    }
 }

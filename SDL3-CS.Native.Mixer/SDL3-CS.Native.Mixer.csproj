@@ -1,19 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+    <!-- Payload-only project: carries native SDL3_mixer binaries. The managed assembly it produces
+         is an empty stub and must never flow to consumers - reference this project with
+         ReferenceOutputAssembly="false" so only the native Content items below are copied. -->
     <PropertyGroup>
-        <TargetFrameworks>net9.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFramework>netstandard1.0</TargetFramework>
         <RootNamespace>SDL3_CS.Native.Mixer</RootNamespace>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet">
-        <Version>2.8.1.1</Version>
+        <Version>3.0.0</Version>
         <Title>SDL3 C# Native mixer libraries</Title>
         <Authors>Eduard Gushchin</Authors>
         <Company>Eduard Gushchin</Company>
-        <Description>This package contains native SDL_mixer libraries for SDL3-CS</Description>
+        <Description>This package contains native SDL3_mixer libraries for SDL3-CS</Description>
         <Copyright>Copyright (c) 2024-2025 Eduard Gushchin.</Copyright>
         <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
         <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
@@ -21,7 +22,6 @@
         <PackageTags>SDL, SDL3, SDL3-CS</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>logo.png</PackageIcon>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>1591</NoWarn>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
@@ -31,13 +31,14 @@
         <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
         <None Include="README.md" Pack="true" Visible="true" PackagePath="\"/>
 
-        <None Include="lib\win-x64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-x64\native\</PackagePath>
-        </None>
-        <None Include="lib\win-x86\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-x86\native\</PackagePath>
-        </None>
+        <!-- Only SDL3_mixer binaries are valid payloads here; the SDL2_mixer.dll still sitting in
+             lib\ is a stale upstream artifact (SDL2-generation, useless against SDL3) and is
+             deliberately not matched. Drop SDL3_mixer.dll into lib\win-x64\ to activate. -->
+        <Content Include="lib\**\SDL3_mixer*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Link>runtimes\%(RecursiveDir)\native\%(Filename)%(Extension)</Link>
+            <Pack>true</Pack>
+            <PackagePath>runtimes\%(RecursiveDir)\native</PackagePath>
+        </Content>
     </ItemGroup>
 </Project>

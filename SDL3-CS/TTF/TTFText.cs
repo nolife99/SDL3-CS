@@ -38,8 +38,8 @@ public static partial class TTF
     public struct TTFText
     {
         /// <summary>
-        ///     A copy of the UTF-8 string that this text object represents, useful for layout, debugging and retrieving substring
-        ///     text. This is updated when the text object is modified and will be freed automatically when the object is destroyed.
+        /// A copy of the UTF-8 string that this text object represents, useful for layout, debugging and retrieving substring
+        /// text. This is updated when the text object is modified and will be freed automatically when the object is destroyed.
         /// </summary>
         public IntPtr Text;
 

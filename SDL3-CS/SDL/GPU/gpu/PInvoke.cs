@@ -52,7 +52,7 @@ public partial class SDL
  [LibraryImport(SDLLibrary, EntryPoint = "SDL_GPUSupportsProperties"),
   UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool GPUSupportsProperties(uint props);
+    public static partial bool GPUSupportsProperties(PropertiesID props);
 
  /// <code>extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(SDL_GPUShaderFormat format_flags, bool debug_mode, const char *name);</code>
  /// <summary>
@@ -160,7 +160,7 @@ public partial class SDL
  /// <seealso cref="GPUSupportsProperties"/>
  [LibraryImport(SDLLibrary, EntryPoint = "SDL_CreateGPUDeviceWithProperties"),
   UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGPUDeviceWithProperties(uint props);
+    public static partial nint CreateGPUDeviceWithProperties(PropertiesID props);
 
  /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUDevice(SDL_GPUDevice *device);</code>
  /// <summary> Destroys a GPU context previously returned by SDL_CreateGPUDevice. </summary>
@@ -298,7 +298,7 @@ public partial class SDL
     /// <since> This function is available since SDL 3.4.0. </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetGPUDeviceProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetGPUDeviceProperties(nint device);
+    public static partial PropertiesID GetGPUDeviceProperties(nint device);
 
     /// <code>extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline(SDL_GPUDevice *device, const SDL_GPUComputePipelineCreateInfo *createinfo);</code>
     /// <summary>
@@ -1043,9 +1043,9 @@ public partial class SDL
     /// <param name="renderPass"> a render pass handle. </param>
     /// <param name="reference"> the stencil reference value to set. </param>
     /// <since> This function is available since SDL 3.2.0 </since>
-    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetGPUBlendConstants"),
+    [LibraryImport(SDLLibrary, EntryPoint = "SDL_SetGPUStencilReference"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void SetGPUBlendConstants(nint renderPass, byte reference);
+    public static partial void SetGPUStencilReference(nint renderPass, byte reference);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(SDL_GPURenderPass *render_pass, const SDL_GPUBufferBinding *binding, SDL_GPUIndexElementSize index_element_size);</code>
     /// <summary> Binds an index buffer on a command buffer for use with subsequent draw calls. </summary>
@@ -1121,7 +1121,7 @@ public partial class SDL
         uint numIndices,
         uint numInstances,
         uint firstIndex,
-        short vertexOffset,
+        int vertexOffset,
         uint firstInstance);
 
     /// <code>extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUPrimitives(SDL_GPURenderPass *render_pass, Uint32 num_vertices, Uint32 num_instances, Uint32 first_vertex, Uint32 first_instance);</code>

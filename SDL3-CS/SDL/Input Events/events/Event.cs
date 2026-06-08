@@ -165,6 +165,10 @@ public struct Event
     [FieldOffset(0)]
     public SDL.TouchFingerEvent TFinger;
 
+    /// <summary> Pinch event data </summary>
+    [FieldOffset(0)]
+    public SDL.PinchFingerEvent Pinch;
+
     /// <summary> Pen proximity event data </summary>
     [FieldOffset(0)]
     public SDL.PenProximityEvent PProximity;

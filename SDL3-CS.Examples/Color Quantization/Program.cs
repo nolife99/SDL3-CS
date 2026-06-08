@@ -24,13 +24,13 @@ internal class Program
         
         if (!SDL.Init(SDL.InitFlags.Video | SDL.InitFlags.Camera))
         {
-            SDL.LogError(SDL.LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
+            SDL.LogError(LogCategory.System, $"SDL could not initialize: {SDL.GetError()}");
             return;
         }
 
         if (!SDL.CreateWindowAndRenderer("SDL3 Color Quantization", 640, 640, SDL.WindowFlags.Resizable, out _window, out _renderer))
         {
-            SDL.LogError(SDL.LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
+            SDL.LogError(LogCategory.Application, $"Error creating window and rendering: {SDL.GetError()}");
             return;
         }
         
@@ -65,7 +65,7 @@ internal class Program
             {
                 var surface = Image.Load(newfileName);
                 
-                var frame = SDL.PointerToStructure<SDL.Surface>(surface) ?? default;
+                var frame = SDL.PointerToStructure<Surface>(surface) ?? default;
 
                 if (frame.Format == SDL.PixelFormat.RGB24)
                 {

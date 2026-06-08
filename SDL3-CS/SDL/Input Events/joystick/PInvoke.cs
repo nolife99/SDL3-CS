@@ -509,7 +509,7 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetJoystickProperties"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetJoystickProperties(nint joystick);
+    public static partial PropertiesID GetJoystickProperties(nint joystick);
 
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_GetJoystickName"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -987,17 +987,22 @@ public static partial class SDL
     [return: MarshalAs(UnmanagedType.I1)]
     public static partial bool SetJoystickLED(nint joystick, byte red, byte green, byte blue);
 
-    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size);</code>
-    /// <summary> Send a joystick specific effect packet. </summary>
-    /// <param name="joystick"> the joystick to affect. </param>
-    /// <param name="data"> the data to send to the joystick. </param>
-    /// <param name="size"> the size of the data to send to the joystick. </param>
-    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
-    /// <since> This function is available since SDL 3.2.0 </since>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_SendJoystickEffect"),
      UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool SendJoystickEffect(nint joystick, nint data, int size);
+    private static unsafe partial bool SDL_SendJoystickEffect(nint joystick, void* data, int size);
+
+    /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size);</code>
+    /// <summary> Send a joystick specific effect packet. </summary>
+    /// <typeparam name="T"> the unmanaged element type of the span. </typeparam>
+    /// <param name="joystick"> the joystick to affect. </param>
+    /// <param name="data"> the effect data to send (pinned for the call); its byte length is <c> data.Length * sizeof(T) </c>. </param>
+    /// <returns> <c> true </c> on success or <c> false </c> on failure; call <see cref="GetError"/> for more information. </returns>
+    /// <since> This function is available since SDL 3.2.0 </since>
+    public static unsafe bool SendJoystickEffect<T>(nint joystick, ReadOnlySpan<T> data) where T : unmanaged
+    {
+        fixed (T* ptr = data) return SDL_SendJoystickEffect(joystick, ptr, checked(data.Length * sizeof(T)));
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size);</code>
     /// <summary> Send a joystick specific effect packet. </summary>

@@ -21,18 +21,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+// This file is an altered version (storybrew fork): the filter is a fully managed delegate (state is
+// captured by closure instead of a userdata pointer); native thunking lives in PInvoke.cs, which also
+// keeps registered delegates rooted so they can never be garbage-collected behind SDL's back.
+
 #endregion
 
 namespace SDL3;
 
-using System.Runtime.InteropServices;
-
 /// <code>typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);</code>
-/// <summary> A function pointer used for callbacks that watch the event queue. </summary>
-/// <param name="userdata">
-/// what was passed as <c> userdata </c> to <see cref="SDL.SetEventFilter"/> or
-/// <see cref="SDL.AddEventWatch"/>, etc.
-/// </param>
+/// <summary> A callback that watches or filters the event queue. </summary>
 /// <param name="event"> the event that triggered the callback. </param>
 /// <returns>
 /// true to permit event to be added to the queue, and false to disallow it. When used with
@@ -40,10 +38,17 @@ using System.Runtime.InteropServices;
 /// </returns>
 /// <threadsafety>
 /// SDL may call this callback at any time from any thread; the application is responsible for locking resources
-/// the callback touches that need to be protected.
+/// the callback touches that need to be protected. Exceptions never propagate into native SDL: they are routed to
+/// <see cref="SDL.UnhandledCallbackException"/> (or the SDL log) and the event is permitted.
 /// </threadsafety>
 /// <since> This datatype is available since SDL 3.2.0 </since>
 /// <seealso cref="SDL.SetEventFilter"/>
 /// <seealso cref="SDL.AddEventWatch"/>
-[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate bool EventFilter(nint userdata, ref Event @event);
+public delegate bool EventFilter(ref readonly Event @event);
+
+/// <summary>
+///     Stateful variant of <see cref="EventFilter"/> for the call-scoped
+///     <see cref="SDL.FilterEvents{T}(EventFilter{T}, T)"/>: <paramref name="state"/> is delivered without
+///     boxing — use a static lambda instead of capturing.
+/// </summary>
+public delegate bool EventFilter<in T>(T state, ref readonly Event @event);

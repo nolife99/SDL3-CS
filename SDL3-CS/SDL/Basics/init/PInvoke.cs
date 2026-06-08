@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /* Copyright (c) 2024-2025 Eduard Gushchin.
  *
@@ -25,8 +25,10 @@
 
 namespace SDL3;
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 public static partial class SDL
 {
@@ -178,11 +180,131 @@ public static partial class SDL
     /// <since> This function is available since SDL 3.2.0 </since>
     /// <seealso cref="IsMainThread"/>
     [LibraryImport(SDLLibrary, EntryPoint = "SDL_RunOnMainThread"),
-     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)]), MethodImpl(MethodImplOptions.AggressiveInlining)]
+     UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     [return: MarshalAs(UnmanagedType.I1)]
-    public static partial bool RunOnMainThread(MainThreadCallback callback,
+    private static unsafe partial bool SDL_RunOnMainThread(delegate* unmanaged[Cdecl]<nint, void> callback,
         nint userdata,
         [MarshalAs(UnmanagedType.I1)] bool waitComplete);
+
+    // One-shot invokers are POOLED (single-slot Interlocked cache per closed type): dispatching to
+    // the main thread allocates nothing in steady state. The instance returns itself to the pool
+    // inside Invoke, before running the callback, so reentrant dispatch from the callback simply
+    // rents it right back.
+    abstract class MainThreadInvoker
+    {
+        public abstract void Invoke();
+
+        /// <summary> Failure path: clear and pool without invoking. </summary>
+        public abstract void Recycle();
+    }
+
+    sealed class PlainMainThreadInvoker : MainThreadInvoker
+    {
+        static PlainMainThreadInvoker? pooled;
+        Action? callback;
+
+        public static PlainMainThreadInvoker Rent(Action callback)
+        {
+            var invoker = Interlocked.Exchange(ref pooled, null) ?? new PlainMainThreadInvoker();
+            invoker.callback = callback;
+            return invoker;
+        }
+
+        public override void Invoke()
+        {
+            var run = callback!;
+            Recycle();
+            run();
+        }
+
+        public override void Recycle()
+        {
+            callback = null;
+            Volatile.Write(ref pooled, this);
+        }
+    }
+
+    // The typed state lives in this generic class field: no boxing, no closure capture.
+    sealed class StatefulMainThreadInvoker<T> : MainThreadInvoker
+    {
+        static StatefulMainThreadInvoker<T>? pooled;
+        Action<T>? callback;
+        T state;
+
+        public static StatefulMainThreadInvoker<T> Rent(Action<T> callback, T state)
+        {
+            var invoker = Interlocked.Exchange(ref pooled, null) ?? new StatefulMainThreadInvoker<T>();
+            invoker.callback = callback;
+            invoker.state = state;
+            return invoker;
+        }
+
+        public override void Invoke()
+        {
+            var run = callback!;
+            var arg = state;
+            Recycle();
+            run(arg);
+        }
+
+        public override void Recycle()
+        {
+            callback = null;
+            state = default!;
+            Volatile.Write(ref pooled, this);
+        }
+    }
+
+    /// <summary>One-shot main-thread dispatch: the root is freed once the callback has run.</summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    static void MainThreadThunk(nint userdata)
+    {
+        var handle = GCHandle.FromIntPtr(userdata);
+        try
+        {
+            ((MainThreadInvoker)handle.Target!).Invoke();
+        }
+        catch (Exception exception)
+        {
+            ReportCallbackException(exception);
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
+
+    static unsafe bool RunOnMainThreadCore(MainThreadInvoker invoker, bool waitComplete)
+    {
+        var handle = GCHandle.Alloc(invoker);
+        if (SDL_RunOnMainThread(&MainThreadThunk, GCHandle.ToIntPtr(handle), waitComplete)) return true;
+
+        // The callback will never run; release the root and pool the invoker here.
+        handle.Free();
+        invoker.Recycle();
+        return false;
+    }
+
+    /// <summary>
+    ///     See the native documentation above: runs <paramref name="callback"/> on the main thread —
+    ///     immediately when already there, otherwise queued into event processing. The delegate is rooted
+    ///     until it has run (or the call fails). Steady-state allocation-free (pooled dispatch).
+    /// </summary>
+    public static bool RunOnMainThread(Action callback, bool waitComplete)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return RunOnMainThreadCore(PlainMainThreadInvoker.Rent(callback), waitComplete);
+    }
+
+    /// <summary>
+    ///     Stateful variant: <paramref name="state"/> reaches the callback without boxing or closure
+    ///     captures — use a static lambda. Steady-state allocation-free (pooled dispatch).
+    /// </summary>
+    public static bool RunOnMainThread<T>(Action<T> callback, T state, bool waitComplete)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        return RunOnMainThreadCore(StatefulMainThreadInvoker<T>.Rent(callback, state), waitComplete);
+    }
 
     /// <code>extern SDL_DECLSPEC bool SDLCALL SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier);</code>
     /// <summary>
