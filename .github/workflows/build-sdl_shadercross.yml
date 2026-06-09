@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      cache_key_prefix:
-        description: Run-scoped prefix used by the aggregate workflow
+      artifact_prefix:
+        description: Run-scoped artifact prefix used by the aggregate workflow
         required: false
         type: string
         default: ""
@@ -52,21 +52,18 @@ jobs:
             rid: win-x64
             msvc_arch: x64
             msvc_host_arch: x64
-            dxc: true
           - runner: windows-2025
             os: windows
             arch: x86
             rid: win-x86
             msvc_arch: x86
             msvc_host_arch: x64
-            dxc: false
           - runner: windows-11-arm
             os: windows
             arch: arm64
             rid: win-arm64
             msvc_arch: arm64
             msvc_host_arch: arm64
-            dxc: true
           - runner: ubuntu-24.04
             os: linux
             arch: x64
@@ -129,7 +126,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
               build-essential gcc-multilib g++-multilib libc6-dev-i386 \
-              cmake ninja-build pkg-config git file patchelf \
+              cmake ninja-build pkg-config git file patchelf curl xz-utils \
+              bison flex libjson-perl \
               libasound2-dev:i386 libusb-1.0-0-dev:i386 \
               libdbus-1-dev:i386 libudev-dev:i386 \
               libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 \
@@ -139,7 +137,8 @@ jobs:
           else
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
-              build-essential cmake ninja-build pkg-config git file patchelf \
+              build-essential cmake ninja-build pkg-config git file patchelf curl xz-utils \
+              bison flex libjson-perl \
               libasound2-dev libpulse-dev libjack-dev libsndio-dev \
               libusb-1.0-0-dev libdbus-1-dev libudev-dev \
               libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
@@ -149,11 +148,180 @@ jobs:
               libpipewire-0.3-dev libvulkan-dev
           fi
 
+      - name: Install macOS vkd3d build dependencies
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install bison flex pkg-config cpanminus
+          echo "$(brew --prefix bison)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix flex)/bin" >> "$GITHUB_PATH"
+          perl_root="$RUNNER_TEMP/perl5"
+          cpanm --notest --local-lib-contained "$perl_root" JSON
+          echo "PERL5LIB=$perl_root/lib/perl5" >> "$GITHUB_ENV"
+          echo "$perl_root/bin" >> "$GITHUB_PATH"
+          perl -MJSON -e 'print "Perl JSON available\n"'
+
+      - name: Patch SDL_shadercross for statically linked vkd3d-utils
+        if: matrix.os != 'windows'
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          source_path = Path("SDL_shadercross/src/SDL_shadercross.c")
+          source = source_path.read_text(encoding="utf-8")
+
+          marker = "static pfn_D3DCompile SDL_D3DCompile = NULL;"
+          replacement = marker + """
+          #ifdef SDL_SHADERCROSS_STATIC_VKD3D
+          extern HRESULT __stdcall SDL_ShaderCross_StaticD3DCompile(
+              LPCVOID pSrcData, SIZE_T SrcDataSize, LPCSTR pSourceName,
+              const D3D_SHADER_MACRO *pDefines, ID3DInclude *pInclude,
+              LPCSTR pEntrypoint, LPCSTR pTarget, UINT Flags1, UINT Flags2,
+              ID3DBlob **ppCode, ID3DBlob **ppErrorMsgs);
+          #endif"""
+          if source.count(marker) != 1:
+              raise RuntimeError("Unexpected SDL_D3DCompile declaration count")
+          source = source.replace(marker, replacement)
+
+          init_pattern = re.compile(
+              r"bool SDL_ShaderCross_Init\(void\)\n\{\n"
+              r".*?"
+              r"\n    return true;\n\}",
+              re.DOTALL,
+          )
+          init_replacement = """bool SDL_ShaderCross_Init(void)
+          {
+          #ifdef SDL_SHADERCROSS_STATIC_VKD3D
+              SDL_D3DCompile = SDL_ShaderCross_StaticD3DCompile;
+          #else
+              d3dcompiler_dll = SDL_LoadObject(D3DCOMPILER_DLL);
+              if (d3dcompiler_dll != NULL) {
+                  SDL_D3DCompile = (pfn_D3DCompile)SDL_LoadFunction(d3dcompiler_dll, "D3DCompile");
+                  if (SDL_D3DCompile == NULL) {
+                      SDL_UnloadObject(d3dcompiler_dll);
+                      d3dcompiler_dll = NULL;
+                  }
+              }
+          #endif
+              return true;
+          }"""
+          source, count = init_pattern.subn(init_replacement, source, count=1)
+          if count != 1:
+              raise RuntimeError("Could not patch SDL_ShaderCross_Init")
+
+          quit_pattern = re.compile(
+              r"void SDL_ShaderCross_Quit\(void\)\n\{\n"
+              r".*?"
+              r"\n\}",
+              re.DOTALL,
+          )
+          quit_replacement = """void SDL_ShaderCross_Quit(void)
+          {
+          #ifndef SDL_SHADERCROSS_STATIC_VKD3D
+              if (d3dcompiler_dll != NULL) {
+                  SDL_UnloadObject(d3dcompiler_dll);
+                  d3dcompiler_dll = NULL;
+              }
+          #endif
+              SDL_D3DCompile = NULL;
+          }"""
+          source, count = quit_pattern.subn(quit_replacement, source, count=1)
+          if count != 1:
+              raise RuntimeError("Could not patch SDL_ShaderCross_Quit")
+
+          # Capability reporting must key off the function pointer for the static path.
+          capability_test = "if (d3dcompiler_dll != NULL) {\n        supportedFormats |= SDL_GPU_SHADERFORMAT_DXBC;"
+          if source.count(capability_test) != 2:
+              raise RuntimeError("Unexpected DXBC capability check count")
+          source = source.replace(
+              capability_test,
+              "if (SDL_D3DCompile != NULL) {\n        supportedFormats |= SDL_GPU_SHADERFORMAT_DXBC;",
+          )
+          source_path.write_text(source, encoding="utf-8")
+
+          wrapper = Path("SDL_shadercross/src/static_vkd3d.c")
+          wrapper.write_text(
+              "#include <vkd3d_utils.h>\n"
+              "HRESULT WINAPI SDL_ShaderCross_StaticD3DCompile(\n"
+              "    LPCVOID source, SIZE_T source_size, LPCSTR source_name,\n"
+              "    const D3D_SHADER_MACRO *defines, ID3DInclude *include,\n"
+              "    LPCSTR entrypoint, LPCSTR target, UINT flags1, UINT flags2,\n"
+              "    ID3DBlob **code, ID3DBlob **errors)\n"
+              "{\n"
+              "    return D3DCompile(source, source_size, source_name, defines, include,\n"
+              "                      entrypoint, target, flags1, flags2, code, errors);\n"
+              "}\n",
+              encoding="utf-8",
+          )
+
+          cmake_path = Path("SDL_shadercross/CMakeLists.txt")
+          cmake = cmake_path.read_text(encoding="utf-8")
+          source_marker = "    src/SDL_shadercross.c\n)"
+          if cmake.count(source_marker) != 1:
+              raise RuntimeError("Could not locate shadercross source list")
+          cmake = cmake.replace(source_marker, "    src/SDL_shadercross.c\n    src/static_vkd3d.c\n)")
+
+          configure_marker = '"--enable-tests=no" "--enable-demos=no" "--disable-doxygen-doc"'
+          if cmake.count(configure_marker) != 1:
+              raise RuntimeError("Could not locate vkd3d configure arguments")
+          cmake = cmake.replace(
+              configure_marker,
+              '"--enable-tests=no" "--enable-demos=no" "--disable-doxygen-doc" "--disable-shared" "--enable-static" "--libdir=<INSTALL_DIR>/lib"',
+          )
+          cmake = cmake.replace(
+              '${configure_CFLAGS}',
+              '${configure_CFLAGS} -fPIC',
+              1,
+          )
+          loader_marker = '"-DCMAKE_PREFIX_PATH=${vulkan_headers_install_dir}"'
+          if cmake.count(loader_marker) != 1:
+              raise RuntimeError("Could not locate Vulkan-Loader CMake arguments")
+          cmake = cmake.replace(
+              loader_marker,
+              loader_marker + ' "-DCMAKE_C_FLAGS=${configure_CFLAGS}" "-DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}"',
+          )
+
+          property_marker = "    ExternalProject_Get_property(vkd3d SOURCE_DIR)\n    ExternalProject_Get_property(vkd3d INSTALL_DIR)"
+          if cmake.count(property_marker) != 1:
+              raise RuntimeError("Could not locate vkd3d external-project properties")
+          static_link = property_marker + """
+
+              find_package(Threads REQUIRED)
+              file(MAKE_DIRECTORY "${INSTALL_DIR}/include")
+              add_library(vkd3d-utils-static STATIC IMPORTED GLOBAL)
+              set_target_properties(vkd3d-utils-static PROPERTIES
+                  IMPORTED_LOCATION "${INSTALL_DIR}/lib/libvkd3d-utils.a"
+                  INTERFACE_INCLUDE_DIRECTORIES "${INSTALL_DIR}/include"
+              )
+              add_library(vkd3d-shader-static STATIC IMPORTED GLOBAL)
+              set_target_properties(vkd3d-shader-static PROPERTIES
+                  IMPORTED_LOCATION "${INSTALL_DIR}/lib/libvkd3d-shader.a"
+                  INTERFACE_INCLUDE_DIRECTORIES "${INSTALL_DIR}/include"
+              )
+              add_dependencies(vkd3d-utils-static vkd3d)
+              add_dependencies(vkd3d-shader-static vkd3d)
+              foreach(target IN LISTS SDL3_shadercross_targets)
+                  add_dependencies(${target} vkd3d)
+                  target_compile_definitions(${target} PRIVATE SDL_SHADERCROSS_STATIC_VKD3D=1)
+                  target_link_libraries(${target} PRIVATE
+                      vkd3d-utils-static
+                      vkd3d-shader-static
+                      Threads::Threads
+                      ${CMAKE_DL_LIBS}
+                  )
+                  if(NOT APPLE)
+                      target_link_libraries(${target} PRIVATE m)
+                  endif()
+              endforeach()
+          """
+          cmake = cmake.replace(property_marker, static_link)
+          cmake_path.write_text(cmake, encoding="utf-8")
+
       - name: Build and install SDL_shadercross stack (Windows)
         if: matrix.os == 'windows'
         shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -215,57 +383,20 @@ jobs:
           & cmake --install "$env:BUILD_DIR/SPIRV-Cross"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-          $dxcEnabled = '${{ matrix.dxc }}' -eq 'true'
-          if ($dxcEnabled) {
-            $headers = @{
-              'User-Agent' = 'SDL-native-build'
-              'Accept' = 'application/vnd.github+json'
-              'Authorization' = "Bearer $env:GITHUB_TOKEN"
-              'X-GitHub-Api-Version' = '2022-11-28'
-            }
-            $release = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/microsoft/DirectXShaderCompiler/releases/latest'
-            $asset = $release.assets |
-              Where-Object { $_.name -like 'dxc_*.zip' -and $_.name -notlike 'pdb_*' } |
-              Select-Object -First 1
-            if (-not $asset) { throw 'No official DXC ZIP asset was found.' }
-
-            $dxcRoot = Join-Path $env:GITHUB_WORKSPACE 'SDL_shadercross/external/DirectXShaderCompiler-binaries'
-            $zipPath = Join-Path $env:RUNNER_TEMP $asset.name
-            Remove-Item $dxcRoot -Recurse -Force -ErrorAction SilentlyContinue
-            New-Item -ItemType Directory -Force -Path $dxcRoot | Out-Null
-            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipPath
-            Expand-Archive -Path $zipPath -DestinationPath $dxcRoot -Force
-
-            $nested = Get-ChildItem $dxcRoot -Directory |
-              Where-Object { Test-Path (Join-Path $_.FullName 'bin') } |
-              Select-Object -First 1
-            if ($nested -and -not (Test-Path (Join-Path $dxcRoot 'bin'))) {
-              Get-ChildItem $nested.FullName -Force | Move-Item -Destination $dxcRoot -Force
-              Remove-Item $nested.FullName -Recurse -Force
-            }
-
-            foreach ($required in @('inc', 'bin', 'lib')) {
-              if (-not (Test-Path (Join-Path $dxcRoot $required))) {
-                throw "DXC archive is missing $required/."
-              }
-            }
-          }
-
-          $dxcOption = if ($dxcEnabled) { '-DSDLSHADERCROSS_DXC=ON' } else { '-DSDLSHADERCROSS_DXC=OFF' }
           $componentOptions = @(
             "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
             "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX",
             '-DSDLSHADERCROSS_INSTALL=ON',
             '-DSDLSHADERCROSS_INSTALL_MAN=OFF',
             '-DSDLSHADERCROSS_INSTALL_CPACK=OFF',
-            '-DSDLSHADERCROSS_INSTALL_RUNTIME=ON',
+            '-DSDLSHADERCROSS_INSTALL_RUNTIME=OFF',
             '-DSDLSHADERCROSS_SHARED=ON',
             '-DSDLSHADERCROSS_STATIC=OFF',
             '-DSDLSHADERCROSS_CLI=OFF',
             '-DSDLSHADERCROSS_TESTS=OFF',
             '-DSDLSHADERCROSS_VENDORED=OFF',
             '-DSDLSHADERCROSS_SPIRVCROSS_SHARED=OFF',
-            $dxcOption
+            '-DSDLSHADERCROSS_DXC=OFF'
           )
           & cmake -S SDL_shadercross -B "$env:BUILD_DIR/SDL_shadercross" @common @componentOptions
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -364,7 +495,7 @@ jobs:
             -DSDLSHADERCROSS_INSTALL=ON
             -DSDLSHADERCROSS_INSTALL_MAN=OFF
             -DSDLSHADERCROSS_INSTALL_CPACK=OFF
-            -DSDLSHADERCROSS_INSTALL_RUNTIME=OFF
+            -DSDLSHADERCROSS_INSTALL_RUNTIME=ON
             -DSDLSHADERCROSS_SHARED=ON
             -DSDLSHADERCROSS_STATIC=OFF
             -DSDLSHADERCROSS_CLI=OFF
@@ -402,15 +533,6 @@ jobs:
           if (-not $binary) { throw 'Could not find SDL3_shadercross.dll under the install prefix.' }
           Copy-Item $binary.FullName (Join-Path $env:ARTIFACT_DIR 'SDL3_shadercross.dll') -Force
 
-          if ('${{ matrix.rid }}' -in @('win-x64', 'win-arm64')) {
-            foreach ($dependency in @('dxcompiler.dll', 'dxil.dll')) {
-              $match = Get-ChildItem -Path $env:INSTALL_PREFIX -Recurse -File -Filter $dependency |
-                Select-Object -First 1
-              if (-not $match) { throw "Could not find $dependency under $env:INSTALL_PREFIX." }
-              Copy-Item $match.FullName (Join-Path $env:ARTIFACT_DIR $dependency) -Force
-            }
-          }
-
       - name: Stage minimal runtime binary (Linux)
         if: matrix.os == 'linux'
         shell: bash
@@ -442,6 +564,11 @@ jobs:
           done < <(patchelf --print-needed "$target")
 
           [[ "$(patchelf --print-soname "$target")" == "$canonical" ]]
+          if patchelf --print-needed "$target" | grep -Eiq 'vkd3d|dxcompiler|dxil'; then
+            echo "Shadercross still has a dynamic shader-compiler dependency:" >&2
+            patchelf --print-needed "$target" >&2
+            exit 1
+          fi
           find "$ARTIFACT_DIR" -maxdepth 1 -type f -printf '%f %s bytes\n'
 
       - name: Stage minimal runtime binary (macOS)
@@ -475,86 +602,77 @@ jobs:
             esac
           done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
 
+          if otool -L "$target" | grep -Eiq 'vkd3d|dxcompiler|dxil'; then
+            echo "Shadercross still has a dynamic shader-compiler dependency:" >&2
+            otool -L "$target" >&2
+            exit 1
+          fi
           echo "Staged $target ($(stat -f '%z' "$target") bytes)"
 
-      - name: Save SDL_shadercross ${{ matrix.rid }} for collection
-        uses: actions/cache/save@v4
+      - name: Upload SDL_shadercross ${{ matrix.rid }} for collection
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff
-          key: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_shadercross-${{ matrix.rid }}
-          enableCrossOsArchive: true
+          name: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_shadercross-${{ matrix.rid }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
   collect:
     name: Collect SDL_shadercross runtime binaries
     runs-on: ubuntu-24.04
     needs: build
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Restore SDL_shadercross win-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross win-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-win-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-win-x64
+          path: handoff/SDL_shadercross/win-x64
 
-      - name: Restore SDL_shadercross win-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross win-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-win-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-win-x86
+          path: handoff/SDL_shadercross/win-x86
 
-      - name: Restore SDL_shadercross win-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross win-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-win-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-win-arm64
+          path: handoff/SDL_shadercross/win-arm64
 
-      - name: Restore SDL_shadercross linux-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross linux-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-linux-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-linux-x64
+          path: handoff/SDL_shadercross/linux-x64
 
-      - name: Restore SDL_shadercross linux-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross linux-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-linux-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-linux-x86
+          path: handoff/SDL_shadercross/linux-x86
 
-      - name: Restore SDL_shadercross linux-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross linux-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-linux-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-linux-arm64
+          path: handoff/SDL_shadercross/linux-arm64
 
-      - name: Restore SDL_shadercross osx-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross osx-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-osx-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-osx-x64
+          path: handoff/SDL_shadercross/osx-x64
 
-      - name: Restore SDL_shadercross osx-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross osx-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-osx-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross-osx-arm64
+          path: handoff/SDL_shadercross/osx-arm64
 
       - name: Validate collected SDL_shadercross files
         shell: bash
@@ -566,24 +684,22 @@ jobs:
             directory="$root/$rid"
             [[ -d "$directory" ]] || { echo "Missing $directory" >&2; exit 1; }
             count="$(find "$directory" -maxdepth 1 -type f | wc -l)"
-            if [[ "SDL_shadercross" == "SDL_shadercross" && ( "$rid" == "win-x64" || "$rid" == "win-arm64" ) ]]; then
-              [[ "$count" -eq 3 ]] || { find "$directory" -maxdepth 1 -type f -print; exit 1; }
-            else
-              [[ "$count" -eq 1 ]] || { find "$directory" -maxdepth 1 -type f -print; exit 1; }
-            fi
+            [[ "$count" -eq 1 ]] || { find "$directory" -maxdepth 1 -type f -print; exit 1; }
           done
           find "$root" -type f -print | sort
 
-      - name: Save collected SDL_shadercross for aggregate workflow
-        if: inputs.cache_key_prefix != ''
-        uses: actions/cache/save@v4
+      - name: Upload collected SDL_shadercross for aggregate workflow
+        if: inputs.artifact_prefix != ''
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff/SDL_shadercross
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross
+          path: handoff/SDL_shadercross/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
       - name: Upload standalone SDL_shadercross binaries
-        if: inputs.cache_key_prefix == ''
+        if: inputs.artifact_prefix == ''
         uses: actions/upload-artifact@v4
         with:
           name: SDL3-CS.Native.Shadercross-binaries
@@ -592,20 +708,35 @@ jobs:
           compression-level: 9
 
   cleanup:
-    name: Delete standalone handoff caches
-    if: always() && inputs.cache_key_prefix == ''
+    name: Delete temporary SDL_shadercross transfer artifacts
+    if: always()
     runs-on: ubuntu-24.04
     needs: [build, collect]
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Delete temporary RID caches
+      - name: Delete temporary RID artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64; do
-            gh cache delete "$HANDOFF_PREFIX-SDL_shadercross-$rid" --ref "$GITHUB_REF"
-          done
+          delete_artifact() {
+            local name="$1"
+            local ids
+            ids="$(gh api --paginate \
+              "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"$name\") | .id")"
+            for id in $ids; do
+              gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null || true
+            done
+          }
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-osx-arm64"

@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      cache_key_prefix:
-        description: Run-scoped prefix used by the aggregate workflow
+      artifact_prefix:
+        description: Run-scoped artifact prefix used by the aggregate workflow
         required: false
         type: string
         default: ""
@@ -327,84 +327,70 @@ jobs:
 
           echo "Staged $target ($(stat -f '%z' "$target") bytes)"
 
-      - name: Save SDL ${{ matrix.rid }} for collection
-        uses: actions/cache/save@v4
+      - name: Upload SDL ${{ matrix.rid }} for collection
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff
-          key: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL-${{ matrix.rid }}
-          enableCrossOsArchive: true
+          name: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL-${{ matrix.rid }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
   collect:
     name: Collect SDL runtime binaries
     runs-on: ubuntu-24.04
     needs: build
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Restore SDL win-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL win-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-win-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-win-x64
+          path: handoff/SDL/win-x64
 
-      - name: Restore SDL win-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL win-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-win-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-win-x86
+          path: handoff/SDL/win-x86
 
-      - name: Restore SDL win-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL win-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-win-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-win-arm64
+          path: handoff/SDL/win-arm64
 
-      - name: Restore SDL linux-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL linux-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-linux-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-linux-x64
+          path: handoff/SDL/linux-x64
 
-      - name: Restore SDL linux-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL linux-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-linux-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-linux-x86
+          path: handoff/SDL/linux-x86
 
-      - name: Restore SDL linux-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL linux-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-linux-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-linux-arm64
+          path: handoff/SDL/linux-arm64
 
-      - name: Restore SDL osx-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL osx-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-osx-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-osx-x64
+          path: handoff/SDL/osx-x64
 
-      - name: Restore SDL osx-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL osx-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL-osx-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL-osx-arm64
+          path: handoff/SDL/osx-arm64
 
       - name: Validate collected SDL files
         shell: bash
@@ -424,16 +410,18 @@ jobs:
           done
           find "$root" -type f -print | sort
 
-      - name: Save collected SDL for aggregate workflow
-        if: inputs.cache_key_prefix != ''
-        uses: actions/cache/save@v4
+      - name: Upload collected SDL for aggregate workflow
+        if: inputs.artifact_prefix != ''
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff/SDL
-          key: ${{ env.HANDOFF_PREFIX }}-SDL
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL
+          path: handoff/SDL/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
       - name: Upload standalone SDL binaries
-        if: inputs.cache_key_prefix == ''
+        if: inputs.artifact_prefix == ''
         uses: actions/upload-artifact@v4
         with:
           name: SDL3-CS.Native-binaries
@@ -442,20 +430,35 @@ jobs:
           compression-level: 9
 
   cleanup:
-    name: Delete standalone handoff caches
-    if: always() && inputs.cache_key_prefix == ''
+    name: Delete temporary SDL transfer artifacts
+    if: always()
     runs-on: ubuntu-24.04
     needs: [build, collect]
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Delete temporary RID caches
+      - name: Delete temporary RID artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64; do
-            gh cache delete "$HANDOFF_PREFIX-SDL-$rid" --ref "$GITHUB_REF"
-          done
+          delete_artifact() {
+            local name="$1"
+            local ids
+            ids="$(gh api --paginate \
+              "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"$name\") | .id")"
+            for id in $ids; do
+              gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null || true
+            done
+          }
+            delete_artifact "$HANDOFF_PREFIX-SDL-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-osx-arm64"

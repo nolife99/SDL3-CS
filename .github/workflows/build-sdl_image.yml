@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      cache_key_prefix:
-        description: Run-scoped prefix used by the aggregate workflow
+      artifact_prefix:
+        description: Run-scoped artifact prefix used by the aggregate workflow
         required: false
         type: string
         default: ""
@@ -203,35 +203,45 @@ jobs:
             '-DSDLIMAGE_INSTALL_CPACK=OFF',
             '-DSDLIMAGE_VENDORED=ON',
             '-DSDLIMAGE_DEPS_SHARED=OFF',
+            '-DSDLIMAGE_STRICT=ON',
             '-DSDLIMAGE_TESTS=OFF',
             '-DSDLIMAGE_SAMPLES=OFF',
             '-DSDLIMAGE_BACKEND_STB=ON',
             '-DSDLIMAGE_BACKEND_WIC=OFF',
             '-DSDLIMAGE_BACKEND_IMAGEIO=OFF',
-            '-DSDLIMAGE_ANI=OFF',
-            '-DSDLIMAGE_AVIF=OFF',
+            '-DSDLIMAGE_ANI=ON',
+            '-DSDLIMAGE_AVIF=ON',
             '-DSDLIMAGE_BMP=ON',
-            '-DSDLIMAGE_GIF=OFF',
+            '-DSDLIMAGE_GIF=ON',
             '-DSDLIMAGE_JPG=ON',
-            '-DSDLIMAGE_JXL=OFF',
-            '-DSDLIMAGE_LBM=OFF',
-            '-DSDLIMAGE_PCX=OFF',
+            '-DSDLIMAGE_JXL=ON',
+            '-DSDLIMAGE_LBM=ON',
+            '-DSDLIMAGE_PCX=ON',
             '-DSDLIMAGE_PNG=ON',
-            '-DSDLIMAGE_PNM=OFF',
-            '-DSDLIMAGE_QOI=OFF',
-            '-DSDLIMAGE_SVG=OFF',
-            '-DSDLIMAGE_TGA=OFF',
-            '-DSDLIMAGE_TIF=OFF',
-            '-DSDLIMAGE_WEBP=OFF',
-            '-DSDLIMAGE_XCF=OFF',
-            '-DSDLIMAGE_XPM=OFF',
-            '-DSDLIMAGE_XV=OFF',
+            '-DSDLIMAGE_PNM=ON',
+            '-DSDLIMAGE_QOI=ON',
+            '-DSDLIMAGE_SVG=ON',
+            '-DSDLIMAGE_TGA=ON',
+            '-DSDLIMAGE_TIF=ON',
+            '-DSDLIMAGE_WEBP=ON',
+            '-DSDLIMAGE_XCF=ON',
+            '-DSDLIMAGE_XPM=ON',
+            '-DSDLIMAGE_XV=ON',
             '-DSDLIMAGE_PNG_LIBPNG=ON',
+            '-DSDLIMAGE_ANI_SAVE=ON',
+            '-DSDLIMAGE_AVIF_SAVE=ON',
             '-DSDLIMAGE_BMP_SAVE=ON',
+            '-DSDLIMAGE_GIF_SAVE=ON',
             '-DSDLIMAGE_JPG_SAVE=ON',
             '-DSDLIMAGE_PNG_SAVE=ON',
+            '-DSDLIMAGE_TGA_SAVE=ON',
+            '-DSDLIMAGE_WEBP_SAVE=ON',
+            '-DSDLIMAGE_AVIF_SHARED=OFF',
             '-DSDLIMAGE_JPG_SHARED=OFF',
-            '-DSDLIMAGE_PNG_SHARED=OFF'
+            '-DSDLIMAGE_JXL_SHARED=OFF',
+            '-DSDLIMAGE_PNG_SHARED=OFF',
+            '-DSDLIMAGE_TIF_SHARED=OFF',
+            '-DSDLIMAGE_WEBP_SHARED=OFF'
           )
           & cmake -S SDL_image -B "$env:BUILD_DIR/SDL_image" @common @componentOptions
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -321,35 +331,45 @@ jobs:
             -DSDLIMAGE_INSTALL_CPACK=OFF
             -DSDLIMAGE_VENDORED=ON
             -DSDLIMAGE_DEPS_SHARED=OFF
+            -DSDLIMAGE_STRICT=ON
             -DSDLIMAGE_TESTS=OFF
             -DSDLIMAGE_SAMPLES=OFF
             -DSDLIMAGE_BACKEND_STB=ON
             -DSDLIMAGE_BACKEND_WIC=OFF
             -DSDLIMAGE_BACKEND_IMAGEIO=OFF
-            -DSDLIMAGE_ANI=OFF
-            -DSDLIMAGE_AVIF=OFF
+            -DSDLIMAGE_ANI=ON
+            -DSDLIMAGE_AVIF=ON
             -DSDLIMAGE_BMP=ON
-            -DSDLIMAGE_GIF=OFF
+            -DSDLIMAGE_GIF=ON
             -DSDLIMAGE_JPG=ON
-            -DSDLIMAGE_JXL=OFF
-            -DSDLIMAGE_LBM=OFF
-            -DSDLIMAGE_PCX=OFF
+            -DSDLIMAGE_JXL=ON
+            -DSDLIMAGE_LBM=ON
+            -DSDLIMAGE_PCX=ON
             -DSDLIMAGE_PNG=ON
-            -DSDLIMAGE_PNM=OFF
-            -DSDLIMAGE_QOI=OFF
-            -DSDLIMAGE_SVG=OFF
-            -DSDLIMAGE_TGA=OFF
-            -DSDLIMAGE_TIF=OFF
-            -DSDLIMAGE_WEBP=OFF
-            -DSDLIMAGE_XCF=OFF
-            -DSDLIMAGE_XPM=OFF
-            -DSDLIMAGE_XV=OFF
+            -DSDLIMAGE_PNM=ON
+            -DSDLIMAGE_QOI=ON
+            -DSDLIMAGE_SVG=ON
+            -DSDLIMAGE_TGA=ON
+            -DSDLIMAGE_TIF=ON
+            -DSDLIMAGE_WEBP=ON
+            -DSDLIMAGE_XCF=ON
+            -DSDLIMAGE_XPM=ON
+            -DSDLIMAGE_XV=ON
             -DSDLIMAGE_PNG_LIBPNG=ON
+            -DSDLIMAGE_ANI_SAVE=ON
+            -DSDLIMAGE_AVIF_SAVE=ON
             -DSDLIMAGE_BMP_SAVE=ON
+            -DSDLIMAGE_GIF_SAVE=ON
             -DSDLIMAGE_JPG_SAVE=ON
             -DSDLIMAGE_PNG_SAVE=ON
+            -DSDLIMAGE_TGA_SAVE=ON
+            -DSDLIMAGE_WEBP_SAVE=ON
+            -DSDLIMAGE_AVIF_SHARED=OFF
             -DSDLIMAGE_JPG_SHARED=OFF
+            -DSDLIMAGE_JXL_SHARED=OFF
             -DSDLIMAGE_PNG_SHARED=OFF
+            -DSDLIMAGE_TIF_SHARED=OFF
+            -DSDLIMAGE_WEBP_SHARED=OFF
           )
           cmake -S SDL_image -B "$BUILD_DIR/SDL_image" "${common[@]}" "${component_options[@]}"
           cmake --build "$BUILD_DIR/SDL_image" --parallel
@@ -411,6 +431,11 @@ jobs:
           done < <(patchelf --print-needed "$target")
 
           [[ "$(patchelf --print-soname "$target")" == "$canonical" ]]
+          if patchelf --print-needed "$target" | grep -Eiq 'lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)\\.so|libsharpyuv'; then
+            echo "A codec/font dependency was linked dynamically instead of into $canonical:" >&2
+            patchelf --print-needed "$target" >&2
+            exit 1
+          fi
           find "$ARTIFACT_DIR" -maxdepth 1 -type f -printf '%f %s bytes\n'
 
       - name: Stage minimal runtime binary (macOS)
@@ -444,86 +469,77 @@ jobs:
             esac
           done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
 
+          if otool -L "$target" | grep -Eiq 'lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z).*\\.dylib|libsharpyuv'; then
+            echo "A codec/font dependency was linked dynamically instead of into $canonical:" >&2
+            otool -L "$target" >&2
+            exit 1
+          fi
           echo "Staged $target ($(stat -f '%z' "$target") bytes)"
 
-      - name: Save SDL_image ${{ matrix.rid }} for collection
-        uses: actions/cache/save@v4
+      - name: Upload SDL_image ${{ matrix.rid }} for collection
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff
-          key: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_image-${{ matrix.rid }}
-          enableCrossOsArchive: true
+          name: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_image-${{ matrix.rid }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
   collect:
     name: Collect SDL_image runtime binaries
     runs-on: ubuntu-24.04
     needs: build
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Restore SDL_image win-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image win-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-win-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-win-x64
+          path: handoff/SDL_image/win-x64
 
-      - name: Restore SDL_image win-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image win-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-win-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-win-x86
+          path: handoff/SDL_image/win-x86
 
-      - name: Restore SDL_image win-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image win-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-win-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-win-arm64
+          path: handoff/SDL_image/win-arm64
 
-      - name: Restore SDL_image linux-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image linux-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-linux-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-linux-x64
+          path: handoff/SDL_image/linux-x64
 
-      - name: Restore SDL_image linux-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image linux-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-linux-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-linux-x86
+          path: handoff/SDL_image/linux-x86
 
-      - name: Restore SDL_image linux-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image linux-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-linux-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-linux-arm64
+          path: handoff/SDL_image/linux-arm64
 
-      - name: Restore SDL_image osx-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image osx-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-osx-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-osx-x64
+          path: handoff/SDL_image/osx-x64
 
-      - name: Restore SDL_image osx-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image osx-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image-osx-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image-osx-arm64
+          path: handoff/SDL_image/osx-arm64
 
       - name: Validate collected SDL_image files
         shell: bash
@@ -543,16 +559,18 @@ jobs:
           done
           find "$root" -type f -print | sort
 
-      - name: Save collected SDL_image for aggregate workflow
-        if: inputs.cache_key_prefix != ''
-        uses: actions/cache/save@v4
+      - name: Upload collected SDL_image for aggregate workflow
+        if: inputs.artifact_prefix != ''
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff/SDL_image
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image
+          path: handoff/SDL_image/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
       - name: Upload standalone SDL_image binaries
-        if: inputs.cache_key_prefix == ''
+        if: inputs.artifact_prefix == ''
         uses: actions/upload-artifact@v4
         with:
           name: SDL3-CS.Native.Image-binaries
@@ -561,20 +579,35 @@ jobs:
           compression-level: 9
 
   cleanup:
-    name: Delete standalone handoff caches
-    if: always() && inputs.cache_key_prefix == ''
+    name: Delete temporary SDL_image transfer artifacts
+    if: always()
     runs-on: ubuntu-24.04
     needs: [build, collect]
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Delete temporary RID caches
+      - name: Delete temporary RID artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64; do
-            gh cache delete "$HANDOFF_PREFIX-SDL_image-$rid" --ref "$GITHUB_REF"
-          done
+          delete_artifact() {
+            local name="$1"
+            local ids
+            ids="$(gh api --paginate \
+              "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"$name\") | .id")"
+            for id in $ids; do
+              gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null || true
+            done
+          }
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-osx-arm64"

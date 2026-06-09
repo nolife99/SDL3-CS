@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      cache_key_prefix:
-        description: Run-scoped prefix used by the aggregate workflow
+      artifact_prefix:
+        description: Run-scoped artifact prefix used by the aggregate workflow
         required: false
         type: string
         default: ""
@@ -203,26 +203,38 @@ jobs:
             '-DSDLMIXER_INSTALL_CPACK=OFF',
             '-DSDLMIXER_VENDORED=ON',
             '-DSDLMIXER_DEPS_SHARED=OFF',
+            '-DSDLMIXER_STRICT=ON',
             '-DSDLMIXER_TESTS=OFF',
             '-DSDLMIXER_EXAMPLES=OFF',
-            '-DSDLMIXER_AIFF=OFF',
+            '-DSDLMIXER_AIFF=ON',
             '-DSDLMIXER_WAVE=ON',
-            '-DSDLMIXER_VOC=OFF',
-            '-DSDLMIXER_AU=OFF',
+            '-DSDLMIXER_VOC=ON',
+            '-DSDLMIXER_AU=ON',
             '-DSDLMIXER_FLAC=ON',
-            '-DSDLMIXER_FLAC_LIBFLAC=OFF',
+            '-DSDLMIXER_FLAC_LIBFLAC=ON',
+            '-DSDLMIXER_FLAC_LIBFLAC_SHARED=OFF',
             '-DSDLMIXER_FLAC_DRFLAC=ON',
-            '-DSDLMIXER_GME=OFF',
-            '-DSDLMIXER_MOD=OFF',
+            '-DSDLMIXER_GME=ON',
+            '-DSDLMIXER_GME_SHARED=OFF',
+            '-DSDLMIXER_MOD=ON',
+            '-DSDLMIXER_MOD_XMP=ON',
+            '-DSDLMIXER_MOD_XMP_SHARED=OFF',
             '-DSDLMIXER_MP3=ON',
             '-DSDLMIXER_MP3_DRMP3=ON',
-            '-DSDLMIXER_MP3_MPG123=OFF',
-            '-DSDLMIXER_MIDI=OFF',
-            '-DSDLMIXER_OPUS=OFF',
+            '-DSDLMIXER_MP3_MPG123=ON',
+            '-DSDLMIXER_MP3_MPG123_SHARED=OFF',
+            '-DSDLMIXER_MIDI=ON',
+            '-DSDLMIXER_MIDI_FLUIDSYNTH=OFF',
+            '-DSDLMIXER_MIDI_TIMIDITY=ON',
+            '-DSDLMIXER_OPUS=ON',
+            '-DSDLMIXER_OPUS_SHARED=OFF',
             '-DSDLMIXER_VORBIS_STB=ON',
-            '-DSDLMIXER_VORBIS_VORBISFILE=OFF',
+            '-DSDLMIXER_VORBIS_VORBISFILE=ON',
+            '-DSDLMIXER_VORBIS_VORBISFILE_SHARED=OFF',
             '-DSDLMIXER_VORBIS_TREMOR=OFF',
-            '-DSDLMIXER_WAVPACK=OFF'
+            '-DSDLMIXER_WAVPACK=ON',
+            '-DSDLMIXER_WAVPACK_DSD=ON',
+            '-DSDLMIXER_WAVPACK_SHARED=OFF'
           )
           & cmake -S SDL_mixer -B "$env:BUILD_DIR/SDL_mixer" @common @componentOptions
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -312,26 +324,38 @@ jobs:
             -DSDLMIXER_INSTALL_CPACK=OFF
             -DSDLMIXER_VENDORED=ON
             -DSDLMIXER_DEPS_SHARED=OFF
+            -DSDLMIXER_STRICT=ON
             -DSDLMIXER_TESTS=OFF
             -DSDLMIXER_EXAMPLES=OFF
-            -DSDLMIXER_AIFF=OFF
+            -DSDLMIXER_AIFF=ON
             -DSDLMIXER_WAVE=ON
-            -DSDLMIXER_VOC=OFF
-            -DSDLMIXER_AU=OFF
+            -DSDLMIXER_VOC=ON
+            -DSDLMIXER_AU=ON
             -DSDLMIXER_FLAC=ON
-            -DSDLMIXER_FLAC_LIBFLAC=OFF
+            -DSDLMIXER_FLAC_LIBFLAC=ON
+            -DSDLMIXER_FLAC_LIBFLAC_SHARED=OFF
             -DSDLMIXER_FLAC_DRFLAC=ON
-            -DSDLMIXER_GME=OFF
-            -DSDLMIXER_MOD=OFF
+            -DSDLMIXER_GME=ON
+            -DSDLMIXER_GME_SHARED=OFF
+            -DSDLMIXER_MOD=ON
+            -DSDLMIXER_MOD_XMP=ON
+            -DSDLMIXER_MOD_XMP_SHARED=OFF
             -DSDLMIXER_MP3=ON
             -DSDLMIXER_MP3_DRMP3=ON
-            -DSDLMIXER_MP3_MPG123=OFF
-            -DSDLMIXER_MIDI=OFF
-            -DSDLMIXER_OPUS=OFF
+            -DSDLMIXER_MP3_MPG123=ON
+            -DSDLMIXER_MP3_MPG123_SHARED=OFF
+            -DSDLMIXER_MIDI=ON
+            -DSDLMIXER_MIDI_FLUIDSYNTH=OFF
+            -DSDLMIXER_MIDI_TIMIDITY=ON
+            -DSDLMIXER_OPUS=ON
+            -DSDLMIXER_OPUS_SHARED=OFF
             -DSDLMIXER_VORBIS_STB=ON
-            -DSDLMIXER_VORBIS_VORBISFILE=OFF
+            -DSDLMIXER_VORBIS_VORBISFILE=ON
+            -DSDLMIXER_VORBIS_VORBISFILE_SHARED=OFF
             -DSDLMIXER_VORBIS_TREMOR=OFF
-            -DSDLMIXER_WAVPACK=OFF
+            -DSDLMIXER_WAVPACK=ON
+            -DSDLMIXER_WAVPACK_DSD=ON
+            -DSDLMIXER_WAVPACK_SHARED=OFF
           )
           cmake -S SDL_mixer -B "$BUILD_DIR/SDL_mixer" "${common[@]}" "${component_options[@]}"
           cmake --build "$BUILD_DIR/SDL_mixer" --parallel
@@ -393,6 +417,11 @@ jobs:
           done < <(patchelf --print-needed "$target")
 
           [[ "$(patchelf --print-soname "$target")" == "$canonical" ]]
+          if patchelf --print-needed "$target" | grep -Eiq 'lib(FLAC|vorbis|vorbisfile|ogg|opus|mpg123|xmp|gme|wavpack)\\.so'; then
+            echo "A codec/font dependency was linked dynamically instead of into $canonical:" >&2
+            patchelf --print-needed "$target" >&2
+            exit 1
+          fi
           find "$ARTIFACT_DIR" -maxdepth 1 -type f -printf '%f %s bytes\n'
 
       - name: Stage minimal runtime binary (macOS)
@@ -426,86 +455,77 @@ jobs:
             esac
           done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
 
+          if otool -L "$target" | grep -Eiq 'lib(FLAC|vorbis|vorbisfile|ogg|opus|mpg123|xmp|gme|wavpack).*\\.dylib'; then
+            echo "A codec/font dependency was linked dynamically instead of into $canonical:" >&2
+            otool -L "$target" >&2
+            exit 1
+          fi
           echo "Staged $target ($(stat -f '%z' "$target") bytes)"
 
-      - name: Save SDL_mixer ${{ matrix.rid }} for collection
-        uses: actions/cache/save@v4
+      - name: Upload SDL_mixer ${{ matrix.rid }} for collection
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff
-          key: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_mixer-${{ matrix.rid }}
-          enableCrossOsArchive: true
+          name: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_mixer-${{ matrix.rid }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
   collect:
     name: Collect SDL_mixer runtime binaries
     runs-on: ubuntu-24.04
     needs: build
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Restore SDL_mixer win-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer win-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-win-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-win-x64
+          path: handoff/SDL_mixer/win-x64
 
-      - name: Restore SDL_mixer win-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer win-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-win-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-win-x86
+          path: handoff/SDL_mixer/win-x86
 
-      - name: Restore SDL_mixer win-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer win-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-win-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-win-arm64
+          path: handoff/SDL_mixer/win-arm64
 
-      - name: Restore SDL_mixer linux-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer linux-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-linux-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-linux-x64
+          path: handoff/SDL_mixer/linux-x64
 
-      - name: Restore SDL_mixer linux-x86
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer linux-x86
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-linux-x86
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-linux-x86
+          path: handoff/SDL_mixer/linux-x86
 
-      - name: Restore SDL_mixer linux-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer linux-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-linux-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-linux-arm64
+          path: handoff/SDL_mixer/linux-arm64
 
-      - name: Restore SDL_mixer osx-x64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer osx-x64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-osx-x64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-osx-x64
+          path: handoff/SDL_mixer/osx-x64
 
-      - name: Restore SDL_mixer osx-arm64
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer osx-arm64
+        uses: actions/download-artifact@v4
         with:
-          path: handoff
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-osx-arm64
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer-osx-arm64
+          path: handoff/SDL_mixer/osx-arm64
 
       - name: Validate collected SDL_mixer files
         shell: bash
@@ -525,16 +545,18 @@ jobs:
           done
           find "$root" -type f -print | sort
 
-      - name: Save collected SDL_mixer for aggregate workflow
-        if: inputs.cache_key_prefix != ''
-        uses: actions/cache/save@v4
+      - name: Upload collected SDL_mixer for aggregate workflow
+        if: inputs.artifact_prefix != ''
+        uses: actions/upload-artifact@v4
         with:
-          path: handoff/SDL_mixer
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer
-          enableCrossOsArchive: true
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer
+          path: handoff/SDL_mixer/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
 
       - name: Upload standalone SDL_mixer binaries
-        if: inputs.cache_key_prefix == ''
+        if: inputs.artifact_prefix == ''
         uses: actions/upload-artifact@v4
         with:
           name: SDL3-CS.Native.Mixer-binaries
@@ -543,20 +565,35 @@ jobs:
           compression-level: 9
 
   cleanup:
-    name: Delete standalone handoff caches
-    if: always() && inputs.cache_key_prefix == ''
+    name: Delete temporary SDL_mixer transfer artifacts
+    if: always()
     runs-on: ubuntu-24.04
     needs: [build, collect]
     env:
-      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
-      - name: Delete temporary RID caches
+      - name: Delete temporary RID artifacts
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64; do
-            gh cache delete "$HANDOFF_PREFIX-SDL_mixer-$rid" --ref "$GITHUB_REF"
-          done
+          delete_artifact() {
+            local name="$1"
+            local ids
+            ids="$(gh api --paginate \
+              "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"$name\") | .id")"
+            for id in $ids; do
+              gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null || true
+            done
+          }
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-osx-arm64"

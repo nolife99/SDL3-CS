@@ -16,31 +16,31 @@ jobs:
     name: Build SDL
     uses: ./.github/workflows/build-sdl.yml
     with:
-      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_image:
     name: Build SDL_image
     uses: ./.github/workflows/build-sdl_image.yml
     with:
-      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_mixer:
     name: Build SDL_mixer
     uses: ./.github/workflows/build-sdl_mixer.yml
     with:
-      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_ttf:
     name: Build SDL_ttf
     uses: ./.github/workflows/build-sdl_ttf.yml
     with:
-      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_shadercross:
     name: Build SDL_shadercross
     uses: ./.github/workflows/build-sdl_shadercross.yml
     with:
-      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   collect:
     name: Collect drop-in binary trees
@@ -48,45 +48,35 @@ jobs:
     needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross]
 
     steps:
-      - name: Restore SDL
-        uses: actions/cache/restore@v4
+      - name: Download SDL
+        uses: actions/download-artifact@v4
         with:
+          name: ${{ env.HANDOFF_PREFIX }}-SDL
           path: handoff/SDL
-          key: ${{ env.HANDOFF_PREFIX }}-SDL
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
-      - name: Restore SDL_image
-        uses: actions/cache/restore@v4
+      - name: Download SDL_image
+        uses: actions/download-artifact@v4
         with:
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_image
           path: handoff/SDL_image
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_image
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
-      - name: Restore SDL_mixer
-        uses: actions/cache/restore@v4
+      - name: Download SDL_mixer
+        uses: actions/download-artifact@v4
         with:
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer
           path: handoff/SDL_mixer
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
-      - name: Restore SDL_ttf
-        uses: actions/cache/restore@v4
+      - name: Download SDL_ttf
+        uses: actions/download-artifact@v4
         with:
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_ttf
           path: handoff/SDL_ttf
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_ttf
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
-      - name: Restore SDL_shadercross
-        uses: actions/cache/restore@v4
+      - name: Download SDL_shadercross
+        uses: actions/download-artifact@v4
         with:
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross
           path: handoff/SDL_shadercross
-          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross
-          fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
       - name: Assemble drop-in lib directories
         shell: bash
@@ -135,23 +125,70 @@ jobs:
           retention-days: 7
 
   cleanup:
-    name: Delete temporary handoff caches
+    name: Delete temporary transfer artifacts
     if: always()
     runs-on: ubuntu-24.04
     needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross, collect]
 
     steps:
-      - name: Delete run-scoped caches
+      - name: Delete every intermediate artifact
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          libraries=(SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross)
-          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
-          for library in "${libraries[@]}"; do
-            for rid in "${rids[@]}"; do
-              gh cache delete "$HANDOFF_PREFIX-$library-$rid" --ref "$GITHUB_REF"
+          delete_artifact() {
+            local name="$1"
+            local ids
+            ids="$(gh api --paginate \
+              "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"$name\") | .id")"
+            for id in $ids; do
+              gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null || true
             done
-            gh cache delete "$HANDOFF_PREFIX-$library" --ref "$GITHUB_REF"
-          done
+          }
+            delete_artifact "$HANDOFF_PREFIX-SDL"
+            delete_artifact "$HANDOFF_PREFIX-SDL-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL-osx-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_image-osx-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-osx-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-osx-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-x86"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-arm64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-osx-x64"
+            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-osx-arm64"
