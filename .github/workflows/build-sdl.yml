@@ -3,9 +3,16 @@ name: Build SDL
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      cache_key_prefix:
+        description: Run-scoped prefix used by the aggregate workflow
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   resolve:
@@ -79,6 +86,7 @@ jobs:
     env:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      ARTIFACT_DIR: ${{ github.workspace }}/handoff/SDL/${{ matrix.rid }}
 
     steps:
 
@@ -105,7 +113,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
               build-essential gcc-multilib g++-multilib libc6-dev-i386 \
-              cmake ninja-build pkg-config git file \
+              cmake ninja-build pkg-config git file patchelf \
               libasound2-dev:i386 libusb-1.0-0-dev:i386 \
               libdbus-1-dev:i386 libudev-dev:i386 \
               libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 \
@@ -115,7 +123,7 @@ jobs:
           else
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
-              build-essential cmake ninja-build pkg-config git file \
+              build-essential cmake ninja-build pkg-config git file patchelf \
               libasound2-dev libpulse-dev libjack-dev libsndio-dev \
               libusb-1.0-0-dev libdbus-1-dev libudev-dev \
               libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
@@ -257,10 +265,197 @@ jobs:
           fi
 
 
-      - name: Upload SDL ${{ matrix.rid }}
+      - name: Stage minimal runtime binary (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Remove-Item $env:ARTIFACT_DIR -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $env:ARTIFACT_DIR | Out-Null
+
+          $binary = Get-ChildItem -Path $env:INSTALL_PREFIX -Recurse -File -Filter 'SDL3.dll' |
+            Select-Object -First 1
+          if (-not $binary) { throw 'Could not find SDL3.dll under the install prefix.' }
+          Copy-Item $binary.FullName (Join-Path $env:ARTIFACT_DIR 'SDL3.dll') -Force
+
+      - name: Stage minimal runtime binary (Linux)
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$ARTIFACT_DIR"
+          mkdir -p "$ARTIFACT_DIR"
+
+          canonical="libSDL3.so"
+          source="$(find "$INSTALL_PREFIX" -type f -name "libSDL3.so*" -printf '%s %p\n' \
+            | sort -nr | head -n 1 | cut -d' ' -f2-)"
+          if [[ -z "$source" ]]; then
+            echo "Could not find a real libSDL3.so binary under $INSTALL_PREFIX." >&2
+            exit 1
+          fi
+
+          target="$ARTIFACT_DIR/$canonical"
+          cp "$source" "$target"
+          chmod 755 "$target"
+          patchelf --set-soname "$canonical" "$target"
+          patchelf --set-rpath '$ORIGIN' "$target"
+
+          [[ "$(patchelf --print-soname "$target")" == "$canonical" ]]
+          find "$ARTIFACT_DIR" -maxdepth 1 -type f -printf '%f %s bytes\n'
+
+      - name: Stage minimal runtime binary (macOS)
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$ARTIFACT_DIR"
+          mkdir -p "$ARTIFACT_DIR"
+
+          canonical="libSDL3.dylib"
+          source="$(find "$INSTALL_PREFIX" -type f -name "libSDL3*.dylib" -print \
+            | while IFS= read -r path; do stat -f '%z %N' "$path"; done \
+            | sort -nr | head -n 1 | cut -d' ' -f2-)"
+          if [[ -z "$source" ]]; then
+            echo "Could not find a real libSDL3.dylib binary under $INSTALL_PREFIX." >&2
+            exit 1
+          fi
+
+          target="$ARTIFACT_DIR/$canonical"
+          cp "$source" "$target"
+          chmod 755 "$target"
+          install_name_tool -id "@rpath/$canonical" "$target"
+
+          echo "Staged $target ($(stat -f '%z' "$target") bytes)"
+
+      - name: Save SDL ${{ matrix.rid }} for collection
+        uses: actions/cache/save@v4
+        with:
+          path: handoff
+          key: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL-${{ matrix.rid }}
+          enableCrossOsArchive: true
+
+  collect:
+    name: Collect SDL runtime binaries
+    runs-on: ubuntu-24.04
+    needs: build
+    env:
+      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+
+    steps:
+      - name: Restore SDL win-x64
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-win-x64
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL win-x86
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-win-x86
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL win-arm64
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-win-arm64
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL linux-x64
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-linux-x64
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL linux-x86
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-linux-x86
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL linux-arm64
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-linux-arm64
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL osx-x64
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-osx-x64
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL osx-arm64
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff
+          key: ${{ env.HANDOFF_PREFIX }}-SDL-osx-arm64
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Validate collected SDL files
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="handoff/SDL"
+          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
+          for rid in "${rids[@]}"; do
+            directory="$root/$rid"
+            [[ -d "$directory" ]] || { echo "Missing $directory" >&2; exit 1; }
+            count="$(find "$directory" -maxdepth 1 -type f | wc -l)"
+            if [[ "SDL" == "SDL_shadercross" && ( "$rid" == "win-x64" || "$rid" == "win-arm64" ) ]]; then
+              [[ "$count" -eq 3 ]] || { find "$directory" -maxdepth 1 -type f -print; exit 1; }
+            else
+              [[ "$count" -eq 1 ]] || { find "$directory" -maxdepth 1 -type f -print; exit 1; }
+            fi
+          done
+          find "$root" -type f -print | sort
+
+      - name: Save collected SDL for aggregate workflow
+        if: inputs.cache_key_prefix != ''
+        uses: actions/cache/save@v4
+        with:
+          path: handoff/SDL
+          key: ${{ env.HANDOFF_PREFIX }}-SDL
+          enableCrossOsArchive: true
+
+      - name: Upload standalone SDL binaries
+        if: inputs.cache_key_prefix == ''
         uses: actions/upload-artifact@v4
         with:
-          name: SDL-${{ matrix.rid }}
-          path: ${{ env.INSTALL_PREFIX }}/
+          name: SDL3-CS.Native-binaries
+          path: handoff/SDL/
           if-no-files-found: error
           compression-level: 9
+
+  cleanup:
+    name: Delete standalone handoff caches
+    if: always() && inputs.cache_key_prefix == ''
+    runs-on: ubuntu-24.04
+    needs: [build, collect]
+    env:
+      HANDOFF_PREFIX: ${{ inputs.cache_key_prefix != '' && inputs.cache_key_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+
+    steps:
+      - name: Delete temporary RID caches
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          for rid in win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64; do
+            gh cache delete "$HANDOFF_PREFIX-SDL-$rid" --ref "$GITHUB_REF"
+          done
