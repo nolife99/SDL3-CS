@@ -12,28 +12,27 @@
       </PropertyGroup>
 
     <PropertyGroup Label="NuGet">
-  <PackageId>SDL3-CS.Native.Image</PackageId>
-  <Version>3.2.4.0</Version>
-  <Title>SDL3 C# Native image libraries</Title>
+  <PackageId>SDL3-CS.Native.Shadercross</PackageId>
+  <VersionPrefix>3.0.0</VersionPrefix>
+  <Title>SDL3 C# Native Shadercross libraries</Title>
   <Authors>Eduard Gushchin</Authors>
   <Company>Eduard Gushchin</Company>
-  <Description>This package contains native SDL_image libraries for SDL3-CS</Description>
+  <Description>This package contains native SDL_shadercross libraries for SDL3-CS</Description>
   <Copyright>Copyright (c) 2024-2026 Eduard Gushchin.</Copyright>
   <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
   <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
   <RepositoryType>git</RepositoryType>
   <PackageTags>SDL;SDL3;SDL3-CS</PackageTags>
+  <PackageReadmeFile>README.md</PackageReadmeFile>
   <PackageIcon>logo.png</PackageIcon>
   <PackageLicenseFile>LICENSE</PackageLicenseFile>
   <NoWarn>$(NoWarn);NU5128</NoWarn>
-  <PackageReleaseNotes>
-    This is a stable bugfix release, with the following changes:
-    - Fixed partial alpha in ICO and CUR images
-    - Set cursor hotspot properties when loading CUR images
-    - Fixed reading beyond the end of PNG images when using stb_image
-  </PackageReleaseNotes>
 </PropertyGroup>
-
+    <PropertyGroup Condition="'$(Configuration)' == 'Prerelease'">
+  <VersionSuffix>preview.$([System.DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))</VersionSuffix>
+  <Description>This package contains native SDL_shadercross libraries for SDL3-CS — PREVIEW CI build (preview builds supported)</Description>
+  <PackageReleaseNotes>Preview CI build at $([System.DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC; Version $(VersionPrefix)-$(VersionSuffix)</PackageReleaseNotes>
+</PropertyGroup>
 
       <ItemGroup>
         <None Include="../LICENSE" Pack="true" PackagePath="/" Condition="Exists('../LICENSE')" />

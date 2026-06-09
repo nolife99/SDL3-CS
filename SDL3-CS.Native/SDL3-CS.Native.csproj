@@ -1,50 +1,45 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
+<Project Sdk="Microsoft.Build.NoTargets/3.7.134">
+      <PropertyGroup>
         <TargetFramework>netstandard1.0</TargetFramework>
-        <RootNamespace>SDL3_CS.Native</RootNamespace>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <IsPackable>true</IsPackable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
+        <Platforms>AnyCPU</Platforms>
+        <Configurations>Debug;Release;Prerelease</Configurations>
+      </PropertyGroup>
 
     <PropertyGroup Label="NuGet">
-        <Version>3.4.10.0</Version>
-        <Title>SDL3 C# Native library</Title>
-        <Authors>Eduard Gushchin</Authors>
-        <Company>Eduard Gushchin</Company>
-        <Description>This is native library for SDL3-CS 3.4.10.x (storybrew fork: required by SDL3_mixer 3.2.4)</Description>
-        <Copyright>Copyright (c) 2024-2025 Eduard Gushchin.</Copyright>
-        <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>SDL, SDL3, SDL3-CS</PackageTags>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageIcon>logo.png</PackageIcon>
-        <NoWarn>1591</NoWarn>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+      <PackageId>SDL3-CS.Native</PackageId>
+      <Version>0.0.0-local</Version>
+      <Title>SDL3 C# Native library</Title>
+      <Authors>Eduard Gushchin</Authors>
+      <Company>Eduard Gushchin</Company>
+      <Description>This package contains native SDL libraries for SDL3-CS</Description>
+      <Copyright>Copyright (c) 2024-2026 Eduard Gushchin.</Copyright>
+      <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
+      <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
+      <RepositoryType>git</RepositoryType>
+      <PackageTags>SDL;SDL3;SDL3-CS</PackageTags>
+      <PackageIcon>logo.png</PackageIcon>
+      <PackageLicenseFile>LICENSE</PackageLicenseFile>
+      <NoWarn>$(NoWarn);NU5128</NoWarn>
     </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
-        <None Include="README.md" Pack="true" Visible="true" PackagePath="\"/>
 
-        <Content Include="lib\**\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>runtimes\%(RecursiveDir)\native\%(Filename)%(Extension)</Link>
-            <Pack>true</Pack>
-            <PackagePath>runtimes\%(RecursiveDir)\native</PackagePath>
-        </Content>
+      <ItemGroup>
+        <None Include="../LICENSE" Pack="true" PackagePath="/" Condition="Exists('../LICENSE')" />
+        <None Include="../logo.png" Pack="true" PackagePath="/" Visible="false" Condition="Exists('../logo.png')" />
+        <None Include="README.md" Pack="true" PackagePath="/" Visible="true" Condition="Exists('README.md')" />
 
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.9.0-beta.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="ErrorProne.NET.Structs" Version="0.6.1-beta.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
-</Project>
+    <Content Include="lib/**/*"
+             Link="runtimes/%(RecursiveDir)native/%(Filename)%(Extension)"
+             TargetPath="runtimes/%(RecursiveDir)native/%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest"
+             Pack="true"
+             PackagePath="runtimes/%(RecursiveDir)native/"
+             Visible="false" />
+      </ItemGroup>
+    </Project>

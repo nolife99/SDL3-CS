@@ -1,4 +1,4 @@
-name: Build and package SDL native libraries
+name: Build and collect SDL native binaries
 
 on:
   workflow_dispatch:
@@ -6,188 +6,152 @@ on:
 
 permissions:
   contents: read
+  actions: write
+
+env:
+  HANDOFF_PREFIX: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
   sdl:
     name: Build SDL
     uses: ./.github/workflows/build-sdl.yml
+    with:
+      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_image:
     name: Build SDL_image
     uses: ./.github/workflows/build-sdl_image.yml
+    with:
+      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_mixer:
     name: Build SDL_mixer
     uses: ./.github/workflows/build-sdl_mixer.yml
+    with:
+      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_ttf:
     name: Build SDL_ttf
     uses: ./.github/workflows/build-sdl_ttf.yml
+    with:
+      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_shadercross:
     name: Build SDL_shadercross
     uses: ./.github/workflows/build-sdl_shadercross.yml
+    with:
+      cache_key_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
-  package:
-    name: Collect all native libraries
+  collect:
+    name: Collect drop-in binary trees
     runs-on: ubuntu-24.04
-    needs:
-      - sdl
-      - sdl_image
-      - sdl_mixer
-      - sdl_ttf
-      - sdl_shadercross
+    needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross]
 
     steps:
-      - name: Download all per-library artifacts
-        uses: actions/download-artifact@v4
+      - name: Restore SDL
+        uses: actions/cache/restore@v4
         with:
-          path: artifacts
-          pattern: SDL*
-          merge-multiple: false
+          path: handoff/SDL
+          key: ${{ env.HANDOFF_PREFIX }}-SDL
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
 
-      - name: Assemble library-separated runtime package
+      - name: Restore SDL_image
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff/SDL_image
+          key: ${{ env.HANDOFF_PREFIX }}-SDL_image
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL_mixer
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff/SDL_mixer
+          key: ${{ env.HANDOFF_PREFIX }}-SDL_mixer
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL_ttf
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff/SDL_ttf
+          key: ${{ env.HANDOFF_PREFIX }}-SDL_ttf
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Restore SDL_shadercross
+        uses: actions/cache/restore@v4
+        with:
+          path: handoff/SDL_shadercross
+          key: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross
+          fail-on-cache-miss: true
+          enableCrossOsArchive: true
+
+      - name: Assemble drop-in lib directories
         shell: bash
         run: |
           set -euo pipefail
-          shopt -s nullglob
+          output="$GITHUB_WORKSPACE/SDL3-CS.Native-binaries"
+          rm -rf "$output"
+          mkdir -p "$output"
 
-          package_root="$GITHUB_WORKSPACE/SDL-native-libraries"
-          rids=(
-            win-x64 win-x86 win-arm64
-            linux-x64 linux-x86 linux-arm64
-            osx-x64 osx-arm64
+          declare -A projects=(
+            [SDL]=SDL3-CS.Native
+            [SDL_image]=SDL3-CS.Native.Image
+            [SDL_mixer]=SDL3-CS.Native.Mixer
+            [SDL_ttf]=SDL3-CS.Native.TTF
+            [SDL_shadercross]=SDL3-CS.Native.Shadercross
           )
-          libraries=(SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross)
+          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
 
-          declare -A binary_names=(
-            [SDL]=SDL3
-            [SDL_image]=SDL3_image
-            [SDL_mixer]=SDL3_mixer
-            [SDL_ttf]=SDL3_ttf
-            [SDL_shadercross]=SDL3_shadercross
-          )
-
-          copy_matches() {
-            local destination="$1"
-            shift
-            local existing=()
-
-            for source in "$@"; do
-              [[ -f "$source" ]] && existing+=("$source")
-            done
-
-            if (( ${#existing[@]} == 0 )); then
-              return 1
-            fi
-
-            mkdir -p "$destination"
-            for source in "${existing[@]}"; do
-              cp -L "$source" "$destination/"
-            done
-          }
-
-          for library in "${libraries[@]}"; do
-            binary="${binary_names[$library]}"
-
+          for library in SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross; do
+            project="${projects[$library]}"
             for rid in "${rids[@]}"; do
-              source_root="$GITHUB_WORKSPACE/artifacts/${library}-${rid}"
-              destination="$package_root/$library/runtimes/$rid/native"
-
-              if [[ ! -d "$source_root" ]]; then
-                echo "Missing artifact directory: $source_root" >&2
-                exit 1
-              fi
-
-              case "$rid" in
-                win-*)
-                  matches=("$source_root/bin/$binary.dll")
-                  ;;
-                linux-*)
-                  matches=("$source_root/lib/lib$binary.so"*)
-                  ;;
-                osx-*)
-                  matches=("$source_root/lib/lib$binary"*.dylib)
-                  ;;
-                *)
-                  echo "Unsupported RID: $rid" >&2
-                  exit 1
-                  ;;
-              esac
-
-              if ! copy_matches "$destination" "${matches[@]}"; then
-                echo "No runtime binary found for $library/$rid ($binary)." >&2
-                find "$source_root" -maxdepth 4 -type f -print >&2 || true
-                exit 1
-              fi
-
-              # SDL_shadercross dynamically loads the official DXC runtime on
-              # Windows x64 and ARM64. Keep those DLLs in its own directory.
-              if [[ "$library" == SDL_shadercross && "$rid" == win-x64 || \
-                    "$library" == SDL_shadercross && "$rid" == win-arm64 ]]; then
-                dxc_files=(
-                  "$source_root/bin/dxcompiler.dll"
-                  "$source_root/bin/dxil.dll"
-                )
-                for dxc_file in "${dxc_files[@]}"; do
-                  if [[ ! -f "$dxc_file" ]]; then
-                    echo "Missing required DXC runtime: $dxc_file" >&2
-                    exit 1
-                  fi
-                  cp -L "$dxc_file" "$destination/"
-                done
-              fi
+              source="handoff/$library/$rid"
+              destination="$output/$project/lib/$rid"
+              [[ -d "$source" ]] || { echo "Missing $source" >&2; exit 1; }
+              mkdir -p "$destination"
+              cp -a "$source/." "$destination/"
             done
           done
 
-          cat > "$package_root/README.txt" <<'EOF'
-          SDL native runtime package
-
-          Each SDL component has its own directory:
-
-            SDL/
-            SDL_image/
-            SDL_mixer/
-            SDL_ttf/
-            SDL_shadercross/
-
-          Runtime binaries are stored under:
-
-            <library>/runtimes/<rid>/native/
-
-          SDL_image, SDL_mixer, SDL_ttf, and SDL_shadercross depend on SDL.
-          Applications must deploy the matching SDL runtime for the same RID.
-          SDL_shadercross also requires dxcompiler.dll and dxil.dll on Windows
-          targets where those files are present.
-
-          For direct .NET P/Invoke deployment, copy the required component files
-          for one RID into the application's native search directory, or install
-          a DllImportResolver that searches these component subdirectories.
-          EOF
-
-          (
-            cd "$package_root"
-            find . -type f ! -name SHA256SUMS -print0 \
-              | sort -z \
-              | xargs -0 sha256sum > SHA256SUMS
-          )
-
-          echo "Packaged files:"
-          find "$package_root" -type f -print | sort
-
-          expected=$(( ${#libraries[@]} * ${#rids[@]} ))
-          actual="$(find "$package_root" -mindepth 4 -maxdepth 4 -type d -name native | wc -l)"
-          if [[ "$actual" -ne "$expected" ]]; then
-            echo "Expected $expected native directories, found $actual." >&2
+          # Only runtime binaries are permitted in the final output.
+          if find "$output" -type f ! \( -name '*.dll' -o -name '*.so' -o -name '*.dylib' \) -print -quit | grep -q .; then
+            echo 'Unexpected non-binary file in output.' >&2
+            find "$output" -type f -print >&2
             exit 1
           fi
 
-          zip -9 -r SDL-native-libraries.zip SDL-native-libraries
+          find "$output" -type f -print | sort
 
-      - name: Upload combined package
+      - name: Upload the only workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SDL-native-libraries
-          path: SDL-native-libraries.zip
+          name: SDL3-CS.Native-binaries
+          path: SDL3-CS.Native-binaries/
           if-no-files-found: error
-          compression-level: 0
+          compression-level: 9
+          retention-days: 7
+
+  cleanup:
+    name: Delete temporary handoff caches
+    if: always()
+    runs-on: ubuntu-24.04
+    needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross, collect]
+
+    steps:
+      - name: Delete run-scoped caches
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          libraries=(SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross)
+          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
+          for library in "${libraries[@]}"; do
+            for rid in "${rids[@]}"; do
+              gh cache delete "$HANDOFF_PREFIX-$library-$rid" --ref "$GITHUB_REF"
+            done
+            gh cache delete "$HANDOFF_PREFIX-$library" --ref "$GITHUB_REF"
+          done
