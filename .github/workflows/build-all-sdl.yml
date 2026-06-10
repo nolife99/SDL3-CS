@@ -33,6 +33,11 @@ jobs:
       primary_binary: SDL3_image
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
       forbidden_libs: lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)[.0-9]|libsharpyuv
+      # On Windows/macOS decode the common formats (JPEG, TIFF, GIF, BMP) with the OS image
+      # frameworks (WIC / ImageIO) instead of bundling stb + libtiff. PNG still uses libpng for
+      # cross-platform consistency; AVIF/JXL/WEBP keep their dedicated libraries everywhere.
+      cmake_args_windows: -DSDLIMAGE_BACKEND_STB=OFF -DSDLIMAGE_BACKEND_WIC=ON
+      cmake_args_macos: -DSDLIMAGE_BACKEND_STB=OFF -DSDLIMAGE_BACKEND_IMAGEIO=ON
       cmake_args: >-
         -DBUILD_SHARED_LIBS=ON
         -DSDLIMAGE_INSTALL=ON

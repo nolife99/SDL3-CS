@@ -32,6 +32,16 @@ on:
         required: false
         type: string
         default: ""
+      cmake_args_windows:
+        description: Extra cmake -D flags appended only on the Windows RIDs (e.g. prefer the WIC OS image backend over bundled codecs). Empty otherwise.
+        required: false
+        type: string
+        default: ""
+      cmake_args_macos:
+        description: Extra cmake -D flags appended only on the macOS RIDs (e.g. prefer the ImageIO OS image backend over bundled codecs). Empty otherwise.
+        required: false
+        type: string
+        default: ""
       forbidden_libs:
         description: Regex of dependency sonames that must NOT remain dynamically linked. Empty skips the check.
         required: false
@@ -176,6 +186,7 @@ jobs:
         env:
           COMPONENT: ${{ inputs.component }}
           CMAKE_ARGS: ${{ inputs.cmake_args }}
+          CMAKE_ARGS_WINDOWS: ${{ inputs.cmake_args_windows }}
         run: |
           $ErrorActionPreference = 'Stop'
 
@@ -221,7 +232,7 @@ jobs:
             $componentOptions = @(
               "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
               "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX"
-            ) + (($env:CMAKE_ARGS -split '\s+') | Where-Object { $_ })
+            ) + ((($env:CMAKE_ARGS + ' ' + $env:CMAKE_ARGS_WINDOWS) -split '\s+') | Where-Object { $_ })
             Write-Host "::group::Resolved $env:COMPONENT cmake options"
             $componentOptions | ForEach-Object { Write-Host "arg: [$_]" }
             Write-Host "::endgroup::"
@@ -237,6 +248,7 @@ jobs:
           COMPONENT: ${{ inputs.component }}
           CMAKE_ARGS: ${{ inputs.cmake_args }}
           CMAKE_ARGS_LINUX_X86: ${{ inputs.cmake_args_linux_x86 }}
+          CMAKE_ARGS_MACOS: ${{ inputs.cmake_args_macos }}
         run: |
           set -euo pipefail
           common=( -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON )
@@ -291,6 +303,10 @@ jobs:
             component_options=()
             set -f
             for option in $CMAKE_ARGS; do component_options+=("$option"); done
+            # Per-OS override (e.g. prefer the ImageIO OS image backend on macOS). Appended last so it wins.
+            if [[ "${{ matrix.os }}" == "macos" ]]; then
+              for option in $CMAKE_ARGS_MACOS; do component_options+=("$option"); done
+            fi
             # Per-RID overrides for the 32-bit build (e.g. a codec whose configure check
             # can't link 32-bit libm on the multilib runner). Appended last so they win.
             if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then

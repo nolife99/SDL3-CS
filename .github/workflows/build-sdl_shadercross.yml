@@ -148,22 +148,17 @@ jobs:
               libpipewire-0.3-dev libvulkan-dev
           fi
 
-      - name: Install macOS vkd3d build dependencies
+      - name: Install macOS build dependencies
         if: matrix.os == 'macos'
         shell: bash
         run: |
           set -euo pipefail
-          brew install bison flex pkg-config cpanminus
-          echo "$(brew --prefix bison)/bin" >> "$GITHUB_PATH"
-          echo "$(brew --prefix flex)/bin" >> "$GITHUB_PATH"
-          # vkd3d's build scripts `use JSON` (not the core JSON::PP). Install it into the same Homebrew perl
-          # that runs them so it lands on the default @INC; a contained local-lib + PERL5LIB did not
-          # propagate through CMake/make to the build's perl.
-          cpanm --notest JSON
-          perl -MJSON -e 'print "Perl JSON available\n"'
+          # macOS shadercross builds SDL + SPIRV-Cross only. vkd3d (the HLSL->DXBC path) is
+          # Linux-only: DXBC is unusable on Metal and vkd3d (a Wine component) doesn't build on macOS.
+          brew install ninja pkg-config
 
       - name: Patch SDL_shadercross for statically linked vkd3d-utils
-        if: matrix.os != 'windows'
+        if: matrix.os == 'linux'
         shell: python
         run: |
           from pathlib import Path
@@ -503,7 +498,6 @@ jobs:
             -DSDLSHADERCROSS_INSTALL=ON
             -DSDLSHADERCROSS_INSTALL_MAN=OFF
             -DSDLSHADERCROSS_INSTALL_CPACK=OFF
-            -DSDLSHADERCROSS_INSTALL_RUNTIME=ON
             -DSDLSHADERCROSS_SHARED=ON
             -DSDLSHADERCROSS_STATIC=OFF
             -DSDLSHADERCROSS_CLI=OFF
@@ -512,6 +506,15 @@ jobs:
             -DSDLSHADERCROSS_SPIRVCROSS_SHARED=OFF
             -DSDLSHADERCROSS_DXC=OFF
           )
+          # INSTALL_RUNTIME drives the vkd3d (HLSL->DXBC) sub-build. Keep it on Linux; turn it off
+          # on macOS, where DXBC is unusable (Metal renders natively) and vkd3d (a Wine component)
+          # doesn't build. macOS shadercross still does SPIR-V -> MSL via SPIRV-Cross, dlopening
+          # libvkd3d-utils only if a user drops it in (graceful: DXBC just stays unavailable).
+          if [[ "${{ matrix.os }}" == "linux" ]]; then
+            component_options+=( -DSDLSHADERCROSS_INSTALL_RUNTIME=ON )
+          else
+            component_options+=( -DSDLSHADERCROSS_INSTALL_RUNTIME=OFF )
+          fi
           cmake -S SDL_shadercross -B "$BUILD_DIR/SDL_shadercross" "${common[@]}" "${component_options[@]}"
           cmake --build "$BUILD_DIR/SDL_shadercross" --parallel
           cmake --install "$BUILD_DIR/SDL_shadercross" --strip
