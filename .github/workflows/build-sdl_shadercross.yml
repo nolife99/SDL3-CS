@@ -156,10 +156,10 @@ jobs:
           brew install bison flex pkg-config cpanminus
           echo "$(brew --prefix bison)/bin" >> "$GITHUB_PATH"
           echo "$(brew --prefix flex)/bin" >> "$GITHUB_PATH"
-          perl_root="$RUNNER_TEMP/perl5"
-          cpanm --notest --local-lib-contained "$perl_root" JSON
-          echo "PERL5LIB=$perl_root/lib/perl5" >> "$GITHUB_ENV"
-          echo "$perl_root/bin" >> "$GITHUB_PATH"
+          # vkd3d's build scripts `use JSON` (not the core JSON::PP). Install it into the same Homebrew perl
+          # that runs them so it lands on the default @INC; a contained local-lib + PERL5LIB did not
+          # propagate through CMake/make to the build's perl.
+          cpanm --notest JSON
           perl -MJSON -e 'print "Perl JSON available\n"'
 
       - name: Patch SDL_shadercross for statically linked vkd3d-utils
@@ -326,6 +326,18 @@ jobs:
               endforeach()
           """
           cmake = property_pattern.sub(lambda match: match.group(0) + static_link_suffix, cmake, count=1)
+
+          # Ninja can't see that the vkd3d ExternalProject produces the static archives the imported targets
+          # consume ("missing and no known rule to make it"), so declare them as build byproducts.
+          install_marker = '"make" "install"'
+          if cmake.count(install_marker) != 1:
+              raise RuntimeError("Could not locate vkd3d install command")
+          cmake = cmake.replace(
+              install_marker,
+              install_marker + '\n\t\t\tBUILD_BYPRODUCTS "<INSTALL_DIR>/lib/libvkd3d-utils.a" "<INSTALL_DIR>/lib/libvkd3d-shader.a"',
+              1,
+          )
+
           cmake_path.write_text(cmake, encoding="utf-8")
 
       - name: Build and install SDL_shadercross stack (Windows)
