@@ -1,0 +1,462 @@
+name: Build SDL_ttf
+
+# SDL_ttf needs zlib + libpng + brotli to turn on FreeType's WOFF2 (brotli) and PNG-bitmap
+# colour-font / emoji support (libpng — Apple Color Emoji sbix, Noto Color Emoji CBDT). SDL_ttf
+# vendors none of them, so this workflow prebuilds them as static, position-independent libraries
+# and points FreeType straight at them. That special dependency chain is why SDL_ttf gets its own
+# workflow instead of the shared component engine.
+#
+# Two gotchas this works around:
+#   * zlib's release builds both shared + static (which find_package would resolve to the shared
+#     one); zlib's `develop` branch exposes ZLIB_BUILD_SHARED=OFF for a clean static-only build.
+#   * FreeType's FindBrotliDec only locates `brotlidec`, but a static `brotlidec` needs
+#     `brotlicommon` too, so both archives are passed explicitly via BROTLIDEC_LIBRARIES.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      artifact_prefix:
+        description: Run-scoped artifact prefix used by the aggregate workflow
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  resolve:
+    name: Resolve SDL and SDL_ttf releases
+    runs-on: ubuntu-24.04
+    outputs:
+      sdl_ref: ${{ steps.refs.outputs.sdl_ref }}
+      ttf_ref: ${{ steps.refs.outputs.ttf_ref }}
+    steps:
+      - name: Resolve official release tags
+        id: refs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sdl_ref="$(gh api repos/libsdl-org/SDL/releases/latest --jq '.tag_name')"
+          ttf_ref="$(gh api repos/libsdl-org/SDL_ttf/releases/latest --jq '.tag_name')"
+          test -n "$sdl_ref"
+          test -n "$ttf_ref"
+          echo "sdl_ref=$sdl_ref" >> "$GITHUB_OUTPUT"
+          echo "ttf_ref=$ttf_ref" >> "$GITHUB_OUTPUT"
+          echo "Using SDL $sdl_ref and SDL_ttf $ttf_ref"
+
+  build:
+    name: SDL_ttf ${{ matrix.rid }}
+    needs: resolve
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-2025,     os: windows, rid: win-x64,   msvc_arch: x64,   msvc_host_arch: x64 }
+          - { runner: windows-2025,     os: windows, rid: win-x86,   msvc_arch: x86,   msvc_host_arch: x64 }
+          - { runner: windows-11-arm,   os: windows, rid: win-arm64, msvc_arch: arm64, msvc_host_arch: arm64 }
+          - { runner: ubuntu-24.04,     os: linux,   rid: linux-x64 }
+          - { runner: ubuntu-24.04,     os: linux,   rid: linux-x86 }
+          - { runner: ubuntu-24.04-arm, os: linux,   rid: linux-arm64 }
+          - { runner: macos-15-intel,   os: macos,   rid: osx-x64,   osx_arch: x86_64 }
+          - { runner: macos-latest,     os: macos,   rid: osx-arm64, osx_arch: arm64 }
+
+    env:
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      ARTIFACT_DIR: ${{ github.workspace }}/handoff/SDL_ttf/${{ matrix.rid }}
+      # zlib has no static-only toggle in any release; develop does. libpng16 is the stable 1.6.x
+      # branch. Pin to commit SHAs if you need byte-for-byte reproducibility.
+      ZLIB_REPO: https://github.com/madler/zlib
+      ZLIB_REF: develop
+      LIBPNG_REPO: https://github.com/pnggroup/libpng
+      LIBPNG_REF: libpng16
+      BROTLI_REPO: https://github.com/google/brotli
+      BROTLI_REF: v1.1.0
+
+    steps:
+      - name: Checkout SDL
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          ref: ${{ needs.resolve.outputs.sdl_ref }}
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL
+
+      - name: Checkout SDL_ttf
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL_ttf
+          ref: ${{ needs.resolve.outputs.ttf_ref }}
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL_ttf
+
+      - name: Install Linux toolchain
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            sudo dpkg --add-architecture i386
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              build-essential gcc-multilib g++-multilib libc6-dev-i386 libc6-dev:i386 \
+              cmake ninja-build pkg-config git file patchelf \
+              libasound2-dev:i386 libusb-1.0-0-dev:i386 \
+              libdbus-1-dev:i386 libudev-dev:i386 \
+              libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 \
+              libxcursor-dev:i386 libxfixes-dev:i386 libxi-dev:i386 \
+              libxss-dev:i386 libxtst-dev:i386 \
+              libgl-dev:i386 libvulkan-dev:i386
+          else
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              build-essential cmake ninja-build pkg-config git file patchelf \
+              libasound2-dev libpulse-dev libjack-dev libsndio-dev \
+              libusb-1.0-0-dev libdbus-1-dev libudev-dev \
+              libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+              libxi-dev libxss-dev libxtst-dev \
+              libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev \
+              libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev \
+              libpipewire-0.3-dev libvulkan-dev
+          fi
+
+      - name: Install macOS toolchain
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install cmake ninja pkg-config
+
+      - name: Build and install (Unix)
+        if: matrix.os != 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          common=( -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON )
+          cflags="-Os -flto -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables -fvisibility=hidden -fno-ident -DNDEBUG"
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            ldflags="-flto -Wl,-dead_strip -Wl,-dead_strip_dylibs -Wl,-x"
+            common+=( "-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 )
+          else
+            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -Wl,--exclude-libs,ALL -s"
+          fi
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            export PKG_CONFIG_PATH=
+            common+=( -DCMAKE_SYSTEM_PROCESSOR=x86 -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32 )
+          fi
+          common+=(
+            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags"
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags"
+            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags"
+            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags"
+          )
+
+          # --- SDL (shared, the only dynamic library we ship) ---
+          sdl_options=(
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX"
+            -DSDL_INSTALL=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF
+            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_INSTALL_DOCS=OFF -DSDL_INSTALL_TESTS=OFF
+          )
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            sdl_options+=(
+              -DSDL_X11=ON -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF -DSDL_LIBDECOR=OFF
+              -DSDL_OPENGL=ON -DSDL_OPENGLES=OFF -DSDL_VULKAN=ON
+              -DSDL_ALSA=ON -DSDL_PULSEAUDIO=OFF -DSDL_JACK=OFF -DSDL_SNDIO=OFF -DSDL_PIPEWIRE=OFF
+            )
+          fi
+          cmake -S SDL -B "$BUILD_DIR/SDL" "${common[@]}" "${sdl_options[@]}"
+          cmake --build "$BUILD_DIR/SDL" --parallel
+          cmake --install "$BUILD_DIR/SDL" --strip
+
+          # --- static, PIC dependencies that FreeType statically links in ---
+          dep_common=( "${common[@]}" -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX" )
+
+          git clone --depth 1 --branch "$ZLIB_REF" "$ZLIB_REPO" src/zlib
+          cmake -S src/zlib -B "$BUILD_DIR/zlib" "${dep_common[@]}" \
+            -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON -DZLIB_BUILD_TESTING=OFF
+          cmake --build "$BUILD_DIR/zlib" --parallel
+          cmake --install "$BUILD_DIR/zlib"
+          # Capture the produced archive now (only SDL + zlib are installed, so the glob is unambiguous).
+          zlib_lib="$(find "$INSTALL_PREFIX/lib" -maxdepth 1 -name '*z*.a' | head -n1)"
+          [[ -n "$zlib_lib" ]] || { echo "static zlib not found" >&2; exit 1; }
+
+          git clone --depth 1 --branch "$LIBPNG_REF" "$LIBPNG_REPO" src/libpng
+          cmake -S src/libpng -B "$BUILD_DIR/libpng" "${dep_common[@]}" \
+            -DPNG_SHARED=OFF -DPNG_STATIC=ON -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DPNG_EXECUTABLES=OFF -DPNG_FRAMEWORK=OFF \
+            "-DZLIB_LIBRARY=$zlib_lib" "-DZLIB_INCLUDE_DIR=$INSTALL_PREFIX/include"
+          cmake --build "$BUILD_DIR/libpng" --parallel
+          cmake --install "$BUILD_DIR/libpng"
+          png_lib="$(find "$INSTALL_PREFIX/lib" -maxdepth 1 -name 'libpng*.a' | head -n1)"
+          [[ -n "$png_lib" ]] || { echo "static libpng not found" >&2; exit 1; }
+
+          git clone --depth 1 --branch "$BROTLI_REF" "$BROTLI_REPO" src/brotli
+          cmake -S src/brotli -B "$BUILD_DIR/brotli" "${dep_common[@]}" -DBROTLI_DISABLE_TESTS=ON
+          cmake --build "$BUILD_DIR/brotli" --parallel
+          cmake --install "$BUILD_DIR/brotli"
+          brotlidec_lib="$(find "$INSTALL_PREFIX/lib" -maxdepth 1 -name 'libbrotlidec*.a' | head -n1)"
+          brotlicommon_lib="$(find "$INSTALL_PREFIX/lib" -maxdepth 1 -name 'libbrotlicommon*.a' | head -n1)"
+          [[ -n "$brotlidec_lib" && -n "$brotlicommon_lib" ]] || { echo "static brotli not found" >&2; exit 1; }
+
+          # --- SDL_ttf: FreeType with WOFF2 (brotli) + PNG-bitmap colour fonts (libpng) ---
+          # FT_DISABLE_*=FALSE re-enables what SDL_ttf turned off (its cache sets are non-FORCE, so the
+          # command line wins); explicit library paths skip find_package's shared/static guessing, and
+          # BROTLIDEC_LIBRARIES carries brotlicommon alongside brotlidec for the static link to resolve.
+          ttf_options=(
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX"
+            -DBUILD_SHARED_LIBS=ON
+            -DSDLTTF_INSTALL=ON -DSDLTTF_INSTALL_MAN=OFF -DSDLTTF_INSTALL_CPACK=OFF
+            -DSDLTTF_VENDORED=ON -DSDLTTF_STRICT=ON -DSDLTTF_SAMPLES=OFF
+            -DSDLTTF_HARFBUZZ=ON -DSDLTTF_PLUTOSVG=ON
+            -DFT_DISABLE_ZLIB=FALSE -DFT_DISABLE_PNG=FALSE -DFT_DISABLE_BROTLI=FALSE
+            -DFT_REQUIRE_ZLIB=TRUE -DFT_REQUIRE_PNG=TRUE -DFT_REQUIRE_BROTLI=TRUE
+            "-DZLIB_LIBRARY=$zlib_lib" "-DZLIB_INCLUDE_DIR=$INSTALL_PREFIX/include"
+            "-DPNG_LIBRARY=$png_lib" "-DPNG_PNG_INCLUDE_DIR=$INSTALL_PREFIX/include"
+            "-DBROTLIDEC_LIBRARIES=$brotlidec_lib;$brotlicommon_lib" "-DBROTLIDEC_INCLUDE_DIRS=$INSTALL_PREFIX/include"
+          )
+          cmake -S SDL_ttf -B "$BUILD_DIR/SDL_ttf" "${common[@]}" "${ttf_options[@]}"
+          cmake --build "$BUILD_DIR/SDL_ttf" --parallel
+          cmake --install "$BUILD_DIR/SDL_ttf" --strip
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            shared_objects=()
+            while IFS= read -r -d '' shared_object; do shared_objects+=("$shared_object"); done \
+              < <(find "$INSTALL_PREFIX" -type f -name 'libSDL3_ttf.so*' -print0)
+            (( ${#shared_objects[@]} > 0 ))
+            for shared_object in "${shared_objects[@]}"; do
+              file -Lb "$shared_object" | grep -q 'ELF 32-bit' || { echo "Not 32-bit: $shared_object" >&2; exit 1; }
+            done
+          fi
+
+      - name: Build and install (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { throw 'vswhere.exe was not found.' }
+          $vs = (& $vswhere -latest -products * -property installationPath).Trim()
+          if (-not $vs) { throw 'No Visual Studio installation was found.' }
+          $devcmd = Join-Path $vs 'Common7\Tools\VsDevCmd.bat'
+          if (-not (Test-Path $devcmd)) { throw "VsDevCmd.bat was not found at $devcmd" }
+          $environment = & cmd.exe /d /s /c "`"$devcmd`" -no_logo -arch=${{ matrix.msvc_arch }} -host_arch=${{ matrix.msvc_host_arch }} && set"
+          if ($LASTEXITCODE -ne 0) { throw "VsDevCmd failed with exit code $LASTEXITCODE." }
+          foreach ($line in $environment) {
+            if ($line -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') }
+          }
+          # Drop MinGW so CMake's export step uses MSVC's nm, not C:\mingw64\bin\nm.exe.
+          $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -and $_ -notmatch '(?i)mingw' }) -join ';'
+          Get-Command cl.exe, cmake.exe, ninja.exe, git.exe -ErrorAction Stop | Out-Host
+
+          # No /GL + /LTCG: MSVC link-time codegen bloats the binary; /O1 + /OPT:REF,ICF and the dynamic UCRT keep it lean.
+          $common = @(
+            '-G', 'Ninja',
+            '-DCMAKE_BUILD_TYPE=MinSizeRel',
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF',
+            '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL',
+            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Gy /Gw /DNDEBUG',
+            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Gy /Gw /DNDEBUG',
+            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/OPT:REF /OPT:ICF /INCREMENTAL:NO',
+            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/OPT:REF /OPT:ICF /INCREMENTAL:NO'
+          )
+
+          $sdlOptions = @(
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
+            '-DSDL_INSTALL=ON', '-DSDL_SHARED=ON', '-DSDL_STATIC=OFF',
+            '-DSDL_TESTS=OFF', '-DSDL_EXAMPLES=OFF', '-DSDL_INSTALL_DOCS=OFF', '-DSDL_INSTALL_TESTS=OFF'
+          )
+          & cmake -S SDL -B "$env:BUILD_DIR/SDL" @common @sdlOptions; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/SDL" --parallel;             if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/SDL";                      if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          $depCommon = $common + @('-DBUILD_SHARED_LIBS=OFF', '-DCMAKE_POSITION_INDEPENDENT_CODE=ON',
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX", "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX")
+
+          & git clone --depth 1 --branch $env:ZLIB_REF $env:ZLIB_REPO src/zlib; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake -S src/zlib -B "$env:BUILD_DIR/zlib" @depCommon -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON -DZLIB_BUILD_TESTING=OFF; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/zlib" --parallel; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/zlib";          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $zlibLib = (Get-ChildItem "$env:INSTALL_PREFIX/lib" -Filter '*.lib' | Where-Object { $_.BaseName -match '(?i)z(lib)?(static|s)?$' } | Select-Object -First 1).FullName
+          if (-not $zlibLib) { throw 'static zlib not found' }
+
+          & git clone --depth 1 --branch $env:LIBPNG_REF $env:LIBPNG_REPO src/libpng; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake -S src/libpng -B "$env:BUILD_DIR/libpng" @depCommon -DPNG_SHARED=OFF -DPNG_STATIC=ON -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DPNG_EXECUTABLES=OFF -DPNG_FRAMEWORK=OFF "-DZLIB_LIBRARY=$zlibLib" "-DZLIB_INCLUDE_DIR=$env:INSTALL_PREFIX/include"; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/libpng" --parallel; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/libpng";          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $pngLib = (Get-ChildItem "$env:INSTALL_PREFIX/lib" -Filter '*.lib' | Where-Object { $_.Name -match '(?i)png' } | Select-Object -First 1).FullName
+          if (-not $pngLib) { throw 'static libpng not found' }
+
+          & git clone --depth 1 --branch $env:BROTLI_REF $env:BROTLI_REPO src/brotli; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake -S src/brotli -B "$env:BUILD_DIR/brotli" @depCommon -DBROTLI_DISABLE_TESTS=ON; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/brotli" --parallel; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/brotli";          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $brotliDec = (Get-ChildItem "$env:INSTALL_PREFIX/lib" -Filter '*.lib' | Where-Object { $_.Name -match '(?i)brotlidec' } | Select-Object -First 1).FullName
+          $brotliCommon = (Get-ChildItem "$env:INSTALL_PREFIX/lib" -Filter '*.lib' | Where-Object { $_.Name -match '(?i)brotlicommon' } | Select-Object -First 1).FullName
+          if (-not $brotliDec -or -not $brotliCommon) { throw 'static brotli not found' }
+
+          $ttfOptions = @(
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX", "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX",
+            '-DBUILD_SHARED_LIBS=ON',
+            '-DSDLTTF_INSTALL=ON', '-DSDLTTF_INSTALL_MAN=OFF', '-DSDLTTF_INSTALL_CPACK=OFF',
+            '-DSDLTTF_VENDORED=ON', '-DSDLTTF_STRICT=ON', '-DSDLTTF_SAMPLES=OFF',
+            '-DSDLTTF_HARFBUZZ=ON', '-DSDLTTF_PLUTOSVG=ON',
+            '-DFT_DISABLE_ZLIB=FALSE', '-DFT_DISABLE_PNG=FALSE', '-DFT_DISABLE_BROTLI=FALSE',
+            '-DFT_REQUIRE_ZLIB=TRUE', '-DFT_REQUIRE_PNG=TRUE', '-DFT_REQUIRE_BROTLI=TRUE',
+            "-DZLIB_LIBRARY=$zlibLib", "-DZLIB_INCLUDE_DIR=$env:INSTALL_PREFIX/include",
+            "-DPNG_LIBRARY=$pngLib", "-DPNG_PNG_INCLUDE_DIR=$env:INSTALL_PREFIX/include",
+            "-DBROTLIDEC_LIBRARIES=$brotliDec;$brotliCommon", "-DBROTLIDEC_INCLUDE_DIRS=$env:INSTALL_PREFIX/include"
+          )
+          & cmake -S SDL_ttf -B "$env:BUILD_DIR/SDL_ttf" @common @ttfOptions; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/SDL_ttf" --parallel;            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/SDL_ttf";                     if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Stage runtime binary (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Remove-Item $env:ARTIFACT_DIR -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $env:ARTIFACT_DIR | Out-Null
+          $binary = Get-ChildItem -Path $env:INSTALL_PREFIX -Recurse -File -Filter 'SDL3_ttf.dll' | Select-Object -First 1
+          if (-not $binary) { throw 'Could not find SDL3_ttf.dll under the install prefix.' }
+          Copy-Item $binary.FullName (Join-Path $env:ARTIFACT_DIR 'SDL3_ttf.dll') -Force
+          Write-Host ("Staged SDL3_ttf.dll ({0:N0} bytes)" -f $binary.Length)
+
+      - name: Stage runtime binary (Linux)
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$ARTIFACT_DIR"; mkdir -p "$ARTIFACT_DIR"
+          canonical="libSDL3_ttf.so"
+          source="$(find "$INSTALL_PREFIX" -type f -name "libSDL3_ttf.so*" -printf '%s %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)"
+          [[ -n "$source" ]] || { echo "Could not find $canonical under $INSTALL_PREFIX." >&2; exit 1; }
+          target="$ARTIFACT_DIR/$canonical"
+          cp "$source" "$target"; chmod 755 "$target"
+          patchelf --set-soname "$canonical" "$target"
+          patchelf --set-rpath '$ORIGIN' "$target"
+          while IFS= read -r dependency; do
+            case "$dependency" in
+              libSDL3.so.*) patchelf --replace-needed "$dependency" libSDL3.so "$target" ;;
+            esac
+          done < <(patchelf --print-needed "$target")
+          [[ "$(patchelf --print-soname "$target")" == "$canonical" ]]
+          if patchelf --print-needed "$target" | grep -Eiq 'lib(freetype|harfbuzz|plutosvg|plutovg|brotli|bz2|png|z)[.0-9]'; then
+            echo "A FreeType dependency was linked dynamically instead of into $canonical:" >&2
+            patchelf --print-needed "$target" >&2
+            exit 1
+          fi
+          find "$ARTIFACT_DIR" -maxdepth 1 -type f -printf '%f %s bytes\n'
+
+      - name: Stage runtime binary (macOS)
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$ARTIFACT_DIR"; mkdir -p "$ARTIFACT_DIR"
+          canonical="libSDL3_ttf.dylib"
+          source="$(find "$INSTALL_PREFIX" -type f -name "libSDL3_ttf*.dylib" -print \
+            | while IFS= read -r path; do stat -f '%z %N' "$path"; done | sort -nr | head -n1 | cut -d' ' -f2-)"
+          [[ -n "$source" ]] || { echo "Could not find $canonical under $INSTALL_PREFIX." >&2; exit 1; }
+          target="$ARTIFACT_DIR/$canonical"
+          cp "$source" "$target"; chmod 755 "$target"
+          install_name_tool -id "@rpath/$canonical" "$target"
+          while IFS= read -r dependency; do
+            case "$(basename "$dependency")" in
+              libSDL3.dylib|libSDL3.*.dylib) install_name_tool -change "$dependency" "@loader_path/libSDL3.dylib" "$target" ;;
+            esac
+          done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
+          if otool -L "$target" | grep -Eiq 'lib(freetype|harfbuzz|plutosvg|plutovg|brotli|bz2|png|z)[.0-9]'; then
+            echo "A FreeType dependency was linked dynamically instead of into $canonical:" >&2
+            otool -L "$target" >&2
+            exit 1
+          fi
+          echo "Staged $target ($(stat -f '%z' "$target") bytes)"
+
+      - name: Upload SDL_ttf ${{ matrix.rid }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-SDL_ttf-${{ matrix.rid }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
+
+  collect:
+    name: Collect SDL_ttf binaries
+    runs-on: ubuntu-24.04
+    needs: build
+    env:
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+    steps:
+      - name: Download every RID artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ env.HANDOFF_PREFIX }}-SDL_ttf-*
+          path: downloads
+
+      - name: Assemble per-RID tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="handoff/SDL_ttf"
+          rm -rf "$root"; mkdir -p "$root"
+          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
+          for rid in "${rids[@]}"; do
+            source="downloads/$HANDOFF_PREFIX-SDL_ttf-$rid"
+            [[ -d "$source" ]] || { echo "Missing artifact for $rid" >&2; exit 1; }
+            mkdir -p "$root/$rid"
+            cp -a "$source/." "$root/$rid/"
+            count="$(find "$root/$rid" -maxdepth 1 -type f | wc -l)"
+            [[ "$count" -eq 1 ]] || { echo "Expected exactly one binary for $rid:" >&2; find "$root/$rid" -maxdepth 1 -type f -print >&2; exit 1; }
+          done
+          find "$root" -type f -print | sort
+
+      - name: Upload collected SDL_ttf for the aggregate
+        if: inputs.artifact_prefix != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.HANDOFF_PREFIX }}-SDL_ttf
+          path: handoff/SDL_ttf/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
+
+      - name: Upload standalone SDL_ttf binaries
+        if: inputs.artifact_prefix == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: SDL_ttf-binaries
+          path: handoff/SDL_ttf/
+          if-no-files-found: error
+          compression-level: 9
+
+  cleanup:
+    name: Delete temporary SDL_ttf artifacts
+    if: always()
+    runs-on: ubuntu-24.04
+    needs: [build, collect]
+    env:
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+    steps:
+      - name: Delete per-RID transfer artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          ids="$(gh api --paginate \
+            "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+            --jq ".artifacts[] | select(.name | startswith(\"$HANDOFF_PREFIX-SDL_ttf-\")) | .id")"
+          for id in $ids; do
+            gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null 2>&1 || true
+          done

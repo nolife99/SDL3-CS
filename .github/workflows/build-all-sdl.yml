@@ -133,23 +133,11 @@ jobs:
 
   sdl_ttf:
     name: SDL_ttf
-    uses: ./.github/workflows/build-component.yml
+    # Dedicated workflow: SDL_ttf prebuilds zlib + libpng + brotli (static) so FreeType ships with
+    # WOFF2 and PNG-bitmap colour-font / emoji support — its own dependency chain, like shadercross.
+    uses: ./.github/workflows/build-sdl_ttf.yml
     with:
-      component: SDL_ttf
-      component_repository: libsdl-org/SDL_ttf
-      primary_binary: SDL3_ttf
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
-      forbidden_libs: lib(freetype|harfbuzz|plutosvg|plutovg|brotli|bz2|png|z)[.0-9]
-      cmake_args: >-
-        -DBUILD_SHARED_LIBS=ON
-        -DSDLTTF_INSTALL=ON
-        -DSDLTTF_INSTALL_MAN=OFF
-        -DSDLTTF_INSTALL_CPACK=OFF
-        -DSDLTTF_VENDORED=ON
-        -DSDLTTF_STRICT=ON
-        -DSDLTTF_SAMPLES=OFF
-        -DSDLTTF_HARFBUZZ=ON
-        -DSDLTTF_PLUTOSVG=ON
 
   sdl_shadercross:
     name: SDL_shadercross
