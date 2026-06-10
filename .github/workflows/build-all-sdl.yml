@@ -12,32 +12,145 @@ env:
   HANDOFF_PREFIX: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
+  # SDL, SDL_image, SDL_mixer and SDL_ttf share one engine; only their cmake flags differ.
+  # SDL_shadercross has a different dependency graph and keeps its own workflow.
+
   sdl:
-    name: Build SDL
-    uses: ./.github/workflows/build-sdl.yml
+    name: SDL
+    uses: ./.github/workflows/build-component.yml
     with:
+      component: SDL
+      component_repository: libsdl-org/SDL
+      primary_binary: SDL3
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
 
   sdl_image:
-    name: Build SDL_image
-    uses: ./.github/workflows/build-sdl_image.yml
+    name: SDL_image
+    uses: ./.github/workflows/build-component.yml
     with:
+      component: SDL_image
+      component_repository: libsdl-org/SDL_image
+      primary_binary: SDL3_image
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      forbidden_libs: lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)[.0-9]|libsharpyuv
+      cmake_args: |
+        -DBUILD_SHARED_LIBS=ON
+        -DSDLIMAGE_INSTALL=ON
+        -DSDLIMAGE_INSTALL_MAN=OFF
+        -DSDLIMAGE_INSTALL_CPACK=OFF
+        -DSDLIMAGE_VENDORED=ON
+        -DSDLIMAGE_DEPS_SHARED=OFF
+        -DSDLIMAGE_STRICT=ON
+        -DSDLIMAGE_TESTS=OFF
+        -DSDLIMAGE_SAMPLES=OFF
+        -DSDLIMAGE_BACKEND_STB=ON
+        -DSDLIMAGE_BACKEND_WIC=OFF
+        -DSDLIMAGE_BACKEND_IMAGEIO=OFF
+        -DSDLIMAGE_ANI=ON
+        -DSDLIMAGE_AVIF=ON
+        -DSDLIMAGE_BMP=ON
+        -DSDLIMAGE_GIF=ON
+        -DSDLIMAGE_JPG=ON
+        -DSDLIMAGE_JXL=ON
+        -DSDLIMAGE_LBM=ON
+        -DSDLIMAGE_PCX=ON
+        -DSDLIMAGE_PNG=ON
+        -DSDLIMAGE_PNM=ON
+        -DSDLIMAGE_QOI=ON
+        -DSDLIMAGE_SVG=ON
+        -DSDLIMAGE_TGA=ON
+        -DSDLIMAGE_TIF=ON
+        -DSDLIMAGE_WEBP=ON
+        -DSDLIMAGE_XCF=ON
+        -DSDLIMAGE_XPM=ON
+        -DSDLIMAGE_XV=ON
+        -DSDLIMAGE_PNG_LIBPNG=ON
+        -DSDLIMAGE_ANI_SAVE=ON
+        -DSDLIMAGE_AVIF_SAVE=ON
+        -DSDLIMAGE_BMP_SAVE=ON
+        -DSDLIMAGE_GIF_SAVE=ON
+        -DSDLIMAGE_JPG_SAVE=ON
+        -DSDLIMAGE_PNG_SAVE=ON
+        -DSDLIMAGE_TGA_SAVE=ON
+        -DSDLIMAGE_WEBP_SAVE=ON
+        -DSDLIMAGE_AVIF_SHARED=OFF
+        -DSDLIMAGE_JPG_SHARED=OFF
+        -DSDLIMAGE_JXL_SHARED=OFF
+        -DSDLIMAGE_PNG_SHARED=OFF
+        -DSDLIMAGE_TIF_SHARED=OFF
+        -DSDLIMAGE_WEBP_SHARED=OFF
 
   sdl_mixer:
-    name: Build SDL_mixer
-    uses: ./.github/workflows/build-sdl_mixer.yml
+    name: SDL_mixer
+    uses: ./.github/workflows/build-component.yml
     with:
+      component: SDL_mixer
+      component_repository: libsdl-org/SDL_mixer
+      primary_binary: SDL3_mixer
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      forbidden_libs: lib(FLAC|ogg|vorbis|opus|opusfile|mpg123|xmp|gme|wavpack|fluidsynth)[.0-9]
+      cmake_args: |
+        -DBUILD_SHARED_LIBS=ON
+        -DSDLMIXER_INSTALL=ON
+        -DSDLMIXER_INSTALL_MAN=OFF
+        -DSDLMIXER_INSTALL_CPACK=OFF
+        -DSDLMIXER_VENDORED=ON
+        -DSDLMIXER_DEPS_SHARED=OFF
+        -DSDLMIXER_STRICT=ON
+        -DSDLMIXER_TESTS=OFF
+        -DSDLMIXER_EXAMPLES=OFF
+        -DSDLMIXER_AIFF=ON
+        -DSDLMIXER_WAVE=ON
+        -DSDLMIXER_VOC=ON
+        -DSDLMIXER_AU=ON
+        -DSDLMIXER_FLAC=ON
+        -DSDLMIXER_FLAC_LIBFLAC=ON
+        -DSDLMIXER_FLAC_LIBFLAC_SHARED=OFF
+        -DSDLMIXER_FLAC_DRFLAC=ON
+        -DSDLMIXER_GME=ON
+        -DSDLMIXER_GME_SHARED=OFF
+        -DSDLMIXER_MOD=ON
+        -DSDLMIXER_MOD_XMP=ON
+        -DSDLMIXER_MOD_XMP_SHARED=OFF
+        -DSDLMIXER_MP3=ON
+        -DSDLMIXER_MP3_DRMP3=ON
+        -DSDLMIXER_MP3_MPG123=ON
+        -DSDLMIXER_MP3_MPG123_SHARED=OFF
+        -DSDLMIXER_MIDI=ON
+        -DSDLMIXER_MIDI_FLUIDSYNTH=OFF
+        -DSDLMIXER_MIDI_TIMIDITY=ON
+        -DSDLMIXER_OPUS=ON
+        -DSDLMIXER_OPUS_SHARED=OFF
+        -DSDLMIXER_VORBIS_STB=ON
+        -DSDLMIXER_VORBIS_VORBISFILE=ON
+        -DSDLMIXER_VORBIS_VORBISFILE_SHARED=OFF
+        -DSDLMIXER_VORBIS_TREMOR=OFF
+        -DSDLMIXER_WAVPACK=ON
+        -DSDLMIXER_WAVPACK_DSD=ON
+        -DSDLMIXER_WAVPACK_SHARED=OFF
 
   sdl_ttf:
-    name: Build SDL_ttf
-    uses: ./.github/workflows/build-sdl_ttf.yml
+    name: SDL_ttf
+    uses: ./.github/workflows/build-component.yml
     with:
+      component: SDL_ttf
+      component_repository: libsdl-org/SDL_ttf
+      primary_binary: SDL3_ttf
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
+      forbidden_libs: lib(freetype|harfbuzz|plutosvg|plutovg|brotli|bz2|png|z)[.0-9]
+      cmake_args: |
+        -DBUILD_SHARED_LIBS=ON
+        -DSDLTTF_INSTALL=ON
+        -DSDLTTF_INSTALL_MAN=OFF
+        -DSDLTTF_INSTALL_CPACK=OFF
+        -DSDLTTF_VENDORED=ON
+        -DSDLTTF_STRICT=ON
+        -DSDLTTF_SAMPLES=OFF
+        -DSDLTTF_HARFBUZZ=ON
+        -DSDLTTF_PLUTOSVG=ON
 
   sdl_shadercross:
-    name: Build SDL_shadercross
+    name: SDL_shadercross
     uses: ./.github/workflows/build-sdl_shadercross.yml
     with:
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
@@ -46,45 +159,19 @@ jobs:
     name: Collect drop-in binary trees
     runs-on: ubuntu-24.04
     needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross]
-
     steps:
-      - name: Download SDL
+      - name: Download every collected component
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.HANDOFF_PREFIX }}-SDL
-          path: handoff/SDL
-
-      - name: Download SDL_image
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.HANDOFF_PREFIX }}-SDL_image
-          path: handoff/SDL_image
-
-      - name: Download SDL_mixer
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.HANDOFF_PREFIX }}-SDL_mixer
-          path: handoff/SDL_mixer
-
-      - name: Download SDL_ttf
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.HANDOFF_PREFIX }}-SDL_ttf
-          path: handoff/SDL_ttf
-
-      - name: Download SDL_shadercross
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.HANDOFF_PREFIX }}-SDL_shadercross
-          path: handoff/SDL_shadercross
+          pattern: ${{ env.HANDOFF_PREFIX }}-*
+          path: handoff
 
       - name: Assemble drop-in lib directories
         shell: bash
         run: |
           set -euo pipefail
           output="$GITHUB_WORKSPACE/SDL3-CS.Native-binaries"
-          rm -rf "$output"
-          mkdir -p "$output"
+          rm -rf "$output"; mkdir -p "$output"
 
           declare -A projects=(
             [SDL]=SDL3-CS.Native
@@ -98,7 +185,7 @@ jobs:
           for library in SDL SDL_image SDL_mixer SDL_ttf SDL_shadercross; do
             project="${projects[$library]}"
             for rid in "${rids[@]}"; do
-              source="handoff/$library/$rid"
+              source="handoff/$HANDOFF_PREFIX-$library/$rid"
               destination="$output/$project/lib/$rid"
               [[ -d "$source" ]] || { echo "Missing $source" >&2; exit 1; }
               mkdir -p "$destination"
@@ -112,7 +199,6 @@ jobs:
             find "$output" -type f -print >&2
             exit 1
           fi
-
           find "$output" -type f -print | sort
 
       - name: Upload the only workflow artifact
@@ -129,66 +215,16 @@ jobs:
     if: always()
     runs-on: ubuntu-24.04
     needs: [sdl, sdl_image, sdl_mixer, sdl_ttf, sdl_shadercross, collect]
-
     steps:
-      - name: Delete every intermediate artifact
+      - name: Delete every collected-component artifact
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          delete_artifact() {
-            local name="$1"
-            local ids
-            ids="$(gh api --paginate \
-              "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
-              --jq ".artifacts[] | select(.name == \"$name\") | .id")"
-            for id in $ids; do
-              gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null || true
-            done
-          }
-            delete_artifact "$HANDOFF_PREFIX-SDL"
-            delete_artifact "$HANDOFF_PREFIX-SDL-win-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL-win-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL-win-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL-linux-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL-linux-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL-linux-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL-osx-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL-osx-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-win-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-linux-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-osx-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_image-osx-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-win-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-linux-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-osx-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_mixer-osx-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-win-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-win-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-win-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-linux-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-linux-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-linux-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-osx-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_ttf-osx-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-win-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-x86"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-linux-arm64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-osx-x64"
-            delete_artifact "$HANDOFF_PREFIX-SDL_shadercross-osx-arm64"
+          ids="$(gh api --paginate \
+            "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+            --jq ".artifacts[] | select(.name | startswith(\"$HANDOFF_PREFIX-\")) | .id")"
+          for id in $ids; do
+            gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null 2>&1 || true
+          done

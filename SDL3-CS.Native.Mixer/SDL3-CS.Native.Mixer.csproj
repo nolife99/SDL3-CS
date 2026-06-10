@@ -1,55 +1,12 @@
 <Project Sdk="Microsoft.Build.NoTargets/3.7.134">
-      <PropertyGroup>
-        <!-- NoTargets supplies normal restore/project-reference behavior but emits no assembly. -->
-        <TargetFramework>netstandard1.0</TargetFramework>
-        <EnableDefaultItems>false</EnableDefaultItems>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
-        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-        <IsPackable>true</IsPackable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Platforms>AnyCPU</Platforms>
-        <Configurations>Debug;Release;Prerelease</Configurations>
-      </PropertyGroup>
 
-    <PropertyGroup Label="NuGet">
-  <PackageId>SDL3-CS.Native.Mixer</PackageId>
-  <Version>3.0.0</Version>
-  <Title>SDL3 C# Native mixer libraries</Title>
-  <Authors>Eduard Gushchin</Authors>
-  <Company>Eduard Gushchin</Company>
-  <Description>This package contains native SDL3_mixer libraries for SDL3-CS</Description>
-  <Copyright>Copyright (c) 2024-2026 Eduard Gushchin.</Copyright>
-  <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
-  <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
-  <RepositoryType>git</RepositoryType>
-  <PackageTags>SDL;SDL3;SDL3-CS</PackageTags>
-  <PackageIcon>logo.png</PackageIcon>
-  <PackageLicenseFile>LICENSE</PackageLicenseFile>
-  <NoWarn>$(NoWarn);NU5128</NoWarn>
-</PropertyGroup>
+  <Import Project="../Native.Common.props" />
 
+  <PropertyGroup>
+    <PackageId>SDL3-CS.Native.Mixer</PackageId>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <Title>SDL3 C# native SDL_mixer libraries</Title>
+    <Description>Native SDL_mixer runtime libraries for SDL3-CS — every codec enabled, with its dependencies (FLAC, Ogg/Vorbis, Opus, mpg123, libxmp, WavPack, …) statically linked in.</Description>
+  </PropertyGroup>
 
-      <ItemGroup>
-        <None Include="../LICENSE" Pack="true" PackagePath="/" Condition="Exists('../LICENSE')" />
-        <None Include="../logo.png" Pack="true" PackagePath="/" Visible="false" Condition="Exists('../logo.png')" />
-        <None Include="README.md" Pack="true" PackagePath="/" Visible="true" Condition="Exists('README.md')" />
-
-        <!--
-      Permanent binary layout:
-
-        lib/<rid>/<native files>
-
-      Replacing lib/ is the only operation required when binaries are updated.
-      ProjectReference copies every RID into the same runtimes/<rid>/native/
-      layout used inside the NuGet package.
-    -->
-    <Content Include="lib/**/*"
-             Link="runtimes/%(RecursiveDir)native/%(Filename)%(Extension)"
-             TargetPath="runtimes/%(RecursiveDir)native/%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest"
-             Pack="true"
-             PackagePath="runtimes/%(RecursiveDir)native/"
-             Visible="false" />
-      </ItemGroup>
-    </Project>
+</Project>

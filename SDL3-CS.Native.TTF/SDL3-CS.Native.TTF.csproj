@@ -1,53 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.Build.NoTargets/3.7.134">
 
-    <PropertyGroup>
-        <TargetFrameworks>net9.0;net7.0;net8.0</TargetFrameworks>
-        <RootNamespace>SDL3_CS.Native.TTF</RootNamespace>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageReleaseNotes>
-            This is a stable bugfix release, with the following changes:
+  <Import Project="../Native.Common.props" />
 
-            - Added TTF_GetFontWeight()
-            - Fixed surface size and layout of SDF text
-        </PackageReleaseNotes>
-    </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SDL3-CS.Native.TTF</PackageId>
+    <VersionPrefix>3.2.0</VersionPrefix>
+    <Title>SDL3 C# native SDL_ttf libraries</Title>
+    <Description>Native SDL_ttf runtime libraries for SDL3-CS, with FreeType, HarfBuzz and PlutoSVG statically linked in.</Description>
+  </PropertyGroup>
 
-    <PropertyGroup Label="NuGet">
-        <Version>3.2.2.0</Version>
-        <Title>SDL3 C# Native ttf libraries</Title>
-        <Authors>Eduard Gushchin</Authors>
-        <Company>Eduard Gushchin</Company>
-        <Description>This package contains native SDL_ttf libraries for SDL3-CS</Description>
-        <Copyright>Copyright (c) 2024-2025 Eduard Gushchin.</Copyright>
-        <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>SDL, SDL3, SDL3-CS</PackageTags>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageIcon>logo.png</PackageIcon>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>1591</NoWarn>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="../LICENSE" Pack="true" PackagePath="\"/>
-        <None Include="../logo.png" Pack="true" Visible="false" PackagePath="\"/>
-        <None Include="README.md" Pack="true" Visible="true" PackagePath="\"/>
-
-        <None Include="lib\win-x64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-x64\native\</PackagePath>
-        </None>
-        <None Include="lib\win-x86\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-x86\native\</PackagePath>
-        </None>
-        <None Include="lib\win-arm64\*">
-            <Pack>True</Pack>
-            <PackagePath>runtimes\win-arm64\native\</PackagePath>
-        </None>
-    </ItemGroup>
 </Project>

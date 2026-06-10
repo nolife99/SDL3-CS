@@ -1,0 +1,63 @@
+<Project>
+
+  <!--
+    Shared definition for every SDL3-CS.Native* package. Each project only sets its PackageId,
+    VersionPrefix, Title and Description; everything below (packaging behaviour, NuGet metadata,
+    and the lib/<rid> -> runtimes/<rid>/native layout) lives here so the projects stay identical.
+  -->
+
+  <PropertyGroup>
+    <!-- NoTargets gives normal restore / project-reference behaviour but emits no assembly. -->
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Platforms>AnyCPU</Platforms>
+    <Configurations>Debug;Release;Prerelease</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Label="NuGet">
+    <Authors>Eduard Gushchin</Authors>
+    <Company>Eduard Gushchin</Company>
+    <Copyright>Copyright (c) 2024-2026 Eduard Gushchin.</Copyright>
+    <PackageProjectUrl>https://github.com/edwardgushchin/SDL3-CS</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/edwardgushchin/SDL3-CS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>SDL;SDL3;SDL3-CS;native;runtime</PackageTags>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile Condition="Exists('README.md')">README.md</PackageReadmeFile>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <!-- CI Prerelease builds get a deterministic, sortable suffix. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Prerelease'">
+    <VersionSuffix>preview.$([System.DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))</VersionSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../LICENSE" Pack="true" PackagePath="/" Visible="false" Condition="Exists('../LICENSE')" />
+    <None Include="../logo.png" Pack="true" PackagePath="/" Visible="false" Condition="Exists('../logo.png')" />
+    <None Include="README.md" Pack="true" PackagePath="/" Condition="Exists('README.md')" />
+
+    <!--
+      Permanent binary layout:
+
+        lib/<rid>/<native files>
+
+      Replacing lib/ is the only operation required when binaries are updated. The same
+      runtimes/<rid>/native/ layout is used by both the NuGet package and ProjectReference.
+    -->
+    <Content Include="lib/**/*"
+             Link="runtimes/%(RecursiveDir)native/%(Filename)%(Extension)"
+             TargetPath="runtimes/%(RecursiveDir)native/%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest"
+             Pack="true"
+             PackagePath="runtimes/%(RecursiveDir)native/"
+             Visible="false" />
+  </ItemGroup>
+
+</Project>

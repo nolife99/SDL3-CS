@@ -1,0 +1,443 @@
+name: Build SDL component
+
+# Reusable engine shared by every vendored library (SDL, SDL_image, SDL_mixer, SDL_ttf).
+# The caller passes the component's cmake flags; this workflow owns the matrix, toolchain,
+# size-optimized build, static-dependency verification, collection and cleanup.
+#
+# SDL_shadercross is NOT built here — its dependency graph (a separate static SPIRV-Cross
+# sub-build plus a vkd3d patch) is different enough to warrant its own workflow.
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: Library name. "SDL" builds only the base library; anything else also builds that component.
+        required: true
+        type: string
+      component_repository:
+        description: GitHub repository of the component (e.g. libsdl-org/SDL_image; libsdl-org/SDL for the base).
+        required: true
+        type: string
+      primary_binary:
+        description: Base name of the runtime binary to ship (e.g. SDL3, SDL3_image).
+        required: true
+        type: string
+      cmake_args:
+        description: Newline-separated component cmake -D flags. Empty for the SDL base.
+        required: false
+        type: string
+        default: ""
+      forbidden_libs:
+        description: Regex of dependency sonames that must NOT remain dynamically linked. Empty skips the check.
+        required: false
+        type: string
+        default: ""
+      artifact_prefix:
+        description: Run-scoped artifact prefix used by the aggregate workflow.
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  resolve:
+    name: Resolve latest stable releases
+    runs-on: ubuntu-24.04
+    outputs:
+      sdl_ref: ${{ steps.refs.outputs.sdl_ref }}
+      component_ref: ${{ steps.refs.outputs.component_ref }}
+    steps:
+      - name: Resolve official release tags
+        id: refs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPONENT: ${{ inputs.component }}
+          COMPONENT_REPOSITORY: ${{ inputs.component_repository }}
+        run: |
+          set -euo pipefail
+          sdl_ref="$(gh api repos/libsdl-org/SDL/releases/latest --jq '.tag_name')"
+          test -n "$sdl_ref"
+          echo "sdl_ref=$sdl_ref" >> "$GITHUB_OUTPUT"
+          if [[ "$COMPONENT" == "SDL" ]]; then
+            echo "component_ref=$sdl_ref" >> "$GITHUB_OUTPUT"
+            echo "Using SDL $sdl_ref"
+          else
+            component_ref="$(gh api "repos/$COMPONENT_REPOSITORY/releases/latest" --jq '.tag_name')"
+            test -n "$component_ref"
+            echo "component_ref=$component_ref" >> "$GITHUB_OUTPUT"
+            echo "Using SDL $sdl_ref and $COMPONENT $component_ref"
+          fi
+
+  build:
+    name: ${{ inputs.component }} ${{ matrix.rid }}
+    needs: resolve
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-2025,    os: windows, rid: win-x64,     msvc_arch: x64,   msvc_host_arch: x64 }
+          - { runner: windows-2025,    os: windows, rid: win-x86,     msvc_arch: x86,   msvc_host_arch: x64 }
+          - { runner: windows-11-arm,  os: windows, rid: win-arm64,   msvc_arch: arm64, msvc_host_arch: arm64 }
+          - { runner: ubuntu-24.04,    os: linux,   rid: linux-x64 }
+          - { runner: ubuntu-24.04,    os: linux,   rid: linux-x86 }
+          - { runner: ubuntu-24.04-arm, os: linux,  rid: linux-arm64 }
+          - { runner: macos-15-intel,  os: macos,   rid: osx-x64,     osx_arch: x86_64 }
+          - { runner: macos-latest,    os: macos,   rid: osx-arm64,   osx_arch: arm64 }
+
+    env:
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      ARTIFACT_DIR: ${{ github.workspace }}/handoff/${{ inputs.component }}/${{ matrix.rid }}
+
+    steps:
+      - name: Checkout SDL
+        uses: actions/checkout@v4
+        with:
+          repository: libsdl-org/SDL
+          ref: ${{ needs.resolve.outputs.sdl_ref }}
+          fetch-depth: 1
+          submodules: recursive
+          path: SDL
+
+      - name: Checkout ${{ inputs.component }}
+        if: inputs.component != 'SDL'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.component_repository }}
+          ref: ${{ needs.resolve.outputs.component_ref }}
+          fetch-depth: 1
+          submodules: recursive
+          path: ${{ inputs.component }}
+
+      - name: Install Linux toolchain
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # nasm + meson are required by the vendored SIMD codecs (dav1d, aom, libjpeg-turbo, mpg123).
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            # Real 32-bit desktop build on the x64 runner. X11 only; the full 32-bit Wayland/decoration
+            # chain is not reliably multiarch-packaged.
+            sudo dpkg --add-architecture i386
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              build-essential gcc-multilib g++-multilib libc6-dev-i386 \
+              cmake ninja-build pkg-config git file patchelf nasm meson \
+              libasound2-dev:i386 libusb-1.0-0-dev:i386 \
+              libdbus-1-dev:i386 libudev-dev:i386 \
+              libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 \
+              libxcursor-dev:i386 libxfixes-dev:i386 libxi-dev:i386 \
+              libxss-dev:i386 libxtst-dev:i386 \
+              libgl-dev:i386 libvulkan-dev:i386
+          else
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              build-essential cmake ninja-build pkg-config git file patchelf nasm meson \
+              libasound2-dev libpulse-dev libjack-dev libsndio-dev \
+              libusb-1.0-0-dev libdbus-1-dev libudev-dev \
+              libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+              libxi-dev libxss-dev libxtst-dev \
+              libwayland-dev wayland-protocols libxkbcommon-dev libdecor-0-dev \
+              libdrm-dev libgbm-dev libgl1-mesa-dev libegl1-mesa-dev \
+              libpipewire-0.3-dev libvulkan-dev
+          fi
+
+      - name: Install macOS toolchain
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew update
+          brew install cmake ninja pkg-config nasm meson
+
+      - name: Install Windows toolchain
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          choco install nasm --no-progress --yes
+          python -m pip install --upgrade pip meson
+          # nasm and the pip script directory must be visible to the vendored codec builds.
+          Add-Content -Path $env:GITHUB_PATH -Value 'C:\Program Files\NASM'
+
+      - name: Build and install (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        env:
+          COMPONENT: ${{ inputs.component }}
+          CMAKE_ARGS: ${{ inputs.cmake_args }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { throw 'vswhere.exe was not found.' }
+          $vs = (& $vswhere -latest -products * -property installationPath).Trim()
+          if (-not $vs) { throw 'No Visual Studio installation was found.' }
+          $devcmd = Join-Path $vs 'Common7\Tools\VsDevCmd.bat'
+          if (-not (Test-Path $devcmd)) { throw "VsDevCmd.bat was not found at $devcmd" }
+
+          $environment = & cmd.exe /d /s /c "`"$devcmd`" -no_logo -arch=${{ matrix.msvc_arch }} -host_arch=${{ matrix.msvc_host_arch }} && set"
+          if ($LASTEXITCODE -ne 0) { throw "VsDevCmd failed with exit code $LASTEXITCODE." }
+          foreach ($line in $environment) {
+            if ($line -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') }
+          }
+          # Keep nasm reachable after VsDevCmd rewrote PATH.
+          $env:PATH = "C:\Program Files\NASM;$env:PATH"
+          Get-Command cl.exe, cmake.exe, ninja.exe, nasm.exe -ErrorAction Stop | Out-Host
+
+          $common = @(
+            '-G', 'Ninja',
+            '-DCMAKE_BUILD_TYPE=MinSizeRel',
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON',
+            '-DCMAKE_C_FLAGS_MINSIZEREL=/Os /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/Os /GL /Gy /Gw /DNDEBUG',
+            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF',
+            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF'
+          )
+
+          $sdlOptions = @(
+            "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
+            '-DSDL_INSTALL=ON', '-DSDL_SHARED=ON', '-DSDL_STATIC=OFF',
+            '-DSDL_TESTS=OFF', '-DSDL_EXAMPLES=OFF', '-DSDL_INSTALL_DOCS=OFF', '-DSDL_INSTALL_TESTS=OFF'
+          )
+          & cmake -S SDL -B "$env:BUILD_DIR/SDL" @common @sdlOptions; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --build "$env:BUILD_DIR/SDL" --parallel;             if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & cmake --install "$env:BUILD_DIR/SDL";                      if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          if ($env:COMPONENT -ne 'SDL') {
+            $componentOptions = @(
+              "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
+              "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX"
+            ) + (($env:CMAKE_ARGS -split "`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+            & cmake -S $env:COMPONENT -B "$env:BUILD_DIR/$env:COMPONENT" @common @componentOptions; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+            & cmake --build "$env:BUILD_DIR/$env:COMPONENT" --parallel;                              if ($LASTEXITCODE) { exit $LASTEXITCODE }
+            & cmake --install "$env:BUILD_DIR/$env:COMPONENT";                                       if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+
+      - name: Build and install (Unix)
+        if: matrix.os != 'windows'
+        shell: bash
+        env:
+          COMPONENT: ${{ inputs.component }}
+          CMAKE_ARGS: ${{ inputs.cmake_args }}
+        run: |
+          set -euo pipefail
+          common=( -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON )
+          cflags="-Os -flto -ffunction-sections -fdata-sections -DNDEBUG"
+
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            ldflags="-flto -Wl,-dead_strip -Wl,-x"
+            common+=( "-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 )
+          else
+            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -s"
+          fi
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            export PKG_CONFIG_PATH=
+            common+=( -DCMAKE_SYSTEM_PROCESSOR=x86 -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32 )
+          fi
+
+          common+=(
+            "-DCMAKE_C_FLAGS_MINSIZEREL=$cflags"
+            "-DCMAKE_CXX_FLAGS_MINSIZEREL=$cflags"
+            "-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=$ldflags"
+            "-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=$ldflags"
+          )
+
+          sdl_options=(
+            "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX"
+            -DSDL_INSTALL=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF
+            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_INSTALL_DOCS=OFF -DSDL_INSTALL_TESTS=OFF
+          )
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            sdl_options+=(
+              -DSDL_X11=ON -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF -DSDL_LIBDECOR=OFF
+              -DSDL_OPENGL=ON -DSDL_OPENGLES=OFF -DSDL_VULKAN=ON
+              -DSDL_ALSA=ON -DSDL_PULSEAUDIO=OFF -DSDL_JACK=OFF -DSDL_SNDIO=OFF -DSDL_PIPEWIRE=OFF
+            )
+          fi
+
+          cmake -S SDL -B "$BUILD_DIR/SDL" "${common[@]}" "${sdl_options[@]}"
+          cmake --build "$BUILD_DIR/SDL" --parallel
+          cmake --install "$BUILD_DIR/SDL" --strip
+
+          if [[ "$COMPONENT" != "SDL" ]]; then
+            mapfile -t component_options < <(printf '%s\n' "$CMAKE_ARGS" | sed '/^[[:space:]]*$/d')
+            cmake -S "$COMPONENT" -B "$BUILD_DIR/$COMPONENT" "${common[@]}" \
+              "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX" \
+              "${component_options[@]}"
+            cmake --build "$BUILD_DIR/$COMPONENT" --parallel
+            cmake --install "$BUILD_DIR/$COMPONENT" --strip
+          fi
+
+          if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+            mapfile -d '' shared_objects < <(find "$INSTALL_PREFIX" -type f -name '*.so*' -print0)
+            (( ${#shared_objects[@]} > 0 ))
+            for shared_object in "${shared_objects[@]}"; do
+              file -Lb "$shared_object" | grep -q 'ELF 32-bit' || { echo "Not 32-bit: $shared_object" >&2; exit 1; }
+            done
+          fi
+
+      - name: Stage runtime binary (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        env:
+          PRIMARY_BINARY: ${{ inputs.primary_binary }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Remove-Item $env:ARTIFACT_DIR -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $env:ARTIFACT_DIR | Out-Null
+          $name = "$env:PRIMARY_BINARY.dll"
+          $binary = Get-ChildItem -Path $env:INSTALL_PREFIX -Recurse -File -Filter $name | Select-Object -First 1
+          if (-not $binary) { throw "Could not find $name under the install prefix." }
+          Copy-Item $binary.FullName (Join-Path $env:ARTIFACT_DIR $name) -Force
+
+      - name: Stage runtime binary (Linux)
+        if: matrix.os == 'linux'
+        shell: bash
+        env:
+          PRIMARY_BINARY: ${{ inputs.primary_binary }}
+          FORBIDDEN_LIBS: ${{ inputs.forbidden_libs }}
+        run: |
+          set -euo pipefail
+          rm -rf "$ARTIFACT_DIR"; mkdir -p "$ARTIFACT_DIR"
+          canonical="lib${PRIMARY_BINARY}.so"
+          source="$(find "$INSTALL_PREFIX" -type f -name "lib${PRIMARY_BINARY}.so*" -printf '%s %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)"
+          [[ -n "$source" ]] || { echo "Could not find $canonical under $INSTALL_PREFIX." >&2; exit 1; }
+
+          target="$ARTIFACT_DIR/$canonical"
+          cp "$source" "$target"; chmod 755 "$target"
+          patchelf --set-soname "$canonical" "$target"
+          patchelf --set-rpath '$ORIGIN' "$target"
+          # Components link against versioned libSDL3.so.*; pin to the drop-in soname next to them.
+          while IFS= read -r dependency; do
+            case "$dependency" in
+              libSDL3.so.*) patchelf --replace-needed "$dependency" libSDL3.so "$target" ;;
+            esac
+          done < <(patchelf --print-needed "$target")
+
+          [[ "$(patchelf --print-soname "$target")" == "$canonical" ]]
+          if [[ -n "$FORBIDDEN_LIBS" ]] && patchelf --print-needed "$target" | grep -Eiq "$FORBIDDEN_LIBS"; then
+            echo "A dependency was linked dynamically instead of into $canonical:" >&2
+            patchelf --print-needed "$target" >&2
+            exit 1
+          fi
+          find "$ARTIFACT_DIR" -maxdepth 1 -type f -printf '%f %s bytes\n'
+
+      - name: Stage runtime binary (macOS)
+        if: matrix.os == 'macos'
+        shell: bash
+        env:
+          PRIMARY_BINARY: ${{ inputs.primary_binary }}
+          FORBIDDEN_LIBS: ${{ inputs.forbidden_libs }}
+        run: |
+          set -euo pipefail
+          rm -rf "$ARTIFACT_DIR"; mkdir -p "$ARTIFACT_DIR"
+          canonical="lib${PRIMARY_BINARY}.dylib"
+          source="$(find "$INSTALL_PREFIX" -type f -name "lib${PRIMARY_BINARY}*.dylib" -print \
+            | while IFS= read -r path; do stat -f '%z %N' "$path"; done | sort -nr | head -n1 | cut -d' ' -f2-)"
+          [[ -n "$source" ]] || { echo "Could not find $canonical under $INSTALL_PREFIX." >&2; exit 1; }
+
+          target="$ARTIFACT_DIR/$canonical"
+          cp "$source" "$target"; chmod 755 "$target"
+          install_name_tool -id "@rpath/$canonical" "$target"
+          while IFS= read -r dependency; do
+            case "$(basename "$dependency")" in
+              libSDL3.dylib|libSDL3.*.dylib) install_name_tool -change "$dependency" "@loader_path/libSDL3.dylib" "$target" ;;
+            esac
+          done < <(otool -L "$target" | tail -n +2 | awk '{print $1}')
+
+          if [[ -n "$FORBIDDEN_LIBS" ]] && otool -L "$target" | grep -Eiq "$FORBIDDEN_LIBS"; then
+            echo "A dependency was linked dynamically instead of into $canonical:" >&2
+            otool -L "$target" >&2
+            exit 1
+          fi
+          echo "Staged $target ($(stat -f '%z' "$target") bytes)"
+
+      - name: Upload ${{ inputs.component }} ${{ matrix.rid }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}-${{ inputs.component }}-${{ matrix.rid }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
+
+  collect:
+    name: Collect ${{ inputs.component }} binaries
+    runs-on: ubuntu-24.04
+    needs: build
+    env:
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+    steps:
+      - name: Download every RID artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ env.HANDOFF_PREFIX }}-${{ inputs.component }}-*
+          path: downloads
+
+      - name: Assemble per-RID tree
+        shell: bash
+        env:
+          COMPONENT: ${{ inputs.component }}
+        run: |
+          set -euo pipefail
+          root="handoff/$COMPONENT"
+          rm -rf "$root"; mkdir -p "$root"
+          rids=(win-x64 win-x86 win-arm64 linux-x64 linux-x86 linux-arm64 osx-x64 osx-arm64)
+          for rid in "${rids[@]}"; do
+            source="downloads/$HANDOFF_PREFIX-$COMPONENT-$rid"
+            [[ -d "$source" ]] || { echo "Missing artifact for $rid" >&2; exit 1; }
+            mkdir -p "$root/$rid"
+            cp -a "$source/." "$root/$rid/"
+            count="$(find "$root/$rid" -maxdepth 1 -type f | wc -l)"
+            [[ "$count" -eq 1 ]] || { echo "Expected exactly one binary for $rid:" >&2; find "$root/$rid" -maxdepth 1 -type f -print >&2; exit 1; }
+          done
+          find "$root" -type f -print | sort
+
+      - name: Upload collected ${{ inputs.component }} for the aggregate
+        if: inputs.artifact_prefix != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.HANDOFF_PREFIX }}-${{ inputs.component }}
+          path: handoff/${{ inputs.component }}/
+          if-no-files-found: error
+          compression-level: 9
+          retention-days: 1
+
+      - name: Upload standalone ${{ inputs.component }} binaries
+        if: inputs.artifact_prefix == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.component }}-binaries
+          path: handoff/${{ inputs.component }}/
+          if-no-files-found: error
+          compression-level: 9
+
+  cleanup:
+    name: Delete temporary ${{ inputs.component }} artifacts
+    if: always()
+    runs-on: ubuntu-24.04
+    needs: [build, collect]
+    env:
+      HANDOFF_PREFIX: ${{ inputs.artifact_prefix != '' && inputs.artifact_prefix || format('sdl-native-{0}-{1}', github.run_id, github.run_attempt) }}
+    steps:
+      - name: Delete per-RID transfer artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPONENT: ${{ inputs.component }}
+        run: |
+          set +e
+          ids="$(gh api --paginate \
+            "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+            --jq ".artifacts[] | select(.name | startswith(\"$HANDOFF_PREFIX-$COMPONENT-\")) | .id")"
+          for id in $ids; do
+            gh api --method DELETE "/repos/$GITHUB_REPOSITORY/actions/artifacts/$id" >/dev/null 2>&1 || true
+          done
