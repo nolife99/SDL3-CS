@@ -23,7 +23,12 @@ on:
         required: true
         type: string
       cmake_args:
-        description: Newline-separated component cmake -D flags. Empty for the SDL base.
+        description: Whitespace-separated component cmake -D flags (the aggregate folds them onto one line). Empty for the SDL base.
+        required: false
+        type: string
+        default: ""
+      cmake_args_linux_x86:
+        description: Extra cmake -D flags appended only on the linux-x86 (32-bit) RID, for codecs whose configure checks misbehave under the runner's multilib toolchain. Empty otherwise.
         required: false
         type: string
         default: ""
@@ -231,6 +236,7 @@ jobs:
         env:
           COMPONENT: ${{ inputs.component }}
           CMAKE_ARGS: ${{ inputs.cmake_args }}
+          CMAKE_ARGS_LINUX_X86: ${{ inputs.cmake_args_linux_x86 }}
         run: |
           set -euo pipefail
           common=( -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON )
@@ -279,6 +285,11 @@ jobs:
             component_options=()
             set -f
             for option in $CMAKE_ARGS; do component_options+=("$option"); done
+            # Per-RID overrides for the 32-bit build (e.g. a codec whose configure check
+            # can't link 32-bit libm on the multilib runner). Appended last so they win.
+            if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
+              for option in $CMAKE_ARGS_LINUX_X86; do component_options+=("$option"); done
+            fi
             set +f
             echo "::group::Resolved $COMPONENT cmake options"
             printf 'arg: [%s]\n' "${component_options[@]}"

@@ -33,7 +33,10 @@ jobs:
       primary_binary: SDL3_image
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
       forbidden_libs: lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)[.0-9]|libsharpyuv
-      cmake_args: |
+      # libtiff's FindCMath pow probe can't link 32-bit libm on the multilib runner, so TIFF
+      # alone is dropped for linux-x86; every other RID keeps it. See build-component.yml.
+      cmake_args_linux_x86: -DSDLIMAGE_TIF=OFF
+      cmake_args: >-
         -DBUILD_SHARED_LIBS=ON
         -DSDLIMAGE_INSTALL=ON
         -DSDLIMAGE_INSTALL_MAN=OFF
@@ -89,7 +92,7 @@ jobs:
       primary_binary: SDL3_mixer
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
       forbidden_libs: lib(opus|opusfile|ogg|xmp|gme|wavpack)[.0-9]
-      cmake_args: |
+      cmake_args: >-
         -DCMAKE_POLICY_DEFAULT_CMP0077=NEW
         -DSDLMIXER_INSTALL=ON
         -DSDLMIXER_INSTALL_MAN=OFF
@@ -136,7 +139,7 @@ jobs:
       primary_binary: SDL3_ttf
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
       forbidden_libs: lib(freetype|harfbuzz|plutosvg|plutovg|brotli|bz2|png|z)[.0-9]
-      cmake_args: |
+      cmake_args: >-
         -DBUILD_SHARED_LIBS=ON
         -DSDLTTF_INSTALL=ON
         -DSDLTTF_INSTALL_MAN=OFF

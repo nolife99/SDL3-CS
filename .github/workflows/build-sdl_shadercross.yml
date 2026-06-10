@@ -298,16 +298,20 @@ jobs:
           static_link_suffix = """
 
               find_package(Threads REQUIRED)
-              file(MAKE_DIRECTORY "${INSTALL_DIR}/include")
+              # vkd3d 2.0 installs its public headers into <prefix>/include/vkd3d/, and they
+              # include each other with flat names (e.g. vkd3d_utils.h does #include <vkd3d.h>),
+              # so the vkd3d subdirectory itself must be on the include path. Keep the parent too
+              # for any consumer that spells the include as <vkd3d/...>.
+              file(MAKE_DIRECTORY "${INSTALL_DIR}/include/vkd3d")
               add_library(vkd3d-utils-static STATIC IMPORTED GLOBAL)
               set_target_properties(vkd3d-utils-static PROPERTIES
                   IMPORTED_LOCATION "${INSTALL_DIR}/lib/libvkd3d-utils.a"
-                  INTERFACE_INCLUDE_DIRECTORIES "${INSTALL_DIR}/include"
+                  INTERFACE_INCLUDE_DIRECTORIES "${INSTALL_DIR}/include;${INSTALL_DIR}/include/vkd3d"
               )
               add_library(vkd3d-shader-static STATIC IMPORTED GLOBAL)
               set_target_properties(vkd3d-shader-static PROPERTIES
                   IMPORTED_LOCATION "${INSTALL_DIR}/lib/libvkd3d-shader.a"
-                  INTERFACE_INCLUDE_DIRECTORIES "${INSTALL_DIR}/include"
+                  INTERFACE_INCLUDE_DIRECTORIES "${INSTALL_DIR}/include;${INSTALL_DIR}/include/vkd3d"
               )
               add_dependencies(vkd3d-utils-static vkd3d)
               add_dependencies(vkd3d-shader-static vkd3d)
