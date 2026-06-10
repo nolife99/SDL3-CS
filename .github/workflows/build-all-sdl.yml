@@ -88,7 +88,7 @@ jobs:
       component_repository: libsdl-org/SDL_mixer
       primary_binary: SDL3_mixer
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
-      forbidden_libs: lib(FLAC|ogg|vorbis|opus|opusfile|mpg123|xmp|gme|wavpack|fluidsynth)[.0-9]
+      forbidden_libs: lib(opus|opusfile|ogg|xmp|gme|wavpack)[.0-9]
       cmake_args: |
         -DBUILD_SHARED_LIBS=ON
         -DSDLMIXER_INSTALL=ON
@@ -104,8 +104,7 @@ jobs:
         -DSDLMIXER_VOC=ON
         -DSDLMIXER_AU=ON
         -DSDLMIXER_FLAC=ON
-        -DSDLMIXER_FLAC_LIBFLAC=ON
-        -DSDLMIXER_FLAC_LIBFLAC_SHARED=OFF
+        -DSDLMIXER_FLAC_LIBFLAC=OFF
         -DSDLMIXER_FLAC_DRFLAC=ON
         -DSDLMIXER_GME=ON
         -DSDLMIXER_GME_SHARED=OFF
@@ -114,16 +113,14 @@ jobs:
         -DSDLMIXER_MOD_XMP_SHARED=OFF
         -DSDLMIXER_MP3=ON
         -DSDLMIXER_MP3_DRMP3=ON
-        -DSDLMIXER_MP3_MPG123=ON
-        -DSDLMIXER_MP3_MPG123_SHARED=OFF
+        -DSDLMIXER_MP3_MPG123=OFF
         -DSDLMIXER_MIDI=ON
         -DSDLMIXER_MIDI_FLUIDSYNTH=OFF
         -DSDLMIXER_MIDI_TIMIDITY=ON
         -DSDLMIXER_OPUS=ON
         -DSDLMIXER_OPUS_SHARED=OFF
         -DSDLMIXER_VORBIS_STB=ON
-        -DSDLMIXER_VORBIS_VORBISFILE=ON
-        -DSDLMIXER_VORBIS_VORBISFILE_SHARED=OFF
+        -DSDLMIXER_VORBIS_VORBISFILE=OFF
         -DSDLMIXER_VORBIS_TREMOR=OFF
         -DSDLMIXER_WAVPACK=ON
         -DSDLMIXER_WAVPACK_DSD=ON

@@ -258,10 +258,16 @@ jobs:
 
           cmake_path = Path("SDL_shadercross/CMakeLists.txt")
           cmake = cmake_path.read_text(encoding="utf-8")
-          source_marker = "    src/SDL_shadercross.c\n)"
-          if cmake.count(source_marker) != 1:
+          # Upstream indents the source list with tabs; match the entry regardless of leading
+          # whitespace and add the wrapper next to it (SOURCE_FILES feeds both the shared and static targets).
+          source_pattern = re.compile(r"(?m)^([ \t]*)src/SDL_shadercross\.c[ \t]*$")
+          if len(source_pattern.findall(cmake)) != 1:
               raise RuntimeError("Could not locate shadercross source list")
-          cmake = cmake.replace(source_marker, "    src/SDL_shadercross.c\n    src/static_vkd3d.c\n)")
+          cmake = source_pattern.sub(
+              lambda match: match.group(1) + "src/SDL_shadercross.c\n" + match.group(1) + "src/static_vkd3d.c",
+              cmake,
+              count=1,
+          )
 
           configure_marker = '"--enable-tests=no" "--enable-demos=no" "--disable-doxygen-doc"'
           if cmake.count(configure_marker) != 1:
@@ -283,10 +289,13 @@ jobs:
               loader_marker + ' "-DCMAKE_C_FLAGS=${configure_CFLAGS}" "-DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}"',
           )
 
-          property_marker = "    ExternalProject_Get_property(vkd3d SOURCE_DIR)\n    ExternalProject_Get_property(vkd3d INSTALL_DIR)"
-          if cmake.count(property_marker) != 1:
+          property_pattern = re.compile(
+              r"(?m)^[ \t]*ExternalProject_Get_property\(vkd3d SOURCE_DIR\)[ \t]*\n"
+              r"[ \t]*ExternalProject_Get_property\(vkd3d INSTALL_DIR\)[ \t]*$"
+          )
+          if len(property_pattern.findall(cmake)) != 1:
               raise RuntimeError("Could not locate vkd3d external-project properties")
-          static_link = property_marker + """
+          static_link_suffix = """
 
               find_package(Threads REQUIRED)
               file(MAKE_DIRECTORY "${INSTALL_DIR}/include")
@@ -316,7 +325,7 @@ jobs:
                   endif()
               endforeach()
           """
-          cmake = cmake.replace(property_marker, static_link)
+          cmake = property_pattern.sub(lambda match: match.group(0) + static_link_suffix, cmake, count=1)
           cmake_path.write_text(cmake, encoding="utf-8")
 
       - name: Build and install SDL_shadercross stack (Windows)

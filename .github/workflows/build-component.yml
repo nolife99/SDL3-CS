@@ -188,6 +188,9 @@ jobs:
           }
           # Keep nasm reachable after VsDevCmd rewrote PATH.
           $env:PATH = "C:\Program Files\NASM;$env:PATH"
+          # Drop MinGW from PATH so CMake's export-def step uses MSVC's nm on MSVC objects instead of
+          # C:\mingw64\bin\nm.exe (which can't read COFF objects and breaks vendored shared-lib builds).
+          $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -and $_ -notmatch '(?i)mingw' }) -join ';'
           Get-Command cl.exe, cmake.exe, ninja.exe, nasm.exe -ErrorAction Stop | Out-Host
 
           $common = @(
@@ -268,7 +271,11 @@ jobs:
           cmake --install "$BUILD_DIR/SDL" --strip
 
           if [[ "$COMPONENT" != "SDL" ]]; then
-            mapfile -t component_options < <(printf '%s\n' "$CMAKE_ARGS" | sed '/^[[:space:]]*$/d')
+            # macOS runners ship bash 3.2, which has no `mapfile`; read the flags portably.
+            component_options=()
+            while IFS= read -r option; do
+              [[ "$option" =~ ^[[:space:]]*$ ]] || component_options+=("$option")
+            done <<< "$CMAKE_ARGS"
             cmake -S "$COMPONENT" -B "$BUILD_DIR/$COMPONENT" "${common[@]}" \
               "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX" \
               "${component_options[@]}"
@@ -277,7 +284,9 @@ jobs:
           fi
 
           if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
-            mapfile -d '' shared_objects < <(find "$INSTALL_PREFIX" -type f -name '*.so*' -print0)
+            shared_objects=()
+            while IFS= read -r -d '' shared_object; do shared_objects+=("$shared_object"); done \
+              < <(find "$INSTALL_PREFIX" -type f -name '*.so*' -print0)
             (( ${#shared_objects[@]} > 0 ))
             for shared_object in "${shared_objects[@]}"; do
               file -Lb "$shared_object" | grep -q 'ELF 32-bit' || { echo "Not 32-bit: $shared_object" >&2; exit 1; }
