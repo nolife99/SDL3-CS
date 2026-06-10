@@ -216,7 +216,10 @@ jobs:
             $componentOptions = @(
               "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
               "-DCMAKE_PREFIX_PATH=$env:INSTALL_PREFIX"
-            ) + (($env:CMAKE_ARGS -split "`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+            ) + (($env:CMAKE_ARGS -split '\s+') | Where-Object { $_ })
+            Write-Host "::group::Resolved $env:COMPONENT cmake options"
+            $componentOptions | ForEach-Object { Write-Host "arg: [$_]" }
+            Write-Host "::endgroup::"
             & cmake -S $env:COMPONENT -B "$env:BUILD_DIR/$env:COMPONENT" @common @componentOptions; if ($LASTEXITCODE) { exit $LASTEXITCODE }
             & cmake --build "$env:BUILD_DIR/$env:COMPONENT" --parallel;                              if ($LASTEXITCODE) { exit $LASTEXITCODE }
             & cmake --install "$env:BUILD_DIR/$env:COMPONENT";                                       if ($LASTEXITCODE) { exit $LASTEXITCODE }
@@ -271,11 +274,15 @@ jobs:
           cmake --install "$BUILD_DIR/SDL" --strip
 
           if [[ "$COMPONENT" != "SDL" ]]; then
-            # macOS runners ship bash 3.2, which has no `mapfile`; read the flags portably.
+            # Split on any whitespace so it's robust whether the multiline input keeps its newlines or
+            # arrives collapsed to spaces. Every flag is a single -D token with no embedded spaces.
             component_options=()
-            while IFS= read -r option; do
-              [[ "$option" =~ ^[[:space:]]*$ ]] || component_options+=("$option")
-            done <<< "$CMAKE_ARGS"
+            set -f
+            for option in $CMAKE_ARGS; do component_options+=("$option"); done
+            set +f
+            echo "::group::Resolved $COMPONENT cmake options"
+            printf 'arg: [%s]\n' "${component_options[@]}"
+            echo "::endgroup::"
             cmake -S "$COMPONENT" -B "$BUILD_DIR/$COMPONENT" "${common[@]}" \
               "-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX" "-DCMAKE_PREFIX_PATH=$INSTALL_PREFIX" \
               "${component_options[@]}"

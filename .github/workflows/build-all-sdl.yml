@@ -35,7 +35,6 @@ jobs:
       forbidden_libs: lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)[.0-9]|libsharpyuv
       cmake_args: |
         -DBUILD_SHARED_LIBS=ON
-        -DCMAKE_REQUIRED_LIBRARIES=m
         -DSDLIMAGE_INSTALL=ON
         -DSDLIMAGE_INSTALL_MAN=OFF
         -DSDLIMAGE_INSTALL_CPACK=OFF
