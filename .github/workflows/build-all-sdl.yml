@@ -33,9 +33,6 @@ jobs:
       primary_binary: SDL3_image
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
       forbidden_libs: lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)[.0-9]|libsharpyuv
-      # libtiff's FindCMath pow probe can't link 32-bit libm on the multilib runner, so TIFF
-      # alone is dropped for linux-x86; every other RID keeps it. See build-component.yml.
-      cmake_args_linux_x86: -DSDLIMAGE_TIF=OFF
       cmake_args: >-
         -DBUILD_SHARED_LIBS=ON
         -DSDLIMAGE_INSTALL=ON

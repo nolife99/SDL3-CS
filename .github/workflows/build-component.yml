@@ -131,7 +131,7 @@ jobs:
             sudo dpkg --add-architecture i386
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
-              build-essential gcc-multilib g++-multilib libc6-dev-i386 \
+              build-essential gcc-multilib g++-multilib libc6-dev-i386 libc6-dev:i386 \
               cmake ninja-build pkg-config git file patchelf nasm meson \
               libasound2-dev:i386 libusb-1.0-0-dev:i386 \
               libdbus-1-dev:i386 libudev-dev:i386 \
@@ -240,19 +240,25 @@ jobs:
         run: |
           set -euo pipefail
           common=( -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON )
-          cflags="-Os -flto -ffunction-sections -fdata-sections -DNDEBUG"
+          # Size: -fvisibility=hidden hides everything except each library's annotated public API
+          # (SDL exports via its version script anyway); -fno-asynchronous-unwind-tables drops the
+          # .eh_frame unwind tables that C code never needs; -fno-ident strips the compiler tag.
+          cflags="-Os -flto -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables -fvisibility=hidden -fno-ident -DNDEBUG"
 
           if [[ "${{ matrix.os }}" == "macos" ]]; then
-            ldflags="-flto -Wl,-dead_strip -Wl,-x"
+            ldflags="-flto -Wl,-dead_strip -Wl,-dead_strip_dylibs -Wl,-x"
             common+=( "-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 )
           else
-            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -s"
+            # --exclude-libs,ALL keeps the statically linked codec symbols out of the dynamic table.
+            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -Wl,--exclude-libs,ALL -s"
           fi
 
           if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
             export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/share/pkgconfig
             export PKG_CONFIG_PATH=
-            common+=( -DCMAKE_SYSTEM_PROCESSOR=x86 -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32 )
+            # nasm defaults to the host format (elf64) on the x64 runner; force elf32 so the
+            # vendored SIMD codecs (dav1d, aom, libjpeg-turbo, libwebp) assemble their 32-bit asm.
+            common+=( -DCMAKE_SYSTEM_PROCESSOR=x86 -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32 -DCMAKE_ASM_NASM_OBJECT_FORMAT=elf32 )
           fi
 
           common+=(

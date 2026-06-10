@@ -125,7 +125,7 @@ jobs:
             sudo dpkg --add-architecture i386
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
-              build-essential gcc-multilib g++-multilib libc6-dev-i386 \
+              build-essential gcc-multilib g++-multilib libc6-dev-i386 libc6-dev:i386 \
               cmake ninja-build pkg-config git file patchelf curl xz-utils \
               bison flex libjson-perl \
               libasound2-dev:i386 libusb-1.0-0-dev:i386 \
@@ -173,9 +173,13 @@ jobs:
           source = source_path.read_text(encoding="utf-8")
 
           marker = "static pfn_D3DCompile SDL_D3DCompile = NULL;"
+          # Declare the real D3DCompile from libvkd3d-utils (statically linked) with the exact
+          # pfn_D3DCompile signature, reusing SDL_shadercross.c's own types so no vkd3d header is
+          # pulled in. vkd3d_utils.h -> vkd3d.h would #include <vulkan/vulkan.h>, which the macOS
+          # runners don't have; this mirrors how upstream declares the dynamically-loaded symbol.
           replacement = marker + """
           #ifdef SDL_SHADERCROSS_STATIC_VKD3D
-          extern HRESULT __stdcall SDL_ShaderCross_StaticD3DCompile(
+          extern HRESULT __stdcall D3DCompile(
               LPCVOID pSrcData, SIZE_T SrcDataSize, LPCSTR pSourceName,
               const D3D_SHADER_MACRO *pDefines, ID3DInclude *pInclude,
               LPCSTR pEntrypoint, LPCSTR pTarget, UINT Flags1, UINT Flags2,
@@ -194,7 +198,7 @@ jobs:
           init_replacement = """bool SDL_ShaderCross_Init(void)
           {
           #ifdef SDL_SHADERCROSS_STATIC_VKD3D
-              SDL_D3DCompile = SDL_ShaderCross_StaticD3DCompile;
+              SDL_D3DCompile = D3DCompile;
           #else
               d3dcompiler_dll = SDL_LoadObject(D3DCOMPILER_DLL);
               if (d3dcompiler_dll != NULL) {
@@ -241,33 +245,10 @@ jobs:
           )
           source_path.write_text(source, encoding="utf-8")
 
-          wrapper = Path("SDL_shadercross/src/static_vkd3d.c")
-          wrapper.write_text(
-              "#include <vkd3d_utils.h>\n"
-              "HRESULT WINAPI SDL_ShaderCross_StaticD3DCompile(\n"
-              "    LPCVOID source, SIZE_T source_size, LPCSTR source_name,\n"
-              "    const D3D_SHADER_MACRO *defines, ID3DInclude *include,\n"
-              "    LPCSTR entrypoint, LPCSTR target, UINT flags1, UINT flags2,\n"
-              "    ID3DBlob **code, ID3DBlob **errors)\n"
-              "{\n"
-              "    return D3DCompile(source, source_size, source_name, defines, include,\n"
-              "                      entrypoint, target, flags1, flags2, code, errors);\n"
-              "}\n",
-              encoding="utf-8",
-          )
-
+          # The static D3DCompile resolves straight from libvkd3d-utils.a (linked below), so no
+          # extra wrapper translation unit is needed.
           cmake_path = Path("SDL_shadercross/CMakeLists.txt")
           cmake = cmake_path.read_text(encoding="utf-8")
-          # Upstream indents the source list with tabs; match the entry regardless of leading
-          # whitespace and add the wrapper next to it (SOURCE_FILES feeds both the shared and static targets).
-          source_pattern = re.compile(r"(?m)^([ \t]*)src/SDL_shadercross\.c[ \t]*$")
-          if len(source_pattern.findall(cmake)) != 1:
-              raise RuntimeError("Could not locate shadercross source list")
-          cmake = source_pattern.sub(
-              lambda match: match.group(1) + "src/SDL_shadercross.c\n" + match.group(1) + "src/static_vkd3d.c",
-              cmake,
-              count=1,
-          )
 
           configure_marker = '"--enable-tests=no" "--enable-demos=no" "--disable-doxygen-doc"'
           if cmake.count(configure_marker) != 1:
@@ -441,13 +422,15 @@ jobs:
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
           )
           
-          cflags="-Os -flto -ffunction-sections -fdata-sections -DNDEBUG"
-          cxxflags="$cflags"
+          # Size: hide everything except the annotated SDL_shadercross API, drop C-unneeded unwind
+          # tables, and keep the statically linked SPIRV-Cross/vkd3d symbols out of the export table.
+          cflags="-Os -flto -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables -fvisibility=hidden -fno-ident -DNDEBUG"
+          cxxflags="$cflags -fvisibility-inlines-hidden"
           if [[ "${{ matrix.os }}" == "macos" ]]; then
-            ldflags="-flto -Wl,-dead_strip -Wl,-x"
+            ldflags="-flto -Wl,-dead_strip -Wl,-dead_strip_dylibs -Wl,-x"
             common+=("-DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }}" -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0)
           else
-            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -s"
+            ldflags="-flto -Wl,--gc-sections -Wl,--as-needed -Wl,--exclude-libs,ALL -s"
           fi
 
           if [[ "${{ matrix.rid }}" == "linux-x86" ]]; then
