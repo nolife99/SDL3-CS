@@ -343,14 +343,18 @@ jobs:
           Get-Command cl.exe -ErrorAction Stop | Out-Host
           Get-Command cmake.exe -ErrorAction Stop | Out-Host
           Get-Command ninja.exe -ErrorAction Stop | Out-Host
+          # No /GL + /LTCG: MSVC link-time codegen inlines aggressively across the whole DLL and
+          # was inflating the binaries well past their non-LTCG size (SDL's own builds don't use it).
+          # /O1 (favor size) + /Gy /Gw + /OPT:REF,ICF strips unused code; the dynamic UCRT keeps it lean.
           $common = @(
             '-G', 'Ninja',
             '-DCMAKE_BUILD_TYPE=MinSizeRel',
-            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON',
-            '-DCMAKE_C_FLAGS_MINSIZEREL=/Os /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/Os /GL /Gy /Gw /DNDEBUG',
-            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF',
-            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/LTCG /OPT:REF /OPT:ICF'
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF',
+            '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL',
+            '-DCMAKE_C_FLAGS_MINSIZEREL=/O1 /Gy /Gw /DNDEBUG',
+            '-DCMAKE_CXX_FLAGS_MINSIZEREL=/O1 /Gy /Gw /DNDEBUG',
+            '-DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL=/OPT:REF /OPT:ICF /INCREMENTAL:NO',
+            '-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL=/OPT:REF /OPT:ICF /INCREMENTAL:NO'
           )
           $sdlOptions = @(
             "-DCMAKE_INSTALL_PREFIX=$env:INSTALL_PREFIX",
@@ -543,6 +547,7 @@ jobs:
             Select-Object -First 1
           if (-not $binary) { throw 'Could not find SDL3_shadercross.dll under the install prefix.' }
           Copy-Item $binary.FullName (Join-Path $env:ARTIFACT_DIR 'SDL3_shadercross.dll') -Force
+          Write-Host ("Staged SDL3_shadercross.dll ({0:N0} bytes)" -f $binary.Length)
 
       - name: Stage minimal runtime binary (Linux)
         if: matrix.os == 'linux'
