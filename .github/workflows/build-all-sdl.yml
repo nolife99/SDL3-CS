@@ -33,11 +33,10 @@ jobs:
       primary_binary: SDL3_image
       artifact_prefix: sdl-native-${{ github.run_id }}-${{ github.run_attempt }}
       forbidden_libs: lib(png|jpeg|turbojpeg|webp|avif|jxl|tiff|dav1d|aom|z)[.0-9]|libsharpyuv
-      # On Windows/macOS decode the common formats (JPEG, TIFF, GIF, BMP) with the OS image
-      # frameworks (WIC / ImageIO) instead of bundling stb + libtiff. PNG still uses libpng for
-      # cross-platform consistency; AVIF/JXL/WEBP keep their dedicated libraries everywhere.
-      cmake_args_windows: -DSDLIMAGE_BACKEND_STB=OFF -DSDLIMAGE_BACKEND_WIC=ON
-      cmake_args_macos: -DSDLIMAGE_BACKEND_STB=OFF -DSDLIMAGE_BACKEND_IMAGEIO=ON
+      # All image backends OFF (BACKEND_STB/WIC/IMAGEIO in the base). Every format is handled by its
+      # dedicated industry-grade library on every platform — libjpeg-turbo, libpng, libtiff, libwebp,
+      # libavif (aom + dav1d) and libjxl — so both decode AND encode/save work everywhere. The
+      # WIC/ImageIO OS backends were decode-only and can't be used now that saving is required.
       cmake_args: >-
         -DBUILD_SHARED_LIBS=ON
         -DSDLIMAGE_INSTALL=ON
@@ -48,7 +47,7 @@ jobs:
         -DSDLIMAGE_STRICT=ON
         -DSDLIMAGE_TESTS=OFF
         -DSDLIMAGE_SAMPLES=OFF
-        -DSDLIMAGE_BACKEND_STB=ON
+        -DSDLIMAGE_BACKEND_STB=OFF
         -DSDLIMAGE_BACKEND_WIC=OFF
         -DSDLIMAGE_BACKEND_IMAGEIO=OFF
         -DSDLIMAGE_ANI=ON
